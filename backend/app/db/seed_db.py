@@ -433,7 +433,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "40.000đ - 65.000đ/người lớn",
             4.8, 3420, 120, True, False, None, "internal",
             "Ban Biên Tập TripFlow xác thực từ Hội trường Thống Nhất",
-            "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/7/71/Ho_Chi_Minh_City_-_Independence_Palace.jpg",
         ),
         (
             2, 1, 4,
@@ -450,7 +450,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "Miễn phí vào cổng",
             4.7, 4180, 90, True, False, None, "internal",
             "Sở Du lịch TP. Hồ Chí Minh & Khảo sát thực địa TripFlow",
-            "https://images.unsplash.com/photo-1555400038-63f5ba517a47?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/0/02/Ben_Thanh_Market%2C_Saigon.jpg",
         ),
         (
             3, 1, 2,
@@ -467,7 +467,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "Miễn phí",
             4.8, 3890, 45, True, False, None, "internal",
             "Cổng thông tin Du lịch TP.HCM (Vibrant Ho Chi Minh City)",
-            "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/9/93/Saigon_Notre-Dame_Basilica_%2814695412776%29.jpg",
         ),
         (
             4, 1, 2,
@@ -484,7 +484,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "Miễn phí",
             4.8, 3650, 60, True, False, None, "internal",
             "Bưu điện TP. Hồ Chí Minh & Ban Biên Tập TripFlow",
-            "https://images.unsplash.com/photo-1540611025311-01df3cef54b5?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/7/78/Ho_Chi_Minh_City%2C_Central_Post_Office%2C_2020-01_CN-01.jpg",
         ),
         (
             5, 1, 1,
@@ -501,7 +501,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "20.000đ/lượt (Miễn phí cho học sinh, sinh viên có thẻ)",
             4.7, 2190, 90, False, False, None, "internal",
             "Bảo tàng Hồ Chí Minh - Chi nhánh TP.HCM",
-            "https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/9/95/Ben_Nha_Rong_ve_dem.JPG",
         ),
         (
             6, 1, 5,
@@ -517,7 +517,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "Miễn phí (Vé Waterbus tham khảo: 15.000đ/lượt)",
             4.8, 5120, 90, True, True, "Điểm đến Đối tác Du lịch Đường sông TP.HCM", "partner",
             "Đối tác Saigon Waterbus & Sở Du lịch TP.HCM",
-            "https://images.unsplash.com/photo-1536086845232-47c3021fb97c?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/0/04/Nguyen_Hue_Street1.jpg",
         ),
         (
             7, 1, 3,
@@ -533,7 +533,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "40.000đ/người",
             4.9, 6240, 120, True, False, None, "internal",
             "Bảo tàng Chứng tích Chiến tranh TP.HCM",
-            "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/c/ca/War_Remnants_Museum.jpg",
         ),
         (
             8, 1, 1,
@@ -549,7 +549,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "35.000đ - 125.000đ/người",
             4.8, 2980, 180, False, False, None, "internal",
             "Khu Di tích Lịch sử Địa đạo Củ Chi",
-            "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/6/69/Cu_Chi_Tunnel.jpg",
         ),
         # --- 2. TP. Đà Nẵng (3 địa điểm) ---
         (
@@ -566,7 +566,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "Miễn phí",
             4.8, 3100, 60, True, False, None, "internal",
             "Sở Du lịch TP. Đà Nẵng & TripFlow",
-            "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/5/5d/Dragon_Bridge_Da_Nang_1.jpg",
         ),
         (
             10, 2, 1,
@@ -582,7 +582,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "40.000đ/lượt (Thang máy: 15.000đ/lượt)",
             4.8, 2840, 120, True, False, None, "internal",
             "Ban Quản lý Di tích Danh thắng Ngũ Hành Sơn Đà Nẵng",
-            "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/4/44/Marble_Mountains%2C_Vietnam.jpg",
         ),
         (
             12, 2, 2,
@@ -598,7 +598,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "Miễn phí",
             4.9, 3920, 90, True, False, None, "internal",
             "Sở Du lịch TP. Đà Nẵng & TripFlow",
-            "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/2/28/Lady_Buddha_Da_Nang_5.jpg",
         ),
         # --- 3. Thủ đô Hà Nội (3 địa điểm) ---
         (
@@ -612,7 +612,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "30.000đ/vé vào Đền Ngọc Sơn",
             4.9, 5400, 90, True, False, None, "internal",
             "Sở Du lịch Hà Nội & TripFlow",
-            "https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/a/a8/Th%C3%A1p_R%C3%B9a.jpg",
         ),
         (
             13, 3, 1,
@@ -628,7 +628,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "70.000đ/người lớn",
             4.9, 4850, 120, True, False, None, "internal",
             "Trung tâm Hoạt động Văn hóa Khoa học Văn Miếu - Quốc Tử Giám",
-            "https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/3/31/Hanoi_Temple_of_Literature.jpg",
         ),
         (
             14, 3, 1,
@@ -644,7 +644,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "70.000đ/lượt",
             4.8, 3620, 120, True, False, None, "internal",
             "Trung tâm Bảo tồn Di sản Thăng Long - Hà Nội",
-            "https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/7/70/Main_Gate_-_Citadel_of_Hanoi.jpg",
         ),
         # --- 4. Quảng Ninh - Vịnh Hạ Long (2 địa điểm) ---
         (
@@ -661,7 +661,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "290.000đ/vé tuyến + 200.000đ vé tàu",
             4.9, 6450, 240, True, False, None, "internal",
             "Ban Quản lý Vịnh Hạ Long & Sở Du lịch Quảng Ninh",
-            "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/4/4b/Halong_Bay.jpg",
         ),
         (
             16, 4, 3,
@@ -677,7 +677,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "40.000đ/người lớn",
             4.8, 3290, 90, True, False, None, "internal",
             "Bảo tàng Quảng Ninh & TripFlow",
-            "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/f/f1/Quang_Ninh_Museum_facade_1.jpg",
         ),
         # --- 5. Lào Cai - Sa Pa (2 địa điểm) ---
         (
@@ -694,7 +694,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "800.000đ/vé cáp treo khứ hồi",
             4.9, 5380, 240, True, True, "Đối tác Khu du lịch Quốc gia Sa Pa", "partner",
             "Sở Du lịch Lào Cai & Sun World Fansipan Legend",
-            "https://images.unsplash.com/photo-1540611025311-01df3cef54b5?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/7/71/Fansipan.jpg",
         ),
         (
             18, 5, 3,
@@ -710,7 +710,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "150.000đ/người lớn",
             4.7, 3810, 150, True, False, None, "internal",
             "Trung tâm Thông tin & Xúc tiến Du lịch Lào Cai",
-            "https://images.unsplash.com/photo-1540611025311-01df3cef54b5?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/4/42/Cat_Cat_waterfall.jpg",
         ),
         # --- 6. Thừa Thiên Huế (2 địa điểm) ---
         (
@@ -727,7 +727,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "200.000đ/người lớn",
             4.9, 5120, 180, True, False, None, "internal",
             "Trung tâm Bảo tồn Di tích Cố đô Huế",
-            "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/1/13/Ng%E1%BB%8D_m%C3%B4n%2C_Hu%E1%BA%BF.jpg",
         ),
         (
             20, 6, 1,
@@ -743,7 +743,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "Miễn phí",
             4.8, 4050, 90, True, False, None, "internal",
             "Sở Du lịch Thừa Thiên Huế & TripFlow",
-            "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/2/26/Thi%C3%AAn_M%E1%BB%A5_Pagoda.jpg",
         ),
         # --- 7. Quảng Nam - Phố cổ Hội An (2 địa điểm) ---
         (
@@ -760,7 +760,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "80.000đ/vé tham quan quần thể phố cổ",
             4.9, 6820, 180, True, False, None, "internal",
             "Trung tâm Quản lý Bảo tồn Di sản Văn hóa Hội An",
-            "https://images.unsplash.com/photo-1555400038-63f5ba517a47?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/9/96/Japanese_Covered_Bridge%2C_Hoi_An%2C_Vietnam_%286944565326%29.jpg",
         ),
         (
             22, 7, 5,
@@ -776,7 +776,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "30.000đ/vé cổng + 150.000đ/thuyền thúng 2 khách",
             4.8, 3490, 120, True, False, None, "internal",
             "Sở Văn hóa, Thể thao và Du lịch Quảng Nam",
-            "https://images.unsplash.com/photo-1555400038-63f5ba517a47?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/8/82/Basket_Boat_and_the_Bamboo_forest_%28Unsplash%29.jpg",
         ),
         # --- 8. Khánh Hòa - Nha Trang (2 địa điểm) ---
         (
@@ -793,7 +793,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "30.000đ/người",
             4.8, 4390, 90, True, False, None, "internal",
             "Trung tâm Bảo tồn Di tích Tỉnh Khánh Hòa",
-            "https://images.unsplash.com/photo-1536086845232-47c3021fb97c?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/c/c8/PoNagar.jpg",
         ),
         (
             24, 8, 5,
@@ -809,7 +809,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "950.000đ/người lớn (Bao gồm cáp treo 2 chiều)",
             4.9, 5210, 300, True, True, "Điểm đến Giải trí Biển Đảo Nha Trang", "partner",
             "Sở Du lịch Khánh Hòa & VinWonders Nha Trang",
-            "https://images.unsplash.com/photo-1536086845232-47c3021fb97c?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/d/df/Vinpearl_Nha_Trang_%2849373981551%29.jpg",
         ),
         # --- 9. Lâm Đồng - Đà Lạt (2 địa điểm) ---
         (
@@ -826,7 +826,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "Miễn phí",
             4.8, 4920, 90, True, False, None, "internal",
             "Sở Văn hóa, Thể thao và Du lịch Lâm Đồng",
-            "https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/a/aa/Da_Lat_-_Xuan_Huong_Lake.jpg",
         ),
         (
             26, 9, 5,
@@ -842,7 +842,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "50.000đ/vé cổng (Xe Jeep khứ hồi: 100.000đ/người)",
             4.8, 3760, 150, True, False, None, "internal",
             "Khu du lịch Langbiang Lâm Đồng",
-            "https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/c/c9/Lang_Biang_mountain_1.jpg",
         ),
         # --- 10. Kiên Giang - Đảo Ngọc Phú Quốc (2 địa điểm) ---
         (
@@ -859,7 +859,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "Miễn phí",
             4.8, 4120, 120, True, False, None, "internal",
             "Sở Du lịch Kiên Giang & TP. Phú Quốc",
-            "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/8/83/Dinh_C%E1%BA%ADu_Ph%C3%BA_Qu%E1%BB%91c.jpg",
         ),
         (
             28, 10, 2,
@@ -875,7 +875,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             "100.000đ/vé tham quan Cầu Hôn",
             4.9, 4680, 180, True, True, "Điểm đến Biểu tượng Nam Đảo Phú Quốc", "partner",
             "Sở Du lịch Kiên Giang & Sunset Town Phú Quốc",
-            "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1000&q=80",
+            "https://upload.wikimedia.org/wikipedia/commons/a/ad/Star_Beach_%28B%C3%A3i_Sao%29.jpg",
         ),
     ]
 

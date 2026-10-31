@@ -21,7 +21,7 @@ class MockDataRepository {
       description:
           'Đô thị năng động bậc nhất Việt Nam, nơi giao thoa giữa di sản kiến trúc Pháp cổ điển, dấu ấn lịch sử hào hùng bên sông Sài Gòn và nền ẩm thực đường phố phong phú.',
       heroImage:
-          'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1200&q=80',
+          'https://upload.wikimedia.org/wikipedia/commons/7/71/Ho_Chi_Minh_City_-_Independence_Palace.jpg',
       centerLat: 10.7769,
       centerLng: 106.7009,
       destinationCount: 8,
@@ -36,7 +36,7 @@ class MockDataRepository {
       description:
           'Thành phố biển đáng sống miền Trung với bãi biển Mỹ Khê quyến rũ, danh thắng Ngũ Hành Sơn, bán đảo Sơn Trà xanh mát và những cây cầu biểu tượng bắc qua sông Hàn.',
       heroImage:
-          'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80',
+          'https://upload.wikimedia.org/wikipedia/commons/5/5d/Dragon_Bridge_Da_Nang_1.jpg',
       centerLat: 16.0544,
       centerLng: 108.2022,
       destinationCount: 3,
@@ -51,7 +51,7 @@ class MockDataRepository {
       description:
           'Thủ đô nghìn năm văn hiến với 36 phố phường cổ kính, Hồ Gươm lịch sử, Văn Miếu - Quốc Tử Giám, Hoàng thành Thăng Long và tinh hoa ẩm thực Bắc Bộ.',
       heroImage:
-          'https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?auto=format&fit=crop&w=1200&q=80',
+          'https://upload.wikimedia.org/wikipedia/commons/a/a8/Th%C3%A1p_R%C3%B9a.jpg',
       centerLat: 21.0285,
       centerLng: 105.8542,
       destinationCount: 3,
@@ -66,7 +66,7 @@ class MockDataRepository {
       description:
           'Kỳ quan thiên nhiên thế giới Vịnh Hạ Long với hàng nghìn đảo đá vôi kỳ vĩ trên làn nước ngọc bích, Bảo tàng Quảng Ninh hiện đại và ẩm thực chả mực giã tay trứ danh.',
       heroImage:
-          'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80',
+          'https://upload.wikimedia.org/wikipedia/commons/4/4b/Halong_Bay.jpg',
       centerLat: 20.9599,
       centerLng: 107.0425,
       destinationCount: 2,
@@ -81,7 +81,7 @@ class MockDataRepository {
       description:
           'Thị trấn trong sương vùng cao Tây Bắc với đỉnh Fansipan - Nóc nhà Đông Dương hùng vĩ, thung lũng Mường Hoa, bản Cát Cát và ẩm thực thắng cố, lẩu cá hồi đặc sắc.',
       heroImage:
-          'https://images.unsplash.com/photo-1540611025311-01df3cef54b5?auto=format&fit=crop&w=1200&q=80',
+          'https://upload.wikimedia.org/wikipedia/commons/7/71/Fansipan.jpg',
       centerLat: 22.3364,
       centerLng: 103.8438,
       destinationCount: 2,
@@ -96,7 +96,7 @@ class MockDataRepository {
       description:
           'Kinh đô xưa của triều đại nhà Nguyễn với Quần thể di tích Cố đô Huế được UNESCO công nhận, chùa Thiên Mụ bên dòng sông Hương và ẩm thực cung đình tinh tế.',
       heroImage:
-          'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1200&q=80',
+          'https://upload.wikimedia.org/wikipedia/commons/1/13/Ng%E1%BB%8D_m%C3%B4n%2C_Hu%E1%BA%BF.jpg',
       centerLat: 16.4637,
       centerLng: 107.5909,
       destinationCount: 2,
@@ -111,7 +111,7 @@ class MockDataRepository {
       description:
           'Thương cảng cổ Hội An rực rỡ sắc đèn lồng bên dòng sông Hoài, Chùa Cầu trăm tuổi, Rừng dừa Bảy Mẫu xanh mướt và những món ngon trứ danh Cao lầu, Cơm gà phố Hội.',
       heroImage:
-          'https://images.unsplash.com/photo-1555400038-63f5ba517a47?auto=format&fit=crop&w=1200&q=80',
+          'https://upload.wikimedia.org/wikipedia/commons/9/96/Japanese_Covered_Bridge%2C_Hoi_An%2C_Vietnam_%286944565326%29.jpg',
       centerLat: 15.8801,
       centerLng: 108.3380,
       destinationCount: 2,
@@ -126,7 +126,7 @@ class MockDataRepository {
       description:
           'Thiên đường du lịch biển đảo Nam Trung Bộ với vịnh Nha Trang trong xanh, Tháp Bà Ponagar cổ kính, đảo Hòn Tre sôi động và đặc sản bún chả cá sứa, nem nướng Ninh Hòa.',
       heroImage:
-          'https://images.unsplash.com/photo-1536086845232-47c3021fb97c?auto=format&fit=crop&w=1200&q=80',
+          'https://upload.wikimedia.org/wikipedia/commons/c/c8/PoNagar.jpg',
       centerLat: 12.2388,
       centerLng: 109.1967,
       destinationCount: 2,
@@ -141,7 +141,7 @@ class MockDataRepository {
       description:
           'Thành phố ngàn hoa trên cao nguyên Lâm Viên se lạnh quanh năm với Hồ Xuân Hương, Quảng trường Lâm Viên, đỉnh Langbiang huyền thoại và ẩm thực phố núi ấm áp.',
       heroImage:
-          'https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?auto=format&fit=crop&w=1200&q=80',
+          'https://upload.wikimedia.org/wikipedia/commons/a/aa/Da_Lat_-_Xuan_Huong_Lake.jpg',
       centerLat: 11.9404,
       centerLng: 108.4583,
       destinationCount: 2,
@@ -156,7 +156,7 @@ class MockDataRepository {
       description:
           'Đảo Ngọc lớn nhất Việt Nam giữa vịnh Thái Lan với những bãi biển hoàng hôn tuyệt mỹ, Dinh Cậu, Cầu Hôn Sunset Town và đặc sản Bún quậy Kiến Xây, Gỏi cá trích tươi ngon.',
       heroImage:
-          'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80',
+          'https://upload.wikimedia.org/wikipedia/commons/8/83/Dinh_C%E1%BA%ADu_Ph%C3%BA_Qu%E1%BB%91c.jpg',
       centerLat: 10.2899,
       centerLng: 103.9840,
       destinationCount: 2,
@@ -204,19 +204,10 @@ class MockDataRepository {
           id: 1,
           destinationId: 1,
           imageUrl:
-              'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1000&q=80',
+              'https://upload.wikimedia.org/wikipedia/commons/7/71/Ho_Chi_Minh_City_-_Independence_Palace.jpg',
           caption: 'Mặt tiền Dinh Độc Lập nhìn từ trục đường Nam Kỳ Khởi Nghĩa',
           licenseType: 'owned',
           creditAuthor: 'TripFlow Editorial Photography',
-        ),
-        DestinationImageModel(
-          id: 2,
-          destinationId: 1,
-          imageUrl:
-              'https://images.unsplash.com/photo-1555921015-5532091f6026?auto=format&fit=crop&w=1000&q=80',
-          caption: 'Khuôn viên cây xanh cổ thụ quanh Hội trường Thống Nhất',
-          licenseType: 'cc_by_sa',
-          creditAuthor: 'Vietnam Heritage Archive (CC BY-SA 4.0)',
         ),
       ],
     ),
@@ -248,7 +239,7 @@ class MockDataRepository {
           id: 3,
           destinationId: 2,
           imageUrl:
-              'https://images.unsplash.com/photo-1555400038-63f5ba517a47?auto=format&fit=crop&w=1000&q=80',
+              'https://upload.wikimedia.org/wikipedia/commons/0/02/Ben_Thanh_Market%2C_Saigon.jpg',
           caption: 'Biểu tượng tháp đồng hồ cửa Nam Chợ Bến Thành',
           licenseType: 'owned',
           creditAuthor: 'TripFlow Editorial Photography',
@@ -283,7 +274,7 @@ class MockDataRepository {
           id: 4,
           destinationId: 3,
           imageUrl:
-              'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1000&q=80',
+              'https://upload.wikimedia.org/wikipedia/commons/9/93/Saigon_Notre-Dame_Basilica_%2814695412776%29.jpg',
           caption: 'Quảng trường Công xã Paris và Nhà thờ Đức Bà Sài Gòn',
           licenseType: 'cc_by_sa',
           creditAuthor: 'Saigon Architecture Commons',
@@ -318,8 +309,8 @@ class MockDataRepository {
           id: 5,
           destinationId: 4,
           imageUrl:
-              'https://images.unsplash.com/photo-1540611025311-01df3cef54b5?auto=format&fit=crop&w=1000&q=80',
-          caption: 'Mái vòm cổ điển bên trong Bưu điện Trung tâm Sài Gòn',
+              'https://upload.wikimedia.org/wikipedia/commons/7/78/Ho_Chi_Minh_City%2C_Central_Post_Office%2C_2020-01_CN-01.jpg',
+          caption: 'Mặt tiền màu vàng cổ điển của Bưu điện Trung tâm Sài Gòn',
           licenseType: 'owned',
           creditAuthor: 'TripFlow Editorial Photography',
         ),
@@ -353,7 +344,7 @@ class MockDataRepository {
           id: 6,
           destinationId: 5,
           imageUrl:
-              'https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?auto=format&fit=crop&w=1000&q=80',
+              'https://upload.wikimedia.org/wikipedia/commons/9/95/Ben_Nha_Rong_ve_dem.JPG',
           caption: 'Bến Nhà Rồng bên dòng sông Sài Gòn lịch sử',
           licenseType: 'owned',
           creditAuthor: 'TripFlow Studio',
@@ -390,8 +381,8 @@ class MockDataRepository {
           id: 7,
           destinationId: 6,
           imageUrl:
-              'https://images.unsplash.com/photo-1536086845232-47c3021fb97c?auto=format&fit=crop&w=1000&q=80',
-          caption: 'Phố đi bộ Nguyễn Huệ và Bến Bạch Đằng rực rỡ về đêm',
+              'https://upload.wikimedia.org/wikipedia/commons/0/04/Nguyen_Hue_Street1.jpg',
+          caption: 'Không gian Phố đi bộ Nguyễn Huệ rực rỡ sắc màu',
           licenseType: 'partner_authorized',
           creditAuthor: 'Saigon Waterbus Media Partner',
         ),
@@ -425,8 +416,8 @@ class MockDataRepository {
           id: 8,
           destinationId: 7,
           imageUrl:
-              'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1000&q=80',
-          caption: 'Khu trưng bày tại Bảo tàng Chứng tích Chiến tranh',
+              'https://upload.wikimedia.org/wikipedia/commons/c/ca/War_Remnants_Museum.jpg',
+          caption: 'Khu trưng bày ngoài trời tại Bảo tàng Chứng tích Chiến tranh',
           licenseType: 'owned',
           creditAuthor: 'TripFlow Editorial Photography',
         ),
@@ -460,8 +451,8 @@ class MockDataRepository {
           id: 9,
           destinationId: 8,
           imageUrl:
-              'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1000&q=80',
-          caption: 'Rừng cây xanh mát che phủ hệ thống Địa đạo Củ Chi',
+              'https://upload.wikimedia.org/wikipedia/commons/6/69/Cu_Chi_Tunnel.jpg',
+          caption: 'Lối vào hệ thống đường hầm Địa đạo Củ Chi',
           licenseType: 'owned',
           creditAuthor: 'TripFlow Studio',
         ),
@@ -490,6 +481,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Cổng Du lịch TP. Đà Nẵng',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 10,
+          destinationId: 9,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/5/5d/Dragon_Bridge_Da_Nang_1.jpg',
+          caption: 'Cầu Rồng phun lửa rực rỡ bên dòng sông Hàn về đêm',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Da Nang Tourism Photo Archive',
+        ),
+      ],
     ),
     DestinationModel(
       id: 10,
@@ -513,6 +515,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Ban Quản lý Di tích Danh thắng Ngũ Hành Sơn Đà Nẵng',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 11,
+          destinationId: 10,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/4/44/Marble_Mountains%2C_Vietnam.jpg',
+          caption: 'Quần thể danh thắng Ngũ Hành Sơn nhìn từ trên cao',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Wikimedia Commons / Non Nuoc Mountains',
+        ),
+      ],
     ),
     DestinationModel(
       id: 12,
@@ -536,6 +549,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Sở Du lịch TP. Đà Nẵng & TripFlow',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 12,
+          destinationId: 12,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/2/28/Lady_Buddha_Da_Nang_5.jpg',
+          caption: 'Tượng Phật Bà Quan Thế Âm cao 67m tại chùa Linh Ứng Sơn Trà',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Da Nang Cultural Tourism',
+        ),
+      ],
     ),
     // --- 3. Thủ đô Hà Nội ---
     DestinationModel(
@@ -560,6 +584,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Sở Du lịch Hà Nội & TripFlow',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 13,
+          destinationId: 11,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/a/a8/Th%C3%A1p_R%C3%B9a.jpg',
+          caption: 'Tháp Rùa soi bóng nước Hồ Gươm cổ kính',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Hanoi Heritage Archive',
+        ),
+      ],
     ),
     DestinationModel(
       id: 13,
@@ -583,6 +618,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Trung tâm Hoạt động Văn hóa Khoa học Văn Miếu',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 14,
+          destinationId: 13,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/3/31/Hanoi_Temple_of_Literature.jpg',
+          caption: 'Khuê Văn Các biểu tượng tri thức tại Văn Miếu - Quốc Tử Giám',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Temple of Literature Archive',
+        ),
+      ],
     ),
     DestinationModel(
       id: 14,
@@ -606,6 +652,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Trung tâm Bảo tồn Di sản Thăng Long - Hà Nội',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 15,
+          destinationId: 14,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/7/70/Main_Gate_-_Citadel_of_Hanoi.jpg',
+          caption: 'Cổng chính Đoan Môn Hoàng thành Thăng Long',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Thang Long Heritage Center',
+        ),
+      ],
     ),
     // --- 4. Quảng Ninh (Vịnh Hạ Long) ---
     DestinationModel(
@@ -630,6 +687,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Ban Quản lý Vịnh Hạ Long',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 16,
+          destinationId: 15,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/4/4b/Halong_Bay.jpg',
+          caption: 'Toàn cảnh kỳ quan Vịnh Hạ Long với hàng ngàn đảo đá vôi xanh ngọc',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Halong Bay Heritage Management',
+        ),
+      ],
     ),
     DestinationModel(
       id: 16,
@@ -653,6 +721,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Bảo tàng Quảng Ninh & TripFlow',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 17,
+          destinationId: 16,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/f/f1/Quang_Ninh_Museum_facade_1.jpg',
+          caption: 'Kiến trúc khối kính đen bóng ấn tượng của Bảo tàng Quảng Ninh',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Quang Ninh Museum Archive',
+        ),
+      ],
     ),
     // --- 5. Lào Cai (Sa Pa) ---
     DestinationModel(
@@ -679,6 +758,17 @@ class MockDataRepository {
       dataSource: 'partner',
       sourceAttribution: 'Sở Du lịch Lào Cai & Sun World Fansipan Legend',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 18,
+          destinationId: 17,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/7/71/Fansipan.jpg',
+          caption: 'Chóp đỉnh Fansipan cao 3.143m ngút ngàn giữa biển mây Hoàng Liên Sơn',
+          licenseType: 'partner_authorized',
+          creditAuthor: 'Fansipan Legend Media Partner',
+        ),
+      ],
     ),
     DestinationModel(
       id: 18,
@@ -702,6 +792,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Trung tâm Xúc tiến Du lịch Lào Cai',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 19,
+          destinationId: 18,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/4/42/Cat_Cat_waterfall.jpg',
+          caption: 'Thác Tiên Sa và guồng nước tre đặc trưng tại Bản Cát Cát',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Lao Cai Tourism Promotion Center',
+        ),
+      ],
     ),
     // --- 6. Thừa Thiên Huế ---
     DestinationModel(
@@ -726,6 +827,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Trung tâm Bảo tồn Di tích Cố đô Huế',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 20,
+          destinationId: 19,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/1/13/Ng%E1%BB%8D_m%C3%B4n%2C_Hu%E1%BA%BF.jpg',
+          caption: 'Cổng Ngọ Môn uy nghi tráng lệ dẫn vào Đại Nội Huế',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Hue Monuments Conservation Centre',
+        ),
+      ],
     ),
     DestinationModel(
       id: 20,
@@ -749,6 +861,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Sở Du lịch Thừa Thiên Huế',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 21,
+          destinationId: 20,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/2/26/Thi%C3%AAn_M%E1%BB%A5_Pagoda.jpg',
+          caption: 'Tháp Phước Duyên 7 tầng sừng sững bên dòng sông Hương',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Hue Tourism Archive',
+        ),
+      ],
     ),
     // --- 7. Quảng Nam (Phố cổ Hội An) ---
     DestinationModel(
@@ -773,6 +896,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Trung tâm Bảo tồn Di sản Văn hóa Hội An',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 22,
+          destinationId: 21,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/9/96/Japanese_Covered_Bridge%2C_Hoi_An%2C_Vietnam_%286944565326%29.jpg',
+          caption: 'Chùa Cầu cổ kính bắc qua lạch nước trong lòng phố cổ Hội An',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Hoi An Cultural Heritage Center',
+        ),
+      ],
     ),
     DestinationModel(
       id: 22,
@@ -796,6 +930,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Sở Văn hóa, Thể thao và Du lịch Quảng Nam',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 23,
+          destinationId: 22,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/8/82/Basket_Boat_and_the_Bamboo_forest_%28Unsplash%29.jpg',
+          caption: 'Trải nghiệm chèo thuyền thúng giữa bạt ngàn rừng dừa Bảy Mẫu',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Quang Nam Tourism Board',
+        ),
+      ],
     ),
     // --- 8. Khánh Hòa (Nha Trang) ---
     DestinationModel(
@@ -820,6 +965,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Trung tâm Bảo tồn Di tích Tỉnh Khánh Hòa',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 24,
+          destinationId: 23,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/c/c8/PoNagar.jpg',
+          caption: 'Quần thể tháp Chăm Tháp Bà Ponagar uy nghiêm trên đồi Cù Lao',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Khanh Hoa Monument Conservation Center',
+        ),
+      ],
     ),
     DestinationModel(
       id: 24,
@@ -845,6 +1001,17 @@ class MockDataRepository {
       dataSource: 'partner',
       sourceAttribution: 'Sở Du lịch Khánh Hòa & VinWonders',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 25,
+          destinationId: 24,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/d/df/Vinpearl_Nha_Trang_%2849373981551%29.jpg',
+          caption: 'Toàn cảnh tổ hợp công viên giải trí đảo Hòn Tre VinWonders Nha Trang',
+          licenseType: 'partner_authorized',
+          creditAuthor: 'VinWonders Media Partner',
+        ),
+      ],
     ),
     // --- 9. Lâm Đồng (Đà Lạt) ---
     DestinationModel(
@@ -869,6 +1036,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Sở Văn hóa, Thể thao và Du lịch Lâm Đồng',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 26,
+          destinationId: 25,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/a/aa/Da_Lat_-_Xuan_Huong_Lake.jpg',
+          caption: 'Mặt nước hồ Xuân Hương yên bình bên khối hoa Atiso Quảng trường Lâm Viên',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Lam Dong Tourism Archive',
+        ),
+      ],
     ),
     DestinationModel(
       id: 26,
@@ -892,6 +1070,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Khu du lịch Langbiang Lâm Đồng',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 27,
+          destinationId: 26,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/c/c9/Lang_Biang_mountain_1.jpg',
+          caption: 'Đỉnh núi thiêng Langbiang huyền thoại mây phủ bao la',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Langbiang Tourism Center',
+        ),
+      ],
     ),
     // --- 10. Kiên Giang (Đảo Ngọc Phú Quốc) ---
     DestinationModel(
@@ -916,6 +1105,17 @@ class MockDataRepository {
       dataSource: 'internal',
       sourceAttribution: 'Sở Du lịch Kiên Giang & TP. Phú Quốc',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 28,
+          destinationId: 27,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/8/83/Dinh_C%E1%BA%ADu_Ph%C3%BA_Qu%E1%BB%91c.jpg',
+          caption: 'Di tích thắng cảnh Dinh Cậu trên ghềnh đá nhìn ra biển Phú Quốc',
+          licenseType: 'cc_by_sa',
+          creditAuthor: 'Kien Giang Tourism Promotion',
+        ),
+      ],
     ),
     DestinationModel(
       id: 28,
@@ -941,6 +1141,17 @@ class MockDataRepository {
       dataSource: 'partner',
       sourceAttribution: 'Sở Du lịch Kiên Giang & Sunset Town',
       updatedAt: '30/10/2026',
+      images: [
+        DestinationImageModel(
+          id: 29,
+          destinationId: 28,
+          imageUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/a/ad/Star_Beach_%28B%C3%A3i_Sao%29.jpg',
+          caption: 'Bờ cát trắng mịn và biển xanh ngọc bích tuyệt đẹp tại Bãi Sao Phú Quốc',
+          licenseType: 'partner_authorized',
+          creditAuthor: 'Phu Quoc Sunset & Beach Partner',
+        ),
+      ],
     ),
   ];
 

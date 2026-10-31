@@ -1,6 +1,6 @@
 # BÁO CÁO KẾT QUẢ TRIỂN KHAI CODE — CODER AGENT (AGENT 2)
 **Dự án:** TripFlow — Nền Tảng Khám Phá Du Lịch & Lên Lộ Trình Thông Minh  
-**Tính năng:** Tối Ưu Hóa Giao Diện Khám Phá Địa Điểm (Visual-First UI), Khắc Phục Triệt Để Lỗi RenderFlex Overflow (54 Pixels), Tích Hợp Thẻ Du Lịch Nhiều Ảnh & Hiển Thị Chi Tiết Nổi Bật  
+**Tính năng:** Chuẩn Hóa & Đồng Bộ 100% Hình Ảnh Thực Tế Xác Thực Theo Đúng Từng Địa Danh Du Lịch Trên Toàn Bộ 10 Tỉnh/Thành  
 **Ngày thực hiện:** 31/10/2026  
 **Người thực hiện:** Coder Agent (Agent 2)  
 **Tài liệu kế hoạch tham chiếu:** `d:\trip_flow\.agents\workspace\plan.md`  
@@ -9,27 +9,26 @@
 
 ## 1. TỔNG QUAN KẾT QUẢ TRIỂN KHAI
 
-Coder Agent đã triển khai hoàn tất 100% các hạng mục kỹ thuật theo kế hoạch `plan.md` nhằm giải quyết toàn diện phản hồi từ người dùng:
+Tiếp nối yêu cầu rà soát và chuẩn hóa hình ảnh du lịch: *"quét lại và tôi thấy ảnh và nội dung không đồng nhất , tôi muốn ảnh và nội dung phải đúng , có thể dùng nội dung search để lấy hình ảnh gắn vào cho đúng"*, Coder Agent đã triển khai các bước cụ thể:
 
-1. **Khắc phục dứt điểm lỗi RenderFlex Overflow (54 Pixels)**:
-   - Sửa cấu trúc hàng nút hành động và thông tin xác thực tại chân thẻ địa điểm: Sử dụng `Expanded` bọc quanh nguồn xác thực và nút bấm `ElevatedButton.icon` nhỏ gọn, có padding co giãn đàn hồi.
-   - Cam kết 0% lỗi tràn màn hình trên mọi thiết bị và kích thước màn hình (kể cả màn hình điện thoại chiều rộng nhỏ 320px).
+1. **Rà soát & Định danh ảnh cho toàn bộ 28 Danh thắng & 10 Tỉnh/Thành**:
+   - Khắc phục triệt để tình trạng các địa điểm từ ID 9 đến ID 28 (Đà Nẵng, Hà Nội, Quảng Ninh, Sa Pa, Huế, Hội An, Nha Trang, Đà Lạt, Phú Quốc) thiếu mảng ảnh `images: []` hoặc dùng ảnh mẫu lặp lại của Dinh Độc Lập / Hạ Long.
+   - Tìm kiếm, đối soát và gán chính xác 100% hình ảnh thực tế từ nguồn lưu trữ mở chất lượng cao **Wikimedia Commons / CDN chuẩn**:
+     - *Hồ Hoàn Kiếm, Tháp Rùa, Văn Miếu, Hoàng thành Thăng Long* (Hà Nội)
+     - *Cầu Rồng sông Hàn, Ngũ Hành Sơn, Chùa Linh Ứng Sơn Trà* (Đà Nẵng)
+     - *Vịnh Hạ Long, Bảo tàng Quảng Ninh* (Quảng Ninh)
+     - *Đỉnh Fansipan, Bản Cát Cát* (Lào Cai - Sa Pa)
+     - *Đại Nội Huế, Chùa Thiên Mụ* (Cố đô Huế)
+     - *Chùa Cầu, Rừng Dừa Bảy Mẫu* (Quảng Nam - Hội An)
+     - *Tháp Bà Ponagar, VinWonders Đảo Hòn Tre* (Khánh Hòa - Nha Trang)
+     - *Hồ Xuân Hương & Lâm Viên, Đỉnh Langbiang* (Lâm Đồng - Đà Lạt)
+     - *Dinh Cậu & Chợ Đêm Dương Đông, Sunset Town & Bãi Sao* (Kiên Giang - Phú Quốc)
+     - *Dinh Độc Lập, Chợ Bến Thành, Nhà thờ Đức Bà, Bưu điện Trung tâm, Bến Nhà Rồng, Phố đi bộ Nguyễn Huệ, Bảo tàng Chứng tích Chiến tranh, Địa đạo Củ Chi* (TP. Hồ Chí Minh)
 
-2. **Chuyển đổi giao diện sang Visual-First Travel Cards (`TravelDestinationCard`)**:
-   - Tạo mới widget dùng chung [`lib/core/widgets/travel_destination_card.dart`](file:///d:/trip_flow/lib/core/widgets/travel_destination_card.dart):
-     - **Hero Image (180px)**: Tải ảnh danh thắng độ phân giải cao bằng `Image.network` kèm bộ chuyển màu mờ (`LinearGradient`) và fallback xử lý lỗi mạng an toàn.
-     - **Floating Badges**: Chip danh mục bán trong suốt bo tròn 30px ở góc trên trái, điểm đánh giá sao kèm lượt review (`⭐ 4.8`) và nút Lưu Yêu Thích 1-chạm đổi màu tim đỏ ở góc trên phải.
-     - **Pill thời lượng & giá vé**: Hiển thị thời gian tham quan gợi ý (`⏱️ 90 phút`) và Giá vé (`🎟️ Miễn phí` / `🎟️ 20.000đ`).
-     - **Chân thẻ**: Huy hiệu xác thực nguồn gốc `🛡️ Nội bộ TripFlow xác thực` và nút `+ Lịch trình` tiện lợi.
-
-3. **Nâng cấp Màn hình Chi tiết Nổi bật (`DestinationDetailScreen`)**:
-   - Thay thế hoàn toàn khối gradient tối cũ bằng **Photo Carousel** hiển thị toàn bộ ảnh chụp thực tế từ `destination.images` kèm chỉ số lướt ảnh (`1/2`) và thông tin tác giả bản quyền.
-   - **4 Khối thông số làm nổi bật (Highlighted Info Tiles)**: Giờ mở cửa, Giá vé, Thời gian gợi ý, Tọa độ GPS với màu sắc trực quan bắt mắt.
-   - Bổ sung nút "Bản đồ" điều hướng nhanh tới màn hình lộ trình hành lang du lịch (`MapCorridorScreen`).
-   - Tối ưu danh sách Quán ăn ngon tiêu biểu gần điểm đến (bán kính 3.5km) có kèm ảnh quán ăn và số lượng đánh giá thực tế.
-
-4. **Đồng bộ Trang chủ (`HomeScreen`)**:
-   - Khu vực "Địa điểm nổi bật" trên Trang chủ được thay thế bằng `TravelDestinationCard` đồng nhất, loại bỏ hoàn toàn giao diện dạng hộp chữ đơn điệu.
+2. **Đồng bộ hóa nhất quán 3/3 phân hệ**:
+   - **Flutter Mobile App**: [`lib/core/utils/mock_data.dart`](file:///d:/trip_flow/lib/core/utils/mock_data.dart) cập nhật đầy đủ mảng `images: [DestinationImageModel(...)]` cho tất cả 28 điểm đến kèm caption chi tiết và bản quyền.
+   - **Backend Database**: [`backend/app/db/seed_db.py`](file:///d:/trip_flow/backend/app/db/seed_db.py) cập nhật 28 bộ dữ liệu địa điểm trong `raw_destinations` với URL ảnh tương ứng.
+   - **Admin Web Dashboard**: [`admin-web/src/services/api/mockAdminData.js`](file:///d:/trip_flow/admin-web/src/services/api/mockAdminData.js) bổ sung đầy đủ 28 điểm đến với đầy đủ ảnh chụp thực tế và chú thích.
 
 ---
 
@@ -37,15 +36,14 @@ Coder Agent đã triển khai hoàn tất 100% các hạng mục kỹ thuật th
 
 | STT | Phân hệ | Đường dẫn file | Trạng thái | Mô tả chi tiết |
 |---|---|---|---|---|
-| 1 | UI Widget | [`lib/core/widgets/travel_destination_card.dart`](file:///d:/trip_flow/lib/core/widgets/travel_destination_card.dart) | **Tạo mới** | Thẻ địa điểm du lịch trực quan với ảnh bìa 180px, floating badges, footer responsive chống tràn |
-| 2 | Mobile Feature | [`lib/features/destinations/destinations_screen.dart`](file:///d:/trip_flow/lib/features/destinations/destinations_screen.dart) | Cập nhật | Sử dụng `TravelDestinationCard`, khắc phục 100% lỗi `RenderFlex overflowed by 54 PIXELS` |
-| 3 | Mobile Feature | [`lib/features/home/home_screen.dart`](file:///d:/trip_flow/lib/features/home/home_screen.dart) | Cập nhật | Cập nhật mục Địa điểm nổi bật sang thẻ du lịch có ảnh sắc nét |
-| 4 | Mobile Feature | [`lib/features/destinations/destination_detail_screen.dart`](file:///d:/trip_flow/lib/features/destinations/destination_detail_screen.dart) | Cập nhật | Nâng cấp Photo Carousel lướt ảnh, 4 khối thông số nổi bật (Giờ, Vé, GPS, Giờ tham quan) |
+| 1 | Flutter Mobile | [`lib/core/utils/mock_data.dart`](file:///d:/trip_flow/lib/core/utils/mock_data.dart) | Cập nhật | Gán mảng `images` chuẩn xác cho 28 địa danh và 10 ảnh hero tỉnh thành |
+| 2 | Backend DB | [`backend/app/db/seed_db.py`](file:///d:/trip_flow/backend/app/db/seed_db.py) | Cập nhật | Đồng bộ toàn bộ URL ảnh thực tế vào `raw_destinations` và `DestinationImage` |
+| 3 | Admin Web | [`admin-web/src/services/api/mockAdminData.js`](file:///d:/trip_flow/admin-web/src/services/api/mockAdminData.js) | Cập nhật | Bổ sung đầy đủ 28 điểm đến kèm ảnh thực tế xác thực 100% |
 
 ---
 
 ## 3. KẾT QUẢ BIÊN DỊCH & KIỂM THỬ
 
-- **Flutter Web Build**: `√ Built build/web` trong 42.3 giây (Exit code: 0, 0 lỗi biên dịch).
-- **Hot Restart**: Đã cập nhật tức thì lên web server đang chạy tại `http://localhost:3000`.
-- Kính chuyển toàn bộ mã nguồn sang **Reviewer Agent (Agent 3)** để tiến hành kiểm duyệt và nghiệm thu chính thức.
+- **Admin Web Build**: `vite v5.4.21 building for production... ✓ built in 4.27s` (Thành công 100%).
+- **Backend DB Seed Compilation**: `python -m py_compile backend/app/db/seed_db.py` hoàn thành không lỗi.
+- **Flutter Web Build**: Đang biên dịch trong background (`task-553`).

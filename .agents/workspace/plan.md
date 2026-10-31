@@ -1,115 +1,68 @@
-# Kế Hoạch Phát Triển & Thiết Kế Kiến Trúc: Tối Ưu Hóa Giao Diện Khám Phá Địa Điểm (Visual-First UI), Khắc Phục Lỗi Tràn Màn Hình RenderFlex (54 Pixels Overflow), Tích Hợp Bộ Sưu Tập Ảnh Du Lịch Đậm Nét và Hiển Thị Chi Tiết Nổi Bật
+# Kế Hoạch Phát Triển & Chuẩn Hóa Hình Ảnh Du Lịch: Đồng Bộ 100% Ảnh Thực Tế Với Từng Địa Danh & Danh Lam Thắng Cảnh Toàn Bộ 10 Tỉnh Thành
 
 ## 1. Tổng quan
 
-### 1.1 Vấn đề hiện tại
-1. **Lỗi tràn màn hình (RenderFlex Overflowed by 54 Pixels)**:
-   - Trên màn hình danh sách địa điểm (`DestinationsScreen`), phần chân thẻ địa điểm gồm dòng `Text('Nguồn: Nội bộ xác thực...')` và nút bấm `TextButton.icon('Thêm lịch trình')` đặt trong cùng một hàng `Row` không có ràng buộc linh hoạt (`Flexible`/`Expanded`).
-   - Trên màn hình di động có chiều rộng thông dụng 360–390px, tổng chiều rộng nội dung vượt quá khung hiển thị khiến Flutter hiển thị dải sọc vàng đen và in dòng chữ cảnh báo `A RenderFlex overflowed by 54 PIXELS`.
-2. **Giao diện quá nhiều chữ, thiếu tính trực quan của ứng dụng du lịch**:
-   - Hiện tại các thẻ địa điểm chỉ là các khung trắng đơn điệu chứa văn bản, hoàn toàn không hiển thị hình ảnh minh họa (`dest.primaryImageUrl` bị bỏ sót).
-   - Màn hình chi tiết (`DestinationDetailScreen`) sử dụng khung màu gradient tối thay vì hiển thị hình ảnh thật sắc nét từ bộ sưu tập ảnh `destination.images`.
-3. **Nhu cầu từ người dùng**:
-   > *"sao có các chữ này, ứng dụng quá nhiều chữ , hình thành phải từ nhiều ảnh , nhiều thẻ , tăng độ trải nghiệm của người dùng , tìm kiếm ảnh du lịch đúng với từ khóa và địa danh, khi chọn show đầy đủ thông tin của thẻ, phần hiển thị làm nổi bật"*
+### 1.1 Vấn đề phát hiện
+- Người dùng phản hồi:
+  > *"quét lại và tôi thấy ảnh và nội dung không đồng nhất , tôi muốn ảnh và nội dung phải đúng , có thể dùng nội dung sreach để lấy hình ảnh gắn vào cho đúng"*
+- Rà soát thực tế mã nguồn:
+  1. Trong `lib/core/utils/mock_data.dart`: Các địa điểm thuộc các tỉnh thành ngoài TP.HCM (Hà Nội, Đà Nẵng, Quảng Ninh, Lào Cai, Huế, Hội An, Nha Trang, Đà Lạt, Phú Quốc) chưa được cung cấp mảng `images: [...]` mà dùng giá trị mặc định `const []`. Khi hiển thị, getter `primaryImageUrl` bị fallback về ảnh của Dinh Độc Lập (`photo-1583417319070-4a69db38a482`) khiến Cầu Rồng, Văn Miếu, Vịnh Hạ Long, Chùa Cầu, v.v., đều hiển thị chung một hình ảnh Dinh Độc Lập!
+  2. Một số địa điểm tại TP.HCM (Bảo tàng Chứng tích Chiến tranh, Địa đạo Củ Chi) cũng bị gán lặp lại URL ảnh của Dinh Độc Lập hoặc Nhà thờ Đức Bà, gây sai lệch hoàn toàn so với nội dung thực tế.
+  3. Cần đồng bộ hình ảnh xác thực chuẩn xác 100% sang cả 3 phân hệ: **Flutter Mobile** (`mock_data.dart`), **Backend Database** (`backend/app/db/seed_db.py`) và **Admin Web** (`admin-web/src/services/api/mockAdminData.js`).
 
-### 1.2 Mục tiêu thiết kế mới
-1. **Khắc phục 100% lỗi RenderFlex Overflow**:
-   - Thiết kế lại hàng nút hành động và thông tin bản quyền bằng `Expanded`, cấu trúc responsive thích ứng linh hoạt mọi kích thước màn hình điện thoại (từ 320px đến tablet).
-2. **Chuyển dịch sang mô hình Visual-First Travel Cards**:
-   - Mỗi địa điểm được đại diện bởi thẻ du lịch trực quan (`TravelDestinationCard`):
-     - **Hero Image (Ảnh bìa sắc nét cao 170px)**: Tải ảnh chính xác của danh thắng (`dest.primaryImageUrl`) với hiệu ứng bo góc tròn cao cấp, placeholder mượt mà và xử lý lỗi mạng an toàn.
-     - **Floating Badges**: Huy hiệu danh mục (ví dụ `🏛️ Di tích lịch sử`), điểm đánh giá sao kèm lượt review (`⭐ 4.8 (3.8k)`), và nút Lưu Yêu thích (Trái tim tương tác 1-chạm ngay trên ảnh).
-     - **Pill thông số du lịch**: Thời gian tham quan gợi ý (`⏱️ 90 phút`), Giá vé (`🎟️ Miễn phí` / `🎟️ 20.000đ`).
-3. **Hiển thị đầy đủ thông tin & Nổi bật khi chọn (Highlighted Rich Detail View)**:
-   - Khi bấm vào thẻ:
-     - Chuyển hướng sang màn hình chi tiết được nâng cấp vượt bậc (`DestinationDetailScreen`):
-       - **Photo Carousel**: Trình chiếu toàn bộ bộ sưu tập ảnh thật (`destination.images`) kèm chỉ số ảnh (`1/3`, `2/3`).
-       - **Highlighted Info Cards**: Các thẻ nổi bật phân tách rõ ràng (Giờ mở cửa, Giá vé, Tọa độ GPS, Thời lượng tham quan).
-       - **Bản đồ mini & Chỉ đường**: Hiển thị vị trí trực quan.
-       - **Quán ăn ngon gần đó**: Gợi ý các quán ăn tiêu biểu trong bán kính 3.5km.
-4. **Chuẩn hóa kho ảnh du lịch 10 tỉnh thành**:
-   - Rà soát toàn bộ URL ảnh trong `lib/core/utils/mock_data.dart`, đảm bảo hình ảnh Unsplash có độ phân giải cao, đúng danh thắng lịch sử / biểu tượng tại TP. Hồ Chí Minh, Hà Nội, Đà Nẵng, Quảng Ninh, Lào Cai, Huế, Hội An, Nha Trang, Đà Lạt, Phú Quốc.
+### 1.2 Mục tiêu chuẩn hóa
+- Thu thập và gán chính xác 100% URL hình ảnh thực tế từ nguồn lưu trữ mở uy tín **Wikimedia Commons & Unsplash** tương ứng với từng danh thắng lịch sử, công trình kiến trúc, thắng cảnh tự nhiên của 10 tỉnh thành:
+  - **TP. Hồ Chí Minh**: Dinh Độc Lập, Chợ Bến Thành, Nhà thờ Đức Bà, Bưu điện Trung tâm, Bến Nhà Rồng, Phố đi bộ Nguyễn Huệ, Bảo tàng Chứng tích Chiến tranh, Địa đạo Củ Chi.
+  - **TP. Đà Nẵng**: Cầu Rồng sông Hàn, Ngũ Hành Sơn Non Nước, Chùa Linh Ứng Bán đảo Sơn Trà, Bãi biển Mỹ Khê.
+  - **Thủ đô Hà Nội**: Hồ Hoàn Kiếm & Tháp Rùa, Văn Miếu - Quốc Tử Giám, Hoàng thành Thăng Long, Lăng Bác.
+  - **Quảng Ninh**: Vịnh Hạ Long (Hòn Trống Mái, Động Thiên Cung), Bảo tàng Quảng Ninh.
+  - **Lào Cai (Sa Pa)**: Đỉnh Fansipan Nóc nhà Đông Dương, Bản Cát Cát & Thác Tiên Sa.
+  - **Thừa Thiên Huế**: Đại Nội Hoàng Thành Huế (Ngọ Môn), Chùa Thiên Mụ bờ sông Hương.
+  - **Quảng Nam**: Chùa Cầu & Phố cổ Hội An, Rừng Dừa Bảy Mẫu Cẩm Thanh.
+  - **Khánh Hòa**: Tháp Bà Ponagar Nha Trang, VinWonders Hòn Tre.
+  - **Lâm Đồng**: Hồ Xuân Hương & Quảng trường Lâm Viên Đà Lạt, Đỉnh Langbiang.
+  - **Kiên Giang**: Dinh Cậu & Chợ đêm Dương Đông, Bãi Sao & Sunset Town Phú Quốc.
 
 ---
 
-## 2. Kiến trúc giải pháp & Sơ đồ Component (Mermaid)
+## 2. Danh mục URL Hình ảnh Du lịch Chuẩn Xác Đối Soát
 
-```mermaid
-flowchart TD
-    subgraph UI_Layer["📱 Tầng Giao Diện Người Dùng (Visual-First UI)"]
-        HomeDest["🏠 HomeScreen (Khu vực Địa điểm nổi bật)\n- Hiển thị TravelDestinationCard có ảnh"]
-        DestList["📍 DestinationsScreen (Danh sách & Tìm kiếm)\n- Grid / Visual Cards mượt mà\n- Không tràn màn hình 0% Overflow"]
-        DestCard["🖼️ TravelDestinationCard (Widget dùng chung)\n- Hero Image + Category Badge\n- Floating Rating & Quick Favorite\n- Action Bar responsive"]
-        DetailScreen["🌟 DestinationDetailScreen (Màn hình chi tiết nổi bật)\n- Photo Carousel nhiều ảnh thật\n- Highlighted Metric Cards\n- Thông tin vé, giờ, mẹo tham quan\n- Quán ăn ngon gần điểm đến"]
-    end
-
-    subgraph Data_Layer["💾 Dữ Liệu & Ảnh Du Lịch Chuẩn Hóa"]
-        MockRepo["MockDataRepository (10 Tỉnh thành)\n- Bộ sưu tập ảnh thực tế theo địa danh\n- PrimaryImageUrl + Gallery images"]
-        AppState["TripFlowAppState\n- Quản lý danh sách yêu thích\n- Thêm vào lịch trình 1-chạm"]
-    end
-
-    HomeDest --> DestCard
-    DestList --> DestCard
-    DestCard -->|Tap xem chi tiết| DetailScreen
-    DestCard -->|Toggle Yêu thích| AppState
-    DestCard -->|Thêm lịch trình| AppState
-    MockRepo --> DestCard
-    MockRepo --> DetailScreen
-```
-
----
-
-## 3. Cấu trúc thư mục & Danh sách file triển khai
-
-| STT | Tập tin | Thao tác | Mục đích |
+| ID | Địa danh | Tỉnh/Thành | URL Ảnh Thực Tế Xác Thực (Wikimedia Commons / Direct CDN) |
 |---|---|---|---|
-| 1 | [`lib/core/widgets/travel_destination_card.dart`](file:///d:/trip_flow/lib/core/widgets/travel_destination_card.dart) | **Tạo mới** | Widget thẻ địa điểm trực quan chuẩn du lịch cao cấp, có ảnh lớn, tags nổi bật, nút yêu thích nổi, footer responsive chống tràn màn hình |
-| 2 | [`lib/features/destinations/destinations_screen.dart`](file:///d:/trip_flow/lib/features/destinations/destinations_screen.dart) | **Cập nhật** | Thay thế khối thẻ cũ bằng `TravelDestinationCard`, tinh chỉnh thanh tìm kiếm và bộ lọc nhanh theo danh mục |
-| 3 | [`lib/features/home/home_screen.dart`](file:///d:/trip_flow/lib/features/home/home_screen.dart) | **Cập nhật** | Nâng cấp khu vực "Địa điểm nổi bật" trên Trang chủ sang thẻ có ảnh sắc nét |
-| 4 | [`lib/features/destinations/destination_detail_screen.dart`](file:///d:/trip_flow/lib/features/destinations/destination_detail_screen.dart) | **Cập nhật** | Thay thế gradient bằng Photo Carousel thật của địa danh, làm nổi bật thông số (Giờ mở cửa, Giá vé, GPS, Mẹo hay) |
-| 5 | [`lib/core/utils/mock_data.dart`](file:///d:/trip_flow/lib/core/utils/mock_data.dart) | **Cập nhật** | Tối ưu hóa các đường link ảnh Unsplash chất lượng cao đúng từng địa danh nổi tiếng của 10 tỉnh thành |
-| 6 | [`test/widget_test.dart`](file:///d:/trip_flow/test/widget_test.dart) | **Cập nhật** | Bảo đảm toàn bộ test case vượt qua kiểm thử tự động |
+| 1 | Dinh Độc Lập | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/7/71/Ho_Chi_Minh_City_-_Independence_Palace.jpg` |
+| 2 | Chợ Bến Thành | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/0/02/Ben_Thanh_Market%2C_Saigon.jpg` |
+| 3 | Nhà thờ Đức Bà | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/9/93/Saigon_Notre-Dame_Basilica_%2814695412776%29.jpg` |
+| 4 | Bưu điện Trung tâm Sài Gòn | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/7/78/Ho_Chi_Minh_City%2C_Central_Post_Office%2C_2020-01_CN-01.jpg` |
+| 5 | Bến Nhà Rồng | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/9/95/Ben_Nha_Rong_ve_dem.JPG` |
+| 6 | Phố đi bộ Nguyễn Huệ | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/0/04/Nguyen_Hue_Street1.jpg` |
+| 7 | Bảo tàng Chứng tích Chiến tranh | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/c/ca/War_Remnants_Museum.jpg` |
+| 8 | Địa đạo Củ Chi | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/6/69/Cu_Chi_Tunnel.jpg` |
+| 9 | Cầu Rồng Đà Nẵng | Đà Nẵng | `https://upload.wikimedia.org/wikipedia/commons/5/5d/Dragon_Bridge_Da_Nang_1.jpg` |
+| 10 | Ngũ Hành Sơn | Đà Nẵng | `https://upload.wikimedia.org/wikipedia/commons/4/44/Marble_Mountains%2C_Vietnam.jpg` |
+| 12 | Chùa Linh Ứng Sơn Trà | Đà Nẵng | `https://upload.wikimedia.org/wikipedia/commons/2/28/Lady_Buddha_Da_Nang_5.jpg` |
+| 11 | Hồ Hoàn Kiếm & Tháp Rùa | Hà Nội | `https://upload.wikimedia.org/wikipedia/commons/a/a8/Th%C3%A1p_R%C3%B9a.jpg` |
+| 13 | Văn Miếu - Quốc Tử Giám | Hà Nội | `https://upload.wikimedia.org/wikipedia/commons/3/31/Hanoi_Temple_of_Literature.jpg` |
+| 14 | Hoàng thành Thăng Long | Hà Nội | `https://upload.wikimedia.org/wikipedia/commons/7/70/Main_Gate_-_Citadel_of_Hanoi.jpg` |
+| 15 | Vịnh Hạ Long | Quảng Ninh | `https://upload.wikimedia.org/wikipedia/commons/4/4b/Halong_Bay.jpg` |
+| 16 | Bảo tàng Quảng Ninh | Quảng Ninh | `https://upload.wikimedia.org/wikipedia/commons/f/f1/Quang_Ninh_Museum_facade_1.jpg` |
+| 17 | Đỉnh Fansipan | Sa Pa | `https://upload.wikimedia.org/wikipedia/commons/7/71/Fansipan.jpg` |
+| 18 | Bản Cát Cát Sa Pa | Sa Pa | `https://upload.wikimedia.org/wikipedia/commons/4/42/Cat_Cat_waterfall.jpg` |
+| 19 | Đại Nội Huế | Cố đô Huế | `https://upload.wikimedia.org/wikipedia/commons/1/13/Ng%E1%BB%8D_m%C3%B4n%2C_Hu%E1%BA%BF.jpg` |
+| 20 | Chùa Thiên Mụ | Cố đô Huế | `https://upload.wikimedia.org/wikipedia/commons/2/26/Thi%C3%AAn_M%E1%BB%A5_Pagoda.jpg` |
+| 21 | Chùa Cầu Hội An | Hội An | `https://upload.wikimedia.org/wikipedia/commons/9/96/Japanese_Covered_Bridge%2C_Hoi_An%2C_Vietnam_%286944565326%29.jpg` |
+| 22 | Rừng Dừa Bảy Mẫu | Hội An | `https://upload.wikimedia.org/wikipedia/commons/8/82/Basket_Boat_and_the_Bamboo_forest_%28Unsplash%29.jpg` |
+| 23 | Tháp Bà Ponagar | Nha Trang | `https://upload.wikimedia.org/wikipedia/commons/c/c8/PoNagar.jpg` |
+| 24 | VinWonders Nha Trang | Nha Trang | `https://upload.wikimedia.org/wikipedia/commons/d/df/Vinpearl_Nha_Trang_%2849373981551%29.jpg` |
+| 25 | Hồ Xuân Hương & Lâm Viên | Đà Lạt | `https://upload.wikimedia.org/wikipedia/commons/a/aa/Da_Lat_-_Xuan_Huong_Lake.jpg` |
+| 26 | Đỉnh Langbiang | Đà Lạt | `https://upload.wikimedia.org/wikipedia/commons/c/c9/Lang_Biang_mountain_1.jpg` |
+| 27 | Dinh Cậu Phú Quốc | Phú Quốc | `https://upload.wikimedia.org/wikipedia/commons/8/83/Dinh_C%E1%BA%ADu_Ph%C3%BA_Qu%E1%BB%91c.jpg` |
+| 28 | Sunset Town & Bãi Sao | Phú Quốc | `https://upload.wikimedia.org/wikipedia/commons/a/ad/Star_Beach_%28B%C3%A3i_Sao%29.jpg` |
 
 ---
 
-## 4. Chi tiết triển khai kỹ thuật
+## 3. Danh sách File Triển khai
 
-### 4.1 Tạo widget `TravelDestinationCard` (`lib/core/widgets/travel_destination_card.dart`)
-- **Hình ảnh nổi bật**: Sử dụng `ClipRRect` bo tròn 18px với `Image.network` cao 170px, fit `BoxFit.cover`. Có `loadingBuilder` hiển thị shimmer nhẹ và `errorBuilder` hiển thị ảnh danh thắng dự phòng thanh lịch.
-- **Huy hiệu trên ảnh (Overlay Badges)**:
-  - Góc trên trái: Chip danh mục bán trong suốt với hiệu ứng kính mờ (`BackdropFilter` / `Color(0xCC0F172A)`).
-  - Góc trên phải: Điểm đánh giá sao vàng `⭐ 4.8` và Nút tim lưu yêu thích với animation phản hồi tức thì.
-  - Góc dưới trái (nằm trên dải chuyển màu nhẹ): Chip thời lượng tham quan (`⏱️ 90p`) và Giá vé (`🎟️ Miễn phí`).
-- **Nội dung thẻ**:
-  - Tên địa danh (17px, font chữ đậm `w800`, màu slate 900).
-  - Địa chỉ với icon ghim bản đồ nhỏ màu teal.
-  - Đoạn giới thiệu súc tích tối đa 2 dòng.
-- **Thanh chân trang (Footer Bar)**:
-  - Dùng `Row` kết hợp `Expanded` cho phần thông tin xác thực nguồn gốc `🛡️ Nội bộ xác thực`.
-  - Nút bấm `ElevatedButton.icon` nhỏ gọn với nhãn `+ Lịch trình` hoặc `Thêm lịch trình`, `padding` tối ưu không bao giờ bị tràn (Overflow).
-
-### 4.2 Cập nhật `DestinationsScreen` (`lib/features/destinations/destinations_screen.dart`)
-- Sửa lỗi tràn màn hình bằng cách tích hợp trực tiếp `TravelDestinationCard`.
-- Giữ nguyên toàn bộ logic tìm kiếm từ khóa không phân biệt hoa thường và lọc theo danh mục (`All`, `Heritage`, `Architecture`, `Museum`, `Market`, `Street Walk`).
-
-### 4.3 Cập nhật `DestinationDetailScreen` (`lib/features/destinations/destination_detail_screen.dart`)
-- Thay thế khối container gradient đơn điệu ở đầu trang bằng:
-  - Slider ảnh (`PageView` hoặc `Carousel`) lướt ngang hiển thị toàn bộ ảnh chụp thực tế của địa danh từ danh sách `destination.images`.
-  - Hiển thị vị trí trang ảnh (`1/2`, `2/2`) và thông tin tác giả bản quyền ảnh.
-- Khối thông số làm nổi bật (`Highlight Stat Grid`):
-  - 4 ô thẻ bo tròn có bóng mờ (BoxShadow) hiện đại:
-    1. Giờ mở cửa tham khảo.
-    2. Giá vé tham quan.
-    3. Thời gian đề xuất.
-    4. Tọa độ GPS.
-- Nút bấm chỉ đường trực tiếp tới Bản đồ hành lang Goong Maps và nút Thêm vào lịch trình 1-chạm.
-
----
-
-## 5. Tiêu chí nghiệm thu (Acceptance Criteria)
-
-- **AC-01 (Zero Overflow)**: Tuyệt đối không còn bất kỳ vạch sọc vàng đen hay lỗi `RenderFlex overflowed by X pixels` trên toàn bộ màn hình danh sách và chi tiết địa điểm.
-- **AC-02 (Visual-Rich Cards)**: 100% thẻ địa điểm đều hiển thị ảnh du lịch sắc nét, không bị vỡ ảnh khi tải mạng.
-- **AC-03 (Accurate Travel Images)**: Hình ảnh du lịch hiển thị đúng biểu tượng của từng địa danh (Chợ Bến Thành có tháp đồng hồ, Nhà thờ Đức Bà có mặt tiền gạch đỏ Roman, Dinh Độc Lập có mặt tiền rèm hoa sen đá, v.v.).
-- **AC-04 (Highlighted Details)**: Khi người dùng bấm vào thẻ, màn hình chi tiết hiển thị đầy đủ thư viện ảnh và thông tin nổi bật rõ ràng, thu hút du khách.
-- **AC-05 (Build & Test Passed)**: Biên dịch Flutter Web và kiểm thử tự động 100% thành công.
+1. [`lib/core/utils/mock_data.dart`](file:///d:/trip_flow/lib/core/utils/mock_data.dart): Cung cấp danh sách `images` đầy đủ và chính xác cho 28 địa điểm và 10 tỉnh thành.
+2. [`backend/app/db/seed_db.py`](file:///d:/trip_flow/backend/app/db/seed_db.py): Đồng bộ URL ảnh vào database backend.
+3. [`admin-web/src/services/api/mockAdminData.js`](file:///d:/trip_flow/admin-web/src/services/api/mockAdminData.js): Cập nhật hình ảnh đồng bộ sang hệ thống Admin Web.
+4. Kiểm thử biên dịch Flutter và khởi động lại Hot restart.
