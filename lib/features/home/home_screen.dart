@@ -7,6 +7,7 @@ import '../../core/widgets/travel_destination_card.dart';
 import '../destinations/destination_detail_screen.dart';
 import '../destinations/destinations_screen.dart';
 import '../favorites/favorites_screen.dart';
+import '../itinerary/screens/trip_planner_wizard_screen.dart';
 import '../provinces/provinces_screen.dart';
 import '../restaurants/restaurant_detail_screen.dart';
 
@@ -216,7 +217,159 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
+
+              // Hero Banner: Chuyến Đi Tiếp Theo? • Lập Lịch Trình Thông Minh (Theo phong cách Ảnh 1)
+              Container(
+                height: 220,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.15),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Stack(
+                    children: [
+                      // Ảnh nền phong cảnh danh thắng
+                      Positioned.fill(
+                        child: Image.network(
+                          currentProv.heroImage,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xFF0F766E), Color(0xFF1E293B)],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Lớp chuyển màu mờ nghệ thuật
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.25),
+                                Colors.black.withValues(alpha: 0.75),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Nội dung Hero Banner
+                      Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.25),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: Colors.white30),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.auto_awesome_rounded, color: Color(0xFF5EEAD4), size: 14),
+                                      SizedBox(width: 5),
+                                      Text(
+                                        'Trình Lập Lịch Trình Thông Minh',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_outward_rounded,
+                                    size: 16,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Chuyến Đi Tiếp Theo Tại ${currentProv.name}?',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                const Text(
+                                  'Nhập điểm đi, điểm đến & sở thích. Tự động tính tuyến đường, điểm dừng chân, quán ăn và chi phí.',
+                                  style: TextStyle(
+                                    color: Color(0xFFE2E8F0),
+                                    fontSize: 12,
+                                    height: 1.35,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 12),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: const Color(0xFF0F172A),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    elevation: 0,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => TripPlannerWizardScreen(appState: appState),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.explore_rounded, color: AppTheme.primaryTeal, size: 18),
+                                  label: const Text(
+                                    'Bắt Đầu Lập Lộ Trình Ngay',
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 22),
 
               // Khu vực 1: Địa điểm nổi bật
               Row(

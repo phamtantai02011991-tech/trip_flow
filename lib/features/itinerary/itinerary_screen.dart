@@ -3,6 +3,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/app_state.dart';
 import '../../core/utils/data_models.dart';
 import '../../core/widgets/common_widgets.dart';
+import 'screens/trip_planner_wizard_screen.dart';
 
 /// Tab 3: Màn hình Quản lý Lịch trình Tham quan (ItineraryScreen - Mục 5.1.9 & Mục 10).
 /// Thực thi đầy đủ yêu cầu Mục 10:
@@ -171,6 +172,21 @@ class ItineraryScreen extends StatelessWidget {
                       runSpacing: 8,
                       children: [
                         ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => TripPlannerWizardScreen(appState: appState),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+                          label: const Text('✨ Lập Lịch Trình Tự Động'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryTeal,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                        FilledButton.tonalIcon(
                           onPressed: () => _showAddStopSheet(context),
                           icon: const Icon(Icons.add_rounded, size: 18),
                           label: const Text('Thêm Điểm Dừng'),

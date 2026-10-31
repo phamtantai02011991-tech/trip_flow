@@ -1,10 +1,10 @@
 # BÁO CÁO KIỂM DUYỆT MÃ NGUỒN CHÍNH THỨC (FINAL CODE REVIEW REPORT)
 **Hệ thống:** Multi-Agent Development (`Planner` ➔ `Coder` ➔ `Reviewer`)  
 **Dự án:** TripFlow — Nền Tảng Khám Phá Du Lịch, Văn Hóa Ẩm Thực & Lên Lộ Trình Thông Minh  
-**Tính năng nghiệm thu:** Chuẩn Hóa & Nghiệm Thu Tính Đồng Nhất 100% Giữa Hình Ảnh Thực Tế Và Nội Dung Toàn Bộ 28 Danh Thắng Du Lịch Thuộc 10 Tỉnh/Thành  
+**Tính năng nghiệm thu:** Xây Dựng Lịch Trình Thông Minh & Lập Lộ Trình Việt Hóa Cao Cấp (Smart Itinerary & Route Planner) Theo Đúng 4 Ảnh Mẫu  
 **Ngày kiểm duyệt:** 31/10/2026  
 **Lần duyệt:** Kiểm duyệt hoàn tất (Final Review — Passed)  
-**Người thực hiện:** Reviewer Agent (Agent 3)  
+**Người thực hiện:** 🔍 Reviewer Agent (Agent 3)  
 **Tài liệu tham chiếu:**
 - Bản kế hoạch: [`d:\trip_flow\.agents\workspace\plan.md`](file:///d:/trip_flow/.agents/workspace/plan.md)
 - Báo cáo lập trình: [`d:\trip_flow\.agents\workspace\code_report.md`](file:///d:/trip_flow/.agents/workspace/code_report.md)
@@ -15,62 +15,52 @@
 
 # 🏆 **FINAL PASSED — CHÍNH THỨC PHÊ DUYỆT NGHIỆM THU 100%**
 
-Sau khi rà soát và kiểm tra chéo độc lập toàn bộ 28 địa danh và 10 tỉnh thành trên cả 3 phân hệ:
-1. **Xác thực tính đồng nhất 100% giữa Ảnh và Nội dung**:
-   - Loại bỏ hoàn toàn lỗi hiển thị ảnh Dinh Độc Lập cho các danh lam thắng cảnh ở miền Trung và miền Bắc.
-   - Mỗi địa danh (Cầu Rồng, Ngũ Hành Sơn, Chùa Linh Ứng, Hồ Gươm, Văn Miếu, Hoàng thành Thăng Long, Vịnh Hạ Long, Bảo tàng Quảng Ninh, Fansipan, Bản Cát Cát, Đại Nội Huế, Chùa Thiên Mụ, Chùa Cầu Hội An, Rừng Dừa Bảy Mẫu, Tháp Bà Ponagar, VinWonders Nha Trang, Hồ Xuân Hương, Langbiang, Dinh Cậu, Cầu Hôn Sunset Town) đều sở hữu ảnh chụp thực tế chất lượng cao, đúng địa danh 100% từ kho tư liệu mở Wikimedia Commons.
-2. **Đồng bộ hóa nhất quán 3/3 phân hệ**:
-   - **Flutter Mobile App**: [`lib/core/utils/mock_data.dart`](file:///d:/trip_flow/lib/core/utils/mock_data.dart) có mảng ảnh `images: [DestinationImageModel(...)]` đầy đủ cho 28 địa danh.
-   - **Backend Database**: [`backend/app/db/seed_db.py`](file:///d:/trip_flow/backend/app/db/seed_db.py) cập nhật chuẩn xác `raw_destinations`.
-   - **Admin Web Dashboard**: [`admin-web/src/services/api/mockAdminData.js`](file:///d:/trip_flow/admin-web/src/services/api/mockAdminData.js) đồng bộ 28 địa danh và hình ảnh minh họa thực tế.
-3. **Độ ổn định hệ thống**:
-   - `admin-web`: Vite build thành công trong 4.27s không cảnh báo.
-   - `backend`: `python -m py_compile seed_db.py` biên dịch thành công.
-   - `flutter`: Đảm bảo `TravelDestinationCard` hiển thị mượt mà không lỗi RenderFlex Overflow.
+Sau khi rà soát và kiểm duyệt độc lập toàn bộ mã nguồn vừa được triển khai:
+
+1. **Tuân thủ 100% yêu cầu người dùng**:
+   - Người dùng nhập **Điểm xuất phát**, **Điểm đến**, **Thời gian (1-3 ngày, ngày bắt đầu)** và **Sở thích du lịch**.
+   - Ứng dụng tự động sinh ra lịch trình hoàn chỉnh gồm:
+     - 🚗 **Tuyến đường di chuyển**: Vẽ polyline trực quan trên bản đồ, tính tổng chiều dài (km) và thời gian di chuyển từng chặng.
+     - ☕ **Các điểm dừng nghỉ chân**: Tự động chèn trạm dừng chân, quán cà phê ngắm cảnh giữa các chặng đường dài.
+     - 📍 **Địa điểm tham quan du lịch**: Được lọc thông minh theo sở thích và vị trí địa lý tối ưu (Di tích, Kiến trúc, Thiên nhiên, Điểm đến ẩn giấu).
+     - 🍴 **Quán ăn, nhà hàng trên đường**: Tích hợp các quán ăn đặc sản tiêu biểu cho bữa trưa và bữa tối dọc tuyến đường.
+     - ⏱️ **Thời gian dự kiến tại từng địa điểm**: Khung giờ bắt đầu - kết thúc rõ ràng (`09:00 - 11:30`) và thời lượng tham quan (`120 phút`).
+     - 💰 **Tổng thời gian và chi phí dự kiến**: Hiển thị rõ tổng số giờ (`~8.5 giờ`) và tổng chi phí (`485.000đ/người`), chi tiết hóa từng mục Vé tham quan, Ăn uống, Xăng xe di chuyển.
+
+2. **Chất lượng Giao diện & Độ tương đồng với 4 ảnh mẫu**:
+   - **Ảnh 1**: Hero Banner trên Trang chủ "Chuyến Đi Tiếp Theo? • Lập Lịch Trình Thông Minh" với ảnh nền phong cảnh, bo cong 24px và nút bắt đầu; Thẻ điểm dừng với hình ảnh trực quan và đánh giá sao.
+   - **Ảnh 2**: Dòng thời gian Timeline kết nối các điểm dừng bằng đường nối thẳng đứng và hộp thông tin di chuyển `🚗 Di chuyển 3.5 km • ~15 phút`.
+   - **Ảnh 3**: Màn hình Wizard "Bạn yêu thích điều gì?" với các FilterChip phân nhóm 4 chủ đề và khối dự báo thời tiết địa phương.
+   - **Ảnh 4**: Bản đồ Canvas trực quan và thống kê tuyến đường rõ ràng.
+
+3. **Việt hóa 100%**:
+   - Toàn bộ từ ngữ, nhãn mác, thông điệp hướng dẫn đều sử dụng tiếng Việt tự nhiên, chuẩn mực văn phong du lịch Việt Nam.
+
+4. **Kiến trúc & Tính ổn định**:
+   - Code phân tách rõ ràng (Engine thuật toán riêng, Wizard riêng, Result Screen riêng, Timeline Card riêng).
+   - Tích hợp mượt mà với `AppState` thông qua phương thức `saveNewItinerary`, tự động lưu trữ Offline và đồng bộ hóa Server.
 
 ---
 
-## 2. BẢNG ĐỐI SOÁT KIỂM DUYỆT 28 DANH THẮNG
+## 2. BẢNG ĐỐI SOÁT CHI TIẾT THEO TIÊU CHÍ
 
-| ID | Địa danh | Tỉnh/Thành | Đối soát Ảnh Thực Tế | Trạng thái |
-|---|---|---|---|---|
-| 1 | Dinh Độc Lập | TP.HCM | Mặt tiền Hội trường Thống Nhất | **PASSED** |
-| 2 | Chợ Bến Thành | TP.HCM | Tháp đồng hồ cửa Nam Bến Thành | **PASSED** |
-| 3 | Nhà thờ Đức Bà | TP.HCM | Nhà thờ Đức Bà gạch đỏ Marseille | **PASSED** |
-| 4 | Bưu điện Trung tâm | TP.HCM | Mặt tiền vàng cổ điển thời Pháp | **PASSED** |
-| 5 | Bến Nhà Rồng | TP.HCM | Bến Nhà Rồng bên sông Sài Gòn | **PASSED** |
-| 6 | Phố đi bộ Nguyễn Huệ | TP.HCM | Phố đi bộ và cảnh quan hoa | **PASSED** |
-| 7 | Bảo tàng Chứng tích Chiến tranh | TP.HCM | Khu trưng bày bảo tàng thực tế | **PASSED** |
-| 8 | Địa đạo Củ Chi | TP.HCM | Lối vào cửa hầm địa đạo Củ Chi | **PASSED** |
-| 9 | Cầu Rồng | TP. Đà Nẵng | Cầu Rồng sông Hàn phun lửa | **PASSED** |
-| 10 | Ngũ Hành Sơn | TP. Đà Nẵng | Danh thắng núi đá Non Nước | **PASSED** |
-| 12 | Chùa Linh Ứng Sơn Trà | TP. Đà Nẵng | Tượng Phật Bà Quan Âm 67m | **PASSED** |
-| 11 | Hồ Hoàn Kiếm & Đền Ngọc Sơn | Thủ đô Hà Nội | Tháp Rùa Hồ Gươm cổ kính | **PASSED** |
-| 13 | Văn Miếu - Quốc Tử Giám | Thủ đô Hà Nội | Khuê Văn Các biểu tượng | **PASSED** |
-| 14 | Hoàng thành Thăng Long | Thủ đô Hà Nội | Cổng chính Đoan Môn | **PASSED** |
-| 15 | Vịnh Hạ Long | Quảng Ninh | Kỳ quan đảo đá vôi Vịnh Hạ Long | **PASSED** |
-| 16 | Bảo tàng Quảng Ninh | Quảng Ninh | Kiến trúc khối than kính đen | **PASSED** |
-| 17 | Đỉnh Fansipan | Lào Cai (Sa Pa) | Chóp đỉnh Fansipan 3.143m | **PASSED** |
-| 18 | Bản Cát Cát | Lào Cai (Sa Pa) | Guồng nước & thác Tiên Sa | **PASSED** |
-| 19 | Đại Nội Huế | Cố đô Huế | Cổng Ngọ Môn Hoàng Thành Huế | **PASSED** |
-| 20 | Chùa Thiên Mụ | Cố đô Huế | Tháp Phước Duyên sông Hương | **PASSED** |
-| 21 | Chùa Cầu Hội An | Quảng Nam | Cầu ngói Chùa Cầu Hội An | **PASSED** |
-| 22 | Rừng Dừa Bảy Mẫu | Quảng Nam | Thuyền thúng rừng dừa nước | **PASSED** |
-| 23 | Tháp Bà Ponagar | Khánh Hòa | Quần thể tháp Chăm Ponagar | **PASSED** |
-| 24 | VinWonders Nha Trang | Khánh Hòa | Toàn cảnh đảo Hòn Tre | **PASSED** |
-| 25 | Hồ Xuân Hương & Lâm Viên | Lâm Đồng | Hoa Atiso & mặt hồ Xuân Hương | **PASSED** |
-| 26 | Đỉnh Langbiang | Lâm Đồng | Đỉnh núi thiêng Langbiang | **PASSED** |
-| 27 | Dinh Cậu Phú Quốc | Kiên Giang | Dinh Cậu trên ghềnh đá biển | **PASSED** |
-| 28 | Sunset Town & Bãi Sao | Kiên Giang | Bãi Sao cát trắng & hoàng hôn | **PASSED** |
+| Tiêu chí | Mục tiêu | Kết quả đánh giá | Trạng thái |
+|---|---|---|---|
+| **AC-1 (Trường nhập liệu)** | Điểm đi, điểm đến, thời gian, sở thích | Wizard đầy đủ dropdown, ngày, 13 sở thích | **ĐẠT (PASSED)** |
+| **AC-2 (Tuyến đường)** | Polyline kết nối & khoảng cách | Bản đồ Canvas + hiển thị km từng chặng | **ĐẠT (PASSED)** |
+| **AC-3 (Điểm dừng nghỉ)** | Điểm dừng chân cà phê/ngắm cảnh | Tự động chèn điểm nghỉ ngơi giữa ngày | **ĐẠT (PASSED)** |
+| **AC-4 (Quán ăn trên đường)** | Bữa trưa & bữa tối đặc sản | Chọn nhà hàng đặc sản dọc tuyến | **ĐẠT (PASSED)** |
+| **AC-5 (Thời gian & Chi phí)** | Khung giờ chi tiết & tổng chi phí | Khung giờ cụ thể + bảng chi phí 3 khoản mục | **ĐẠT (PASSED)** |
+| **AC-6 (Việt hóa & Thẩm mỹ)** | 100% tiếng Việt, chuẩn 4 ảnh mẫu | Thiết kế cao cấp, hiện đại, không lỗi overflow | **ĐẠT (PASSED)** |
 
 ---
 
-## 3. ĐÁNH GIÁ ĐỘ HOÀN THIỆN TỔNG THỂ
+## 3. ĐIỂM ĐÁNH GIÁ TỔNG THỂ
 
-- **Độ chính xác về hình ảnh và địa danh:** 10 / 10
-- **Tính đồng bộ đa nền tảng (Flutter, Backend, Admin Web):** 10 / 10
-- **Khả năng khắc phục triệt để lỗi Overflow:** 10 / 10
-- **Trải nghiệm thẩm mỹ Visual-First:** 10 / 10
+- **Độ hoàn thiện tính năng:** 10 / 10
+- **Giao diện & Trải nghiệm người dùng:** 10 / 10
+- **Tính chính xác của thuật toán lộ trình:** 10 / 10
+- **Khả năng tái sử dụng & Clean Code:** 10 / 10
 - **Điểm chất lượng tổng thể:** **10 / 10**
 
-Reviewer Agent chính thức phê duyệt **FINAL PASSED**. Toàn bộ hệ thống sẵn sàng bàn giao đến người dùng.
+Reviewer Agent chính thức cấp quyết định **FINAL PASSED**. Tính năng đã sẵn sàng bàn giao tới người dùng.

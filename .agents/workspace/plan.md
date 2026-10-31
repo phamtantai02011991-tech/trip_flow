@@ -1,68 +1,157 @@
-# Kế Hoạch Phát Triển & Chuẩn Hóa Hình Ảnh Du Lịch: Đồng Bộ 100% Ảnh Thực Tế Với Từng Địa Danh & Danh Lam Thắng Cảnh Toàn Bộ 10 Tỉnh Thành
+# KẾ HOẠCH PHÁT TRIỂN: TÍNH NĂNG XÂY DỰNG LỊCH TRÌNH THÔNG MINH VIỆT HÓA (SMART ITINERARY & ROUTE PLANNER)
 
-## 1. Tổng quan
-
-### 1.1 Vấn đề phát hiện
-- Người dùng phản hồi:
-  > *"quét lại và tôi thấy ảnh và nội dung không đồng nhất , tôi muốn ảnh và nội dung phải đúng , có thể dùng nội dung sreach để lấy hình ảnh gắn vào cho đúng"*
-- Rà soát thực tế mã nguồn:
-  1. Trong `lib/core/utils/mock_data.dart`: Các địa điểm thuộc các tỉnh thành ngoài TP.HCM (Hà Nội, Đà Nẵng, Quảng Ninh, Lào Cai, Huế, Hội An, Nha Trang, Đà Lạt, Phú Quốc) chưa được cung cấp mảng `images: [...]` mà dùng giá trị mặc định `const []`. Khi hiển thị, getter `primaryImageUrl` bị fallback về ảnh của Dinh Độc Lập (`photo-1583417319070-4a69db38a482`) khiến Cầu Rồng, Văn Miếu, Vịnh Hạ Long, Chùa Cầu, v.v., đều hiển thị chung một hình ảnh Dinh Độc Lập!
-  2. Một số địa điểm tại TP.HCM (Bảo tàng Chứng tích Chiến tranh, Địa đạo Củ Chi) cũng bị gán lặp lại URL ảnh của Dinh Độc Lập hoặc Nhà thờ Đức Bà, gây sai lệch hoàn toàn so với nội dung thực tế.
-  3. Cần đồng bộ hình ảnh xác thực chuẩn xác 100% sang cả 3 phân hệ: **Flutter Mobile** (`mock_data.dart`), **Backend Database** (`backend/app/db/seed_db.py`) và **Admin Web** (`admin-web/src/services/api/mockAdminData.js`).
-
-### 1.2 Mục tiêu chuẩn hóa
-- Thu thập và gán chính xác 100% URL hình ảnh thực tế từ nguồn lưu trữ mở uy tín **Wikimedia Commons & Unsplash** tương ứng với từng danh thắng lịch sử, công trình kiến trúc, thắng cảnh tự nhiên của 10 tỉnh thành:
-  - **TP. Hồ Chí Minh**: Dinh Độc Lập, Chợ Bến Thành, Nhà thờ Đức Bà, Bưu điện Trung tâm, Bến Nhà Rồng, Phố đi bộ Nguyễn Huệ, Bảo tàng Chứng tích Chiến tranh, Địa đạo Củ Chi.
-  - **TP. Đà Nẵng**: Cầu Rồng sông Hàn, Ngũ Hành Sơn Non Nước, Chùa Linh Ứng Bán đảo Sơn Trà, Bãi biển Mỹ Khê.
-  - **Thủ đô Hà Nội**: Hồ Hoàn Kiếm & Tháp Rùa, Văn Miếu - Quốc Tử Giám, Hoàng thành Thăng Long, Lăng Bác.
-  - **Quảng Ninh**: Vịnh Hạ Long (Hòn Trống Mái, Động Thiên Cung), Bảo tàng Quảng Ninh.
-  - **Lào Cai (Sa Pa)**: Đỉnh Fansipan Nóc nhà Đông Dương, Bản Cát Cát & Thác Tiên Sa.
-  - **Thừa Thiên Huế**: Đại Nội Hoàng Thành Huế (Ngọ Môn), Chùa Thiên Mụ bờ sông Hương.
-  - **Quảng Nam**: Chùa Cầu & Phố cổ Hội An, Rừng Dừa Bảy Mẫu Cẩm Thanh.
-  - **Khánh Hòa**: Tháp Bà Ponagar Nha Trang, VinWonders Hòn Tre.
-  - **Lâm Đồng**: Hồ Xuân Hương & Quảng trường Lâm Viên Đà Lạt, Đỉnh Langbiang.
-  - **Kiên Giang**: Dinh Cậu & Chợ đêm Dương Đông, Bãi Sao & Sunset Town Phú Quốc.
+**Dự án:** TripFlow — Nền Tảng Khám Phá Du Lịch, Văn Hóa Ẩm Thực & Lên Lộ Trình Thông Minh  
+**Tác nhân thực hiện:** 🧠 Planner Agent (Agent 1)  
+**Tài liệu đầu vào:** Yêu cầu người dùng & 4 ảnh giao diện tham chiếu (Dribbble/Figma design)  
+**Ngày lập kế hoạch:** 31/10/2026  
 
 ---
 
-## 2. Danh mục URL Hình ảnh Du lịch Chuẩn Xác Đối Soát
+## 1. TỔNG QUAN YÊU CẦU & MỤC TIÊU
 
-| ID | Địa danh | Tỉnh/Thành | URL Ảnh Thực Tế Xác Thực (Wikimedia Commons / Direct CDN) |
+### 1.1 Yêu cầu cốt lõi từ người dùng
+Người dùng yêu cầu Việt hóa toàn diện và áp dụng trải nghiệm người dùng cao cấp theo 4 ảnh tham chiếu:
+> *"Người dùng nhập điểm xuất phát, điểm đến, thời gian và sở thích. Ứng dụng xây dựng lịch trình bao gồm:*
+> *- Tuyến đường di chuyển.*
+> *- Các điểm dừng nghỉ chân.*
+> *- Địa điểm tham quan du lịch.*
+> *- Quán ăn, nhà hàng trên đường.*
+> *- Thời gian dự kiến tại từng địa điểm.*
+> *- Tổng thời gian và chi phí dự kiến."*
+
+### 1.2 Phân tích thiết kế từ 4 ảnh tham chiếu
+1. **Ảnh 1 (`media_...3b70efc2.jpg`)**:
+   - Màn hình Trang chủ: Thẻ "Chuyến đi tiếp theo?" (Where to next?) với ảnh Hero ấn tượng, số ngày (3 ngày 2 đêm), số điểm dừng, ngân sách dự kiến.
+   - Màn hình Tổng quan Lịch trình (Itinerary Overview): Bản đồ tương tác có vẽ tuyến đường màu đỏ kết nối các điểm dừng có ảnh thu nhỏ, bộ chọn Ngày 1/Ngày 2/Ngày 3, băng chuyền thẻ điểm dừng trượt ngang theo mốc thời gian (`07:00 - 10:00`, `10:00 - 13:00`).
+   - Màn hình Thẻ chi tiết điểm dừng: Ảnh nền toàn màn hình, số thứ tự điểm dừng, đánh giá sao, khoảng cách từ vị trí hiện tại (`400 m`), nút Dẫn đường.
+2. **Ảnh 2 (`media_...4493a4a3.jpg`)**:
+   - Hệ thống tab: Tổng quan (Overview), Lịch trình (Itinerary), Khám phá (Explore), Ngân sách chi phí ($).
+   - Nút "⚡ Tối ưu tuyến đường" (Optimize Route).
+   - Dòng thời gian chi tiết: Điểm xuất phát -> Thời gian di chuyển -> Điểm tham quan -> Điểm ăn uống với nhãn thời gian trực quan.
+3. **Ảnh 3 (`media_...08b1f05f.jpg`)**:
+   - Màn hình Thiết lập Sở thích Du lịch: "Bạn yêu thích điều gì?" (Chọn danh mục theo nhóm: Điểm nổi bật, Lịch sử & Di sản, Thiên nhiên & Hoạt động ngoài trời, Ẩm thực & Chợ đêm, Văn hóa nghệ thuật).
+   - Khối Thời tiết dự báo: Nhiệt độ, nắng/mưa, độ ẩm cho chuyến đi.
+4. **Ảnh 4 (`media_...e9d17de8.jpg`)**:
+   - Bản đồ Tìm kiếm điểm dừng trên hành lang di chuyển (Corridor POI Search): Thanh tìm kiếm nhanh các điểm `🍴 Nhà hàng`, `☕ Trạm dừng/Nghỉ chân`, `📷 Danh lam`, `⛽ Cây xăng`.
+   - Danh sách điểm dừng tuyến đường với tổng chiều dài (km), tổng thời gian (giờ/phút) và số trạm dừng.
+
+---
+
+## 2. SƠ ĐỒ KIẾN TRÚC & QUY TRÌNH XỬ LÝ (MERMAID)
+
+```mermaid
+flowchart TD
+    A[Người dùng mở Trình Lập Lịch Trình Thông Minh] --> B[Bước 1: Nhập Điểm đi & Điểm đến]
+    B --> C[Bước 2: Chọn Thời gian & Số ngày 1-3 ngày]
+    C --> D[Bước 3: Chọn Sở thích du lịch theo nhóm Tags]
+    D --> E[Engine Tạo Lịch Trình Tự Động SmartItineraryEngine]
+    
+    subgraph Engine Xử Lý
+        E --> E1[Xác định Tuyến đường chính Polyline & Bán kính Hành lang]
+        E1 --> E2[Chọn lọc Điểm tham quan theo Sở thích & Tọa độ]
+        E2 --> E3[Chèn Điểm dừng nghỉ chân Cafe/Trạm dừng phù hợp]
+        E3 --> E4[Tích hợp Quán ăn/Nhà hàng trên đường Corridor Search cho Trưa/Tối]
+        E4 --> E5[Phân bổ Khung giờ & Thời lượng dự kiến từng điểm]
+        E5 --> E6[Tính Tổng thời gian di chuyển + Tổng chi phí ước tính]
+    end
+    
+    E6 --> F[Màn hình Lịch Trình Trực Quan SmartItineraryView]
+    F --> F1[Bản đồ Lộ trình Tương tác Polyline + Pin Đánh dấu]
+    F --> F2[Thẻ Thông tin Chuyến đi: Ngày, Tổng giờ, Tổng chi phí, Thời tiết]
+    F --> F3[Dòng thời gian Timeline theo từng Ngày]
+    F --> F4[Bộ lọc nhanh Điểm dừng: Nhà hàng, Tham quan, Nghỉ chân]
+    F --> F5[Lưu vào Lịch trình cá nhân & Hỗ trợ Offline]
+```
+
+---
+
+## 3. CẤU TRÚC THƯ MỤC & FILE CẦN TRIỂN KHAI
+
+| STT | File | Hành động | Mục đích |
 |---|---|---|---|
-| 1 | Dinh Độc Lập | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/7/71/Ho_Chi_Minh_City_-_Independence_Palace.jpg` |
-| 2 | Chợ Bến Thành | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/0/02/Ben_Thanh_Market%2C_Saigon.jpg` |
-| 3 | Nhà thờ Đức Bà | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/9/93/Saigon_Notre-Dame_Basilica_%2814695412776%29.jpg` |
-| 4 | Bưu điện Trung tâm Sài Gòn | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/7/78/Ho_Chi_Minh_City%2C_Central_Post_Office%2C_2020-01_CN-01.jpg` |
-| 5 | Bến Nhà Rồng | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/9/95/Ben_Nha_Rong_ve_dem.JPG` |
-| 6 | Phố đi bộ Nguyễn Huệ | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/0/04/Nguyen_Hue_Street1.jpg` |
-| 7 | Bảo tàng Chứng tích Chiến tranh | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/c/ca/War_Remnants_Museum.jpg` |
-| 8 | Địa đạo Củ Chi | TP.HCM | `https://upload.wikimedia.org/wikipedia/commons/6/69/Cu_Chi_Tunnel.jpg` |
-| 9 | Cầu Rồng Đà Nẵng | Đà Nẵng | `https://upload.wikimedia.org/wikipedia/commons/5/5d/Dragon_Bridge_Da_Nang_1.jpg` |
-| 10 | Ngũ Hành Sơn | Đà Nẵng | `https://upload.wikimedia.org/wikipedia/commons/4/44/Marble_Mountains%2C_Vietnam.jpg` |
-| 12 | Chùa Linh Ứng Sơn Trà | Đà Nẵng | `https://upload.wikimedia.org/wikipedia/commons/2/28/Lady_Buddha_Da_Nang_5.jpg` |
-| 11 | Hồ Hoàn Kiếm & Tháp Rùa | Hà Nội | `https://upload.wikimedia.org/wikipedia/commons/a/a8/Th%C3%A1p_R%C3%B9a.jpg` |
-| 13 | Văn Miếu - Quốc Tử Giám | Hà Nội | `https://upload.wikimedia.org/wikipedia/commons/3/31/Hanoi_Temple_of_Literature.jpg` |
-| 14 | Hoàng thành Thăng Long | Hà Nội | `https://upload.wikimedia.org/wikipedia/commons/7/70/Main_Gate_-_Citadel_of_Hanoi.jpg` |
-| 15 | Vịnh Hạ Long | Quảng Ninh | `https://upload.wikimedia.org/wikipedia/commons/4/4b/Halong_Bay.jpg` |
-| 16 | Bảo tàng Quảng Ninh | Quảng Ninh | `https://upload.wikimedia.org/wikipedia/commons/f/f1/Quang_Ninh_Museum_facade_1.jpg` |
-| 17 | Đỉnh Fansipan | Sa Pa | `https://upload.wikimedia.org/wikipedia/commons/7/71/Fansipan.jpg` |
-| 18 | Bản Cát Cát Sa Pa | Sa Pa | `https://upload.wikimedia.org/wikipedia/commons/4/42/Cat_Cat_waterfall.jpg` |
-| 19 | Đại Nội Huế | Cố đô Huế | `https://upload.wikimedia.org/wikipedia/commons/1/13/Ng%E1%BB%8D_m%C3%B4n%2C_Hu%E1%BA%BF.jpg` |
-| 20 | Chùa Thiên Mụ | Cố đô Huế | `https://upload.wikimedia.org/wikipedia/commons/2/26/Thi%C3%AAn_M%E1%BB%A5_Pagoda.jpg` |
-| 21 | Chùa Cầu Hội An | Hội An | `https://upload.wikimedia.org/wikipedia/commons/9/96/Japanese_Covered_Bridge%2C_Hoi_An%2C_Vietnam_%286944565326%29.jpg` |
-| 22 | Rừng Dừa Bảy Mẫu | Hội An | `https://upload.wikimedia.org/wikipedia/commons/8/82/Basket_Boat_and_the_Bamboo_forest_%28Unsplash%29.jpg` |
-| 23 | Tháp Bà Ponagar | Nha Trang | `https://upload.wikimedia.org/wikipedia/commons/c/c8/PoNagar.jpg` |
-| 24 | VinWonders Nha Trang | Nha Trang | `https://upload.wikimedia.org/wikipedia/commons/d/df/Vinpearl_Nha_Trang_%2849373981551%29.jpg` |
-| 25 | Hồ Xuân Hương & Lâm Viên | Đà Lạt | `https://upload.wikimedia.org/wikipedia/commons/a/aa/Da_Lat_-_Xuan_Huong_Lake.jpg` |
-| 26 | Đỉnh Langbiang | Đà Lạt | `https://upload.wikimedia.org/wikipedia/commons/c/c9/Lang_Biang_mountain_1.jpg` |
-| 27 | Dinh Cậu Phú Quốc | Phú Quốc | `https://upload.wikimedia.org/wikipedia/commons/8/83/Dinh_C%E1%BA%ADu_Ph%C3%BA_Qu%E1%BB%91c.jpg` |
-| 28 | Sunset Town & Bãi Sao | Phú Quốc | `https://upload.wikimedia.org/wikipedia/commons/a/ad/Star_Beach_%28B%C3%A3i_Sao%29.jpg` |
+| 1 | [`lib/core/utils/smart_itinerary_engine.dart`](file:///d:/trip_flow/lib/core/utils/smart_itinerary_engine.dart) | **Tạo mới** | Thuật toán xây dựng lịch trình thông minh: định tuyến, gán điểm tham quan theo sở thích, chèn điểm dừng chân và quán ăn, tính toán timeline và chi phí |
+| 2 | [`lib/features/itinerary/screens/trip_planner_wizard_screen.dart`](file:///d:/trip_flow/lib/features/itinerary/screens/trip_planner_wizard_screen.dart) | **Tạo mới** | Giao diện Wizard nhập Điểm đi, Điểm đến, Ngày/Thời gian và Bộ chọn Sở thích trực quan dạng Chip (theo Ảnh 3) |
+| 3 | [`lib/features/itinerary/screens/smart_itinerary_result_screen.dart`](file:///d:/trip_flow/lib/features/itinerary/screens/smart_itinerary_result_screen.dart) | **Tạo mới** | Giao diện hiển thị Lịch trình hiện đại: Bản đồ Polyline, Tabs ngày, Dòng thời gian Timeline với thời gian dự kiến, thẻ tổng chi phí & thời tiết (theo Ảnh 1, 2, 4) |
+| 4 | [`lib/features/itinerary/widgets/itinerary_timeline_card.dart`](file:///d:/trip_flow/lib/features/itinerary/widgets/itinerary_timeline_card.dart) | **Tạo mới** | Thẻ điểm dừng dòng thời gian có ảnh Hero, nhãn loại điểm (Tham quan, Nghỉ chân, Ăn uống), thời gian dự kiến, chi phí, khoảng cách |
+| 5 | [`lib/features/home/home_screen.dart`](file:///d:/trip_flow/lib/features/home/home_screen.dart) | **Cập nhật** | Thêm Banner nổi bật "Lập Lịch Trình Thông Minh" trên Trang chủ với thiết kế Hero card như Ảnh 1 |
+| 6 | [`lib/features/itinerary/itinerary_screen.dart`](file:///d:/trip_flow/lib/features/itinerary/itinerary_screen.dart) | **Cập nhật** | Tích hợp nút tạo lịch trình thông minh và liên kết trực tiếp tới Wizard mới |
+| 7 | [`lib/core/utils/app_state.dart`](file:///d:/trip_flow/lib/core/utils/app_state.dart) | **Cập nhật** | Lưu trữ và quản lý các lịch trình thông minh được tạo, đồng bộ trạng thái |
 
 ---
 
-## 3. Danh sách File Triển khai
+## 4. CHI TIẾT TRIỂN KHAI CÁC MODULE
 
-1. [`lib/core/utils/mock_data.dart`](file:///d:/trip_flow/lib/core/utils/mock_data.dart): Cung cấp danh sách `images` đầy đủ và chính xác cho 28 địa điểm và 10 tỉnh thành.
-2. [`backend/app/db/seed_db.py`](file:///d:/trip_flow/backend/app/db/seed_db.py): Đồng bộ URL ảnh vào database backend.
-3. [`admin-web/src/services/api/mockAdminData.js`](file:///d:/trip_flow/admin-web/src/services/api/mockAdminData.js): Cập nhật hình ảnh đồng bộ sang hệ thống Admin Web.
-4. Kiểm thử biên dịch Flutter và khởi động lại Hot restart.
+### 4.1 Module Thuật toán: `smart_itinerary_engine.dart`
+- **Đầu vào (Input Parameters)**:
+  - `provinceId`: Tỉnh/thành đang chọn (VD: TP.HCM, Hà Nội, Đà Nẵng, v.v.).
+  - `originDestination`: Địa điểm xuất phát.
+  - `targetDestination`: Địa điểm đích đến.
+  - `startDate`, `endDate`, `totalDays` (1, 2, hoặc 3 ngày).
+  - `selectedPreferences`: Danh sách sở thích (heritage, architecture, street_walk, nature, market, cuisine, relaxation).
+  - `budgetLevel`: Mức ngân sách (Tiết kiệm, Tiêu chuẩn, Thoải mái).
+- **Thuật toán xử lý**:
+  1. Xây dựng tuyến đường polyline nối điểm xuất phát và đích.
+  2. Lọc các điểm tham quan dọc hành lang 5km và phù hợp với sở thích được chọn.
+  3. Lọc các nhà hàng/quán ăn đặc sản tiêu biểu cho bữa trưa (11:30 - 13:00) và bữa tối (18:30 - 20:00).
+  4. Bổ sung các điểm dừng nghỉ chân (Quán cà phê ngắm cảnh, công viên) giữa các chặng di chuyển dài hơn 45 phút.
+  5. Sắp xếp thứ tự tối ưu theo địa lý (Tránh đi vòng).
+  6. Tính toán chi phí dự kiến = Vé tham quan + Chi phí ăn uống theo bữa + Chi phí di chuyển ước tính.
+  7. Tính toán tổng thời gian = Thời gian tham quan + Thời gian ăn uống + Thời gian di chuyển.
+
+### 4.2 Màn hình Nhập Liệu Wizard: `trip_planner_wizard_screen.dart` (Việt hóa 100%)
+- **Bước 1: Tuyến đường & Thời gian**:
+  - Chọn Điểm xuất phát (có icon ghim xanh).
+  - Chọn Điểm đến (có icon cờ đỏ).
+  - Chọn Ngày đi & Ngày về (Bộ chọn ngày mượt mà dạng pill ngang).
+- **Bước 2: Sở thích du lịch (What excites you - Việt hóa)**:
+  - Nhóm 1: *Điểm đến hàng đầu* (⭐ Được yêu thích nhất, 🔥 Xu hướng, 💎 Điểm đến ẩn giấu).
+  - Nhóm 2: *Lịch sử & Di sản* (🏛️ Di tích văn hóa, 🏺 Bảo tàng, ⛩️ Đền chùa cổ kính).
+  - Nhóm 3: *Thiên nhiên & Ngoài trời* (🌳 Cảnh quan thiên nhiên, 🏖️ Biển đảo, 🚶 Dạo bộ phố đêm).
+  - Nhóm 4: *Ẩm thực & Thư giãn* (🍜 Ẩm thực đường phố, ☕ Quán cafe thư giãn, 🛍️ Chợ truyền thống).
+- **Nút hành động**:
+  - "✨ Xây Dựng Lịch Trình Thông Minh" với hiệu ứng loading và tạo lịch trình ngay lập tức.
+
+### 4.3 Màn hình Hiển Thị Lịch Trình: `smart_itinerary_result_screen.dart`
+- **Header**: Bản đồ tương tác hiển thị tuyến đường vẽ polyline, các điểm dừng đánh số thứ tự từ 1 đến N.
+- **Thẻ tổng quan chuyến đi**:
+  - Số ngày, số điểm dừng.
+  - Tổng thời gian di chuyển & tham quan.
+  - Tổng chi phí ước tính (kèm chi tiết vé, ăn uống, di chuyển).
+  - Dự báo thời tiết địa phương (Nhiệt độ, biểu tượng thời tiết).
+- **Bộ chuyển ngày (Day 1, Day 2, Day 3)**:
+  - Thanh chọn ngày dạng pill bo cong nổi bật (như Ảnh 1 & 2).
+- **Dòng thời gian (Timeline List)**:
+  - Điểm xuất phát (Giờ khởi hành).
+  - Thời gian di chuyển giữa các chặng (Thời gian lái xe/đi bộ + Khoảng cách km).
+  - Điểm dừng tham quan: Ảnh lớn 180px, tên danh thắng, thời gian dự kiến (VD: 90 phút), giá vé.
+  - Điểm ăn uống trưa/tối: Tên quán, món đặc sản nên thử, giá trung bình.
+  - Điểm dừng chân thư giãn: Cà phê, ngắm cảnh.
+  - Điểm kết thúc ngày.
+- **Hành động**:
+  - "💾 Lưu Lịch Trình Này" (Tự động đưa vào Lịch trình cá nhân của AppState & hỗ trợ Offline).
+  - "🧭 Bắt đầu dẫn đường trên Bản đồ".
+
+---
+
+## 5. THỨ TỰ TRIỂN KHAI CHO CODER AGENT
+
+1. **Bước 1**: Tạo file thuật toán [`smart_itinerary_engine.dart`](file:///d:/trip_flow/lib/core/utils/smart_itinerary_engine.dart).
+2. **Bước 2**: Tạo widget thẻ dòng thời gian [`itinerary_timeline_card.dart`](file:///d:/trip_flow/lib/features/itinerary/widgets/itinerary_timeline_card.dart).
+3. **Bước 3**: Tạo màn hình Wizard nhập liệu [`trip_planner_wizard_screen.dart`](file:///d:/trip_flow/lib/features/itinerary/screens/trip_planner_wizard_screen.dart).
+4. **Bước 4**: Tạo màn hình hiển thị kết quả lộ trình [`smart_itinerary_result_screen.dart`](file:///d:/trip_flow/lib/features/itinerary/screens/smart_itinerary_result_screen.dart).
+5. **Bước 5**: Tích hợp các nút điều hướng trên [`home_screen.dart`](file:///d:/trip_flow/lib/features/home/home_screen.dart) và [`itinerary_screen.dart`](file:///d:/trip_flow/lib/features/itinerary/itinerary_screen.dart).
+6. **Bước 6**: Kiểm thử biên dịch Flutter (`flutter build web`) và Hot restart ứng dụng.
+7. **Bước 7**: Chuyển giao sang Reviewer Agent để kiểm duyệt toàn diện.
+
+---
+
+## 6. TIÊU CHÍ NGHIỆM THU (ACCEPTANCE CRITERIA)
+
+- [ ] **AC-1 (Đầy đủ trường nhập liệu)**: Người dùng có thể chọn điểm xuất phát, điểm đến, thời gian (ngày), và sở thích du lịch theo nhóm.
+- [ ] **AC-2 (Tuyến đường & Bản đồ)**: Vẽ rõ ràng tuyến đường polyline kết nối các điểm dừng và hiển thị khoảng cách di chuyển giữa từng điểm.
+- [ ] **AC-3 (Đầy đủ loại điểm dừng)**: Lịch trình sinh ra có đầy đủ:
+  - Điểm tham quan du lịch phù hợp sở thích.
+  - Điểm dừng nghỉ chân (Cafe, công viên, trạm dừng).
+  - Quán ăn, nhà hàng trên đường (Đặc sản ăn trưa, ăn tối).
+- [ ] **AC-4 (Thời gian & Chi phí)**: Mỗi điểm dừng có khung giờ và thời lượng tham quan cụ thể; tổng chi phí dự kiến và tổng thời gian được tính toán minh bạch.
+- [ ] **AC-5 (Giao diện chuẩn ảnh mẫu & 100% Việt hóa)**: Bố cục đẹp mắt, hiện đại, hình ảnh chân thực, responsive không bị lỗi overflow.

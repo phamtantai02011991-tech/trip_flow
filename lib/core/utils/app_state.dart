@@ -484,6 +484,17 @@ class TripFlowAppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Lưu trực tiếp một Lịch trình thông minh (Smart Itinerary) do Engine tự động sinh ra
+  void saveNewItinerary(ItineraryModel itinerary) {
+    _userItineraries.insert(0, itinerary);
+    _activeItineraryIndex = 0;
+    _persistItinerariesToHive();
+    if (!_isOfflineSimulated) {
+      apiClient.syncItineraryToBackend(itinerary);
+    }
+    notifyListeners();
+  }
+
   void addDestinationToActiveItinerary(
     DestinationModel dest, {
     String plannedTime = '09:00 - 10:30',
