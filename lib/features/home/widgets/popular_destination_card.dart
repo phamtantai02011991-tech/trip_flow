@@ -235,3 +235,4 @@ class PopularDestinationCard extends StatelessWidget {
     );
   }
 }
+

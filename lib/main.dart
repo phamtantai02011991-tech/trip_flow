@@ -8,9 +8,11 @@ import 'core/theme/app_theme.dart';
 import 'core/utils/app_state.dart';
 import 'features/home/home_screen.dart';
 import 'features/itinerary/itinerary_screen.dart';
+import 'features/assistant/assistant_screen.dart';
 import 'features/local_foods/local_foods_screen.dart';
-import 'features/maps/map_corridor_screen.dart';
+import 'features/nearby/nearby_screen.dart';
 import 'features/profile/profile_screen.dart';
+import 'features/trip/trip_list_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -220,8 +222,9 @@ class MainNavigationShell extends StatelessWidget {
       builder: (context, _) {
         final screens = [
           HomeScreen(appState: appState),
-          MapCorridorScreen(appState: appState),
-          ItineraryScreen(appState: appState),
+          const NearbyScreen(),
+          const TripListScreen(),
+          const AssistantScreen(),
           LocalFoodsScreen(appState: appState),
           ProfileScreen(appState: appState),
         ];
@@ -249,12 +252,17 @@ class MainNavigationShell extends StatelessWidget {
       (
         icon: Icons.map_outlined,
         activeIcon: Icons.map_rounded,
-        label: 'Bản đồ'
+        label: 'Gần đây'
       ),
       (
         icon: Icons.event_note_outlined,
         activeIcon: Icons.event_note_rounded,
-        label: 'Lịch trình'
+        label: 'Chuyến đi'
+      ),
+      (
+        icon: Icons.auto_awesome_outlined,
+        activeIcon: Icons.auto_awesome_rounded,
+        label: 'Trợ lý'
       ),
       (
         icon: Icons.ramen_dining_outlined,

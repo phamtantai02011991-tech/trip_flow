@@ -50,3 +50,17 @@ unlinked_spec.ds
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Tooling & local agent state (sinh tự động, không commit)
+devtools_options.yaml
+.vscode/
+.agents/workspace/tmp/
+.agents/workspace/*.log
+coverage/
+lcov.info
+admin-web/.vite/
+*.tsbuildinfo
+.eslintcache
+.research/
+backend/swagger.json
+
