@@ -15,6 +15,7 @@ from app.models.models import (
     Province,
     Role,
     RolePermissionLink,
+    SMSOTPVerification,
     User,
 )
 from app.models.restaurant import Restaurant
@@ -32,6 +33,7 @@ __all__ = [
     "RolePermissionLink",
     "AdminRole",
     "User",
+    "SMSOTPVerification",
     "Favorite",
     "Itinerary",
     "ItineraryStop",

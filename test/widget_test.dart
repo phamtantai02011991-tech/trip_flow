@@ -220,5 +220,112 @@ void main() {
       expect(corridorResult.distanceFromRouteKm, lessThan(1.0));
     },
   );
+
+  testWidgets(
+    'TC-24: Luồng Đăng ký Tên + Số điện thoại Việt Nam + Xác thực OTP SMS và cập nhật Hồ sơ Profile',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: TripFlowApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 1. Điều hướng đến Tab Cá nhân (Tab 5)
+      await tester.tap(find.text('Cá nhân'));
+      await tester.pumpAndSettle();
+
+      // Kiểm tra đang ở Guest Mode với nút Đăng ký tài khoản
+      expect(find.text('Khách du lịch (Guest Mode)'), findsOneWidget);
+      expect(find.text('Đăng ký tài khoản (Nhận OTP)'), findsOneWidget);
+
+      // 2. Nhấn nút Đăng ký tài khoản để mở RegisterScreen
+      await tester.tap(find.text('Đăng ký tài khoản (Nhận OTP)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tham Gia TripFlow'), findsOneWidget);
+      expect(find.text('Họ và tên du khách'), findsOneWidget);
+      expect(find.text('Số điện thoại di động Việt Nam'), findsOneWidget);
+
+      // 3. Nhập Họ và tên và Số điện thoại di động Việt Nam
+      final textFields = find.byType(TextFormField);
+      await tester.enterText(textFields.at(0), 'Nguyễn Văn Du Khách');
+      await tester.enterText(textFields.at(1), '0987654321');
+      await tester.pumpAndSettle();
+
+      // 4. Nhấn nút "Nhận mã xác thực OTP qua SMS"
+      final sendOtpBtn = find.text('Nhận mã xác thực OTP qua SMS');
+      expect(sendOtpBtn, findsOneWidget);
+      await tester.tap(sendOtpBtn);
+      await tester.pumpAndSettle();
+
+      // 5. Kiểm tra đã chuyển sang OtpVerificationScreen
+      expect(find.text('Xác Thực Mã OTP SMS'), findsWidgets);
+      expect(find.textContaining('098 •••• 321'), findsOneWidget);
+      expect(find.text('TIN NHẮN SMS MỚI • TRIPFLOW'), findsOneWidget);
+      expect(find.text('Điền mã 1-chạm'), findsOneWidget);
+
+      // 6. Nhấn nút "Điền mã 1-chạm" để tự động điền mã OTP từ SMS Simulator
+      await tester.tap(find.text('Điền mã 1-chạm'));
+      await tester.pumpAndSettle();
+
+      // 7. Nhấn nút "Xác Nhận & Hoàn Tất"
+      final verifyBtn = find.text('Xác Nhận & Hoàn Tất');
+      expect(verifyBtn, findsOneWidget);
+      await tester.tap(verifyBtn);
+      await tester.pumpAndSettle();
+
+      // 8. Đã quay lại màn hình Cá nhân: kiểm tra tên, SĐT và huy hiệu xác thực OTP
+      await tester.tap(find.text('Cá nhân'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nguyễn Văn Du Khách'), findsWidgets);
+      expect(find.text('0987654321'), findsWidgets);
+      expect(find.text('Đã xác thực OTP qua tin nhắn SMS'), findsOneWidget);
+    },
+  );
+
+  test(
+    'TC-24 Unit: TripFlowAppState lưu trữ và khôi phục số điện thoại cùng trạng thái OTP xác thực',
+    () async {
+      final appState = TripFlowAppState();
+
+      // Kiểm tra trạng thái ban đầu là Guest
+      expect(appState.isLoggedIn, isFalse);
+      expect(appState.userPhone, isEmpty);
+      expect(appState.isOtpVerified, isFalse);
+
+      // Gửi OTP
+      final sendRes = await appState.sendPhoneOtp(
+        phone: '0987654321',
+        fullName: 'Nguyễn Văn Du Khách',
+      );
+      expect(sendRes['success'], isTrue);
+      expect(sendRes['debug_otp'], isNotNull);
+
+      final debugOtp = sendRes['debug_otp']?.toString() ?? '888999';
+
+      // Xác thực OTP
+      final verifyRes = await appState.verifyOtpAndLogin(
+        phone: '0987654321',
+        otpCode: debugOtp,
+        fullName: 'Nguyễn Văn Du Khách',
+      );
+      expect(verifyRes['success'], isTrue);
+
+      // Kiểm tra trạng thái đã cập nhật
+      expect(appState.isLoggedIn, isTrue);
+      expect(appState.userPhone, equals('0987654321'));
+      expect(appState.userName, equals('Nguyễn Văn Du Khách'));
+      expect(appState.isOtpVerified, isTrue);
+
+      // Đăng xuất
+      appState.logoutUser();
+      expect(appState.isLoggedIn, isFalse);
+      expect(appState.userPhone, isEmpty);
+      expect(appState.isOtpVerified, isFalse);
+      expect(appState.userName, contains('Guest Mode'));
+    },
+  );
 }
 

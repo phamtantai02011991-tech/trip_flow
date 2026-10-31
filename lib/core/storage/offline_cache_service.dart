@@ -16,16 +16,19 @@ class OfflineCacheService {
   static const String apiCacheBoxName = 'tripflow_api_cache';
   static const String itinerariesBoxName = 'tripflow_itineraries';
   static const String favoritesBoxName = 'tripflow_favorites';
+  static const String authBoxName = 'tripflow_auth_session';
 
   bool _hiveInitialized = false;
   Box<String>? _apiCacheBox;
   Box<String>? _itinerariesBox;
   Box<String>? _favoritesBox;
+  Box<String>? _authBox;
 
   // Bộ nhớ dự phòng trong RAM cho môi trường Unit/Widget Test không có ổ đĩa Native
   final Map<String, String> _memoryApiCache = {};
   final Map<String, String> _memoryItineraries = {};
   final Map<String, String> _memoryFavorites = {};
+  final Map<String, String> _memoryAuth = {};
 
   bool get isHiveReady => _hiveInitialized;
 
@@ -37,6 +40,7 @@ class OfflineCacheService {
       _apiCacheBox = await Hive.openBox<String>(apiCacheBoxName);
       _itinerariesBox = await Hive.openBox<String>(itinerariesBoxName);
       _favoritesBox = await Hive.openBox<String>(favoritesBoxName);
+      _authBox = await Hive.openBox<String>(authBoxName);
       _hiveInitialized = true;
     } catch (_) {
       // Trong môi trường flutter test không có path_provider native, tự động dùng bộ nhớ đệm trong RAM
@@ -139,6 +143,49 @@ class OfflineCacheService {
       };
     } catch (_) {
       return null;
+    }
+  }
+
+  /// Lưu thông tin phiên đăng nhập người dùng (SĐT, Họ tên, Trạng thái OTP, Token) vào Hive Box
+  Future<void> saveUserAuthSession({
+    required String phone,
+    required String fullName,
+    required bool isOtpVerified,
+    String? token,
+  }) async {
+    final payload = jsonEncode({
+      'user_phone': phone,
+      'user_name': fullName,
+      'is_otp_verified': isOtpVerified,
+      'auth_token': token ?? '',
+      'updated_at': DateTime.now().toIso8601String(),
+    });
+    _memoryAuth['current_session'] = payload;
+    if (_hiveInitialized && _authBox != null) {
+      await _authBox!.put('current_session', payload);
+    }
+  }
+
+  /// Đọc thông tin phiên đăng nhập người dùng từ Hive Box
+  Map<String, dynamic>? loadUserAuthSession() {
+    String? raw;
+    if (_hiveInitialized && _authBox != null) {
+      raw = _authBox!.get('current_session');
+    }
+    raw ??= _memoryAuth['current_session'];
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      return jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Xóa phiên đăng nhập người dùng khi đăng xuất
+  Future<void> clearUserAuthSession() async {
+    _memoryAuth.remove('current_session');
+    if (_hiveInitialized && _authBox != null) {
+      await _authBox!.delete('current_session');
     }
   }
 }

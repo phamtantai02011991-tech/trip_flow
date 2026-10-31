@@ -126,6 +126,9 @@ class TripFlowAppState extends ChangeNotifier {
   bool _isLoggedIn = false;
   String _userName = 'Khách du lịch (Guest Mode)';
   String _userEmail = '';
+  String _userPhone = '';
+  bool _isOtpVerified = false;
+  String _authToken = '';
 
   bool get isLoading => _isLoading;
   bool get isOfflineSimulated => _isOfflineSimulated;
@@ -133,6 +136,9 @@ class TripFlowAppState extends ChangeNotifier {
   bool get isLoggedIn => _isLoggedIn;
   String get userName => _userName;
   String get userEmail => _userEmail;
+  String get userPhone => _userPhone;
+  bool get isOtpVerified => _isOtpVerified;
+  String get authToken => _authToken;
 
   List<ItineraryModel> get sampleItineraries => _sampleItineraries;
   List<ItineraryModel> get userItineraries => _userItineraries;
@@ -173,6 +179,21 @@ class TripFlowAppState extends ChangeNotifier {
       _favoriteRestaurantIds
         ..clear()
         ..addAll(savedFavs['restaurants'] ?? {3});
+    }
+
+    final authSession = cacheService.loadUserAuthSession();
+    if (authSession != null) {
+      _userPhone = authSession['user_phone']?.toString() ?? '';
+      _userName = authSession['user_name']?.toString() ?? 'Du khách TripFlow';
+      _isOtpVerified = authSession['is_otp_verified'] == true;
+      _authToken = authSession['auth_token']?.toString() ?? '';
+      if (_userPhone.isNotEmpty) {
+        _userEmail = '$_userPhone@tripflow.vn';
+      }
+      _isLoggedIn = _userPhone.isNotEmpty || _authToken.isNotEmpty;
+      if (_authToken.isNotEmpty) {
+        apiClient.authToken = _authToken;
+      }
     }
   }
 
@@ -773,18 +794,100 @@ class TripFlowAppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Gửi mã xác thực OTP qua SMS
+  Future<Map<String, dynamic>> sendPhoneOtp({
+    required String phone,
+    String? fullName,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final res = await apiClient.sendSmsOtp(
+        phone: phone,
+        fullName: fullName,
+      );
+      return res;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Xác thực mã OTP, kích hoạt đăng nhập và lưu session vào Hive Cache
+  Future<Map<String, dynamic>> verifyOtpAndLogin({
+    required String phone,
+    required String otpCode,
+    String? fullName,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final res = await apiClient.verifySmsOtp(
+        phone: phone,
+        otpCode: otpCode,
+        fullName: fullName,
+      );
+      if (res['success'] == true) {
+        _isLoggedIn = true;
+        _userPhone = phone;
+        _isOtpVerified = true;
+        _userEmail = '$phone@tripflow.vn';
+        final userMap = res['user'] as Map<String, dynamic>?;
+        if (userMap != null &&
+            userMap['full_name'] != null &&
+            userMap['full_name'].toString().isNotEmpty) {
+          _userName = userMap['full_name'].toString();
+        } else if (fullName != null && fullName.isNotEmpty) {
+          _userName = fullName;
+        } else {
+          _userName =
+              'Du khách ${phone.length >= 4 ? phone.substring(phone.length - 4) : phone}';
+        }
+        _authToken = res['access_token']?.toString() ?? '';
+        await cacheService.saveUserAuthSession(
+          phone: _userPhone,
+          fullName: _userName,
+          isOtpVerified: _isOtpVerified,
+          token: _authToken,
+        );
+      }
+      return res;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   /// Đăng nhập / Đăng xuất người dùng
-  void loginUser({required String email, required String fullName}) {
+  void loginUser({
+    required String email,
+    required String fullName,
+    String? phone,
+    bool isOtpVerified = false,
+  }) {
     _isLoggedIn = true;
     _userEmail = email;
     _userName = fullName;
+    if (phone != null) _userPhone = phone;
+    _isOtpVerified = isOtpVerified;
+    cacheService.saveUserAuthSession(
+      phone: _userPhone,
+      fullName: _userName,
+      isOtpVerified: _isOtpVerified,
+      token: _authToken,
+    );
     notifyListeners();
   }
 
   void logoutUser() {
     _isLoggedIn = false;
     _userEmail = '';
+    _userPhone = '';
+    _isOtpVerified = false;
+    _authToken = '';
     _userName = 'Khách du lịch (Guest Mode)';
+    apiClient.authToken = null;
+    cacheService.clearUserAuthSession();
     notifyListeners();
   }
 }

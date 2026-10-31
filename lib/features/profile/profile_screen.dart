@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/app_state.dart';
+import '../auth/login_screen.dart';
+import '../auth/register_screen.dart';
 import '../favorites/favorites_screen.dart';
 
 /// Tab 5: Màn hình Cá nhân, Tài khoản & Thiết lập Trải nghiệm (ProfileScreen - Mục 5.1.11 & Mục 5.3).
@@ -69,50 +71,109 @@ class ProfileScreen extends StatelessWidget {
                               const SizedBox(height: 3),
                               Text(
                                 appState.isLoggedIn
-                                    ? appState.userEmail
+                                    ? (appState.userPhone.isNotEmpty
+                                        ? appState.userPhone
+                                        : appState.userEmail)
                                     : 'Bạn có thể khám phá đầy đủ nội dung và tạo lịch trình mà không bắt buộc đăng nhập.',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Color(0xFF64748B),
                                 ),
                               ),
+                              if (appState.isLoggedIn &&
+                                  (appState.isOtpVerified ||
+                                      appState.userPhone.isNotEmpty)) ...[
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFECFDF5),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: const Color(0xFFA7F3D0),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Icon(
+                                        Icons.verified_rounded,
+                                        size: 13,
+                                        color: Color(0xFF059669),
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Đã xác thực OTP qua tin nhắn SMS',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF059669),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        if (!appState.isLoggedIn)
+                    if (!appState.isLoggedIn)
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
                           ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryTeal,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
                             onPressed: () {
-                              appState.loginUser(
-                                email: 'traveler@tripflow.vn',
-                                fullName: 'Hoàng Du Khách',
-                              );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Đã đăng nhập tài khoản traveler@tripflow.vn!',
-                                  ),
-                                  backgroundColor: AppTheme.primaryTeal,
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      RegisterScreen(appState: appState),
                                 ),
                               );
                             },
-                            icon: const Icon(Icons.login_rounded, size: 18),
-                            label: const Text('Đăng nhập đồng bộ tài khoản'),
-                          )
-                        else
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              appState.logoutUser();
-                            },
-                            icon: const Icon(Icons.logout_rounded, size: 18),
-                            label: const Text('Chuyển về Chế độ Khách (Guest)'),
+                            icon: const Icon(Icons.sms_rounded, size: 16),
+                            label: const Text('Đăng ký tài khoản (Nhận OTP)'),
                           ),
-                      ],
-                    ),
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      LoginScreen(appState: appState),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.login_rounded, size: 16),
+                            label: const Text('Đăng nhập'),
+                          ),
+                        ],
+                      )
+                    else
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          appState.logoutUser();
+                        },
+                        icon: const Icon(Icons.logout_rounded, size: 18),
+                        label: const Text('Đăng xuất (Chuyển về Guest)'),
+                      ),
                   ],
                 ),
               ),

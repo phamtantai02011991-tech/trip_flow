@@ -77,6 +77,59 @@
         "responses": { "200": { "description": "Successful Response" } }
       }
     },
+    "/api/v1/auth/otp/send": {
+      "post": {
+        "tags": ["1. Auth & Tài khoản"],
+        "summary": "Send SMS OTP",
+        "description": "Gửi mã xác thực OTP 6 số qua tin nhắn SMS tới số điện thoại di động Việt Nam (10 số). Hỗ trợ kiểm tra rate limit 60s và mô phỏng gửi SMS.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SendOtpRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SendOtpResponse" }
+              }
+            }
+          },
+          "400": { "description": "Số điện thoại không hợp lệ" },
+          "429": { "description": "Vui lòng đợi 60 giây trước khi gửi lại" }
+        }
+      }
+    },
+    "/api/v1/auth/otp/verify": {
+      "post": {
+        "tags": ["1. Auth & Tài khoản"],
+        "summary": "Verify SMS OTP & Register/Login",
+        "description": "Xác thực mã OTP 6 số nhận qua SMS. Nếu đúng mã, tự động đăng ký hoặc đăng nhập tài khoản người dùng và cấp JWT Bearer Token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/VerifyOtpRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TokenResponse" }
+              }
+            }
+          },
+          "400": { "description": "Mã OTP không chính xác, hết hạn hoặc vượt quá số lần thử" }
+        }
+      }
+    },
     "/api/v1/provinces": {
       "get": {
         "tags": ["2. Tỉnh / Thành phố (Provinces)"],
@@ -486,6 +539,49 @@
           "email": { "type": "string" },
           "full_name": { "type": "string" },
           "password": { "type": "string" }
+        }
+      },
+      "SendOtpRequest": {
+        "type": "object",
+        "required": ["phone"],
+        "properties": {
+          "phone": { "type": "string", "description": "Số điện thoại di động Việt Nam (10 chữ số)" },
+          "full_name": { "type": "string", "description": "Họ và tên người dùng (khi đăng ký)" }
+        }
+      },
+      "SendOtpResponse": {
+        "type": "object",
+        "required": ["phone", "message", "expires_in_seconds"],
+        "properties": {
+          "phone": { "type": "string" },
+          "message": { "type": "string" },
+          "expires_in_seconds": { "type": "integer", "default": 300 },
+          "debug_otp": { "type": "string", "description": "Mã OTP phục vụ kiểm thử và debug" }
+        }
+      },
+      "VerifyOtpRequest": {
+        "type": "object",
+        "required": ["phone", "otp_code"],
+        "properties": {
+          "phone": { "type": "string", "description": "Số điện thoại nhận mã OTP" },
+          "otp_code": { "type": "string", "description": "Mã OTP 6 chữ số" },
+          "full_name": { "type": "string", "description": "Họ và tên người dùng nếu đăng ký mới" }
+        }
+      },
+      "UserOut": {
+        "type": "object",
+        "required": ["id", "email", "full_name", "role", "is_active"],
+        "properties": {
+          "id": { "type": "integer" },
+          "email": { "type": "string" },
+          "phone": { "type": "string" },
+          "full_name": { "type": "string" },
+          "role": { "type": "string" },
+          "role_id": { "type": "integer" },
+          "assigned_province_id": { "type": "integer" },
+          "is_active": { "type": "boolean" },
+          "permissions": { "type": "array", "items": { "type": "string" } },
+          "created_at": { "type": "string" }
         }
       },
       "TokenResponse": {

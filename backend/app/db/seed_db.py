@@ -23,14 +23,15 @@ from app.models.models import (
     Restaurant,
     Role,
     RolePermissionLink,
+    SMSOTPVerification,
     User,
 )
 
 
 def _ensure_ingestion_columns() -> None:
     """
-    Tự động bổ sung các cột mới của Module AI Data Ingestion và Review Engine
-    (is_verified, source, source_url, reviews_count, sample_reviews_json, is_high_rated, specialties)
+    Tự động bổ sung các cột mới của Module AI Data Ingestion, Review Engine và Auth Module
+    (is_verified, source, source_url, reviews_count, sample_reviews_json, is_high_rated, specialties, phone)
     nếu cơ sở dữ liệu SQLite/PostgreSQL đã được tạo từ phiên bản trước.
     """
     inspector = inspect(engine)
@@ -79,6 +80,19 @@ def _ensure_ingestion_columns() -> None:
                 conn.execute(
                     text("UPDATE restaurants SET specialties = specialty_dishes WHERE specialties IS NULL")
                 )
+
+        if "users" in existing_tables:
+            user_cols = {col["name"] for col in inspector.get_columns("users")}
+            if "phone" not in user_cols:
+                conn.execute(
+                    text("ALTER TABLE users ADD COLUMN phone VARCHAR(20) DEFAULT NULL")
+                )
+            conn.execute(
+                text("UPDATE users SET phone = '0987654321' WHERE email = 'admin@tripflow.vn' AND (phone IS NULL OR phone = '')")
+            )
+            conn.execute(
+                text("UPDATE users SET phone = '0901234567' WHERE email = 'traveler@tripflow.vn' AND (phone IS NULL OR phone = '')")
+            )
 
 
 def _seed_rbac_users_and_categories(db: Session, now: datetime) -> None:
@@ -341,6 +355,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             User(
                 id=1,
                 email="admin@tripflow.vn",
+                phone="0987654321",
                 full_name="Nguyễn Quản Trị (Super Admin)",
                 hashed_password=get_password_hash("Admin@123"),
                 role="super_admin",
@@ -385,6 +400,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
             User(
                 id=5,
                 email="traveler@tripflow.vn",
+                phone="0901234567",
                 full_name="Hoàng Du Khách",
                 hashed_password=get_password_hash("User@123"),
                 role="user",

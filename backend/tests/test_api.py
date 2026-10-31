@@ -737,3 +737,70 @@ def test_tc22_itinerary_smart_meal_stop_insertion():
     # Thứ tự 3: Nhà thờ Đức Bà được đẩy lùi xuống vị trí thứ 3
     assert updated_stops[2]["stop_order"] == 3
     assert "Nhà thờ Đức Bà" in updated_stops[2]["title"]
+
+
+def test_tc23_sms_otp_registration_and_login():
+    """
+    TC-23: Kiểm thử toàn diện API Xác thực Người dùng qua Tin nhắn SMS OTP:
+    1. Gửi OTP với số điện thoại sai định dạng (ví dụ: '12345', '0123456789') -> HTTP 400.
+    2. Gửi OTP với số điện thoại di động Việt Nam hợp lệ (0912345678) -> HTTP 200, nhận debug_otp 6 chữ số.
+    3. Xác thực với mã OTP sai -> HTTP 400 và giảm số lần thử.
+    4. Xác thực với mã OTP đúng -> HTTP 200, cấp access_token JWT và UserOut chứa đúng phone.
+    5. Cố gắng sử dụng lại mã OTP đã xác thực -> HTTP 400 (chống Replay Attack).
+    """
+    test_phone = "0912345678"
+    test_name = "Nguyễn Văn Du Khách SMS"
+
+    # 1. Gửi OTP với số điện thoại sai định dạng
+    invalid_resp = client.post(
+        "/api/v1/auth/otp/send",
+        json={"phone": "012345678", "full_name": test_name},
+    )
+    assert invalid_resp.status_code == 400
+    assert "Số điện thoại không đúng định dạng" in invalid_resp.json()["detail"]
+
+    # 2. Gửi OTP với số điện thoại di động Việt Nam hợp lệ
+    send_resp = client.post(
+        "/api/v1/auth/otp/send",
+        json={"phone": test_phone, "full_name": test_name},
+    )
+    assert send_resp.status_code == 200, send_resp.text
+    send_data = send_resp.json()
+    assert send_data["phone"] == test_phone
+    assert send_data["expires_in_seconds"] == 300
+    assert "debug_otp" in send_data
+    otp_code = send_data["debug_otp"]
+    assert len(otp_code) == 6
+    assert otp_code.isdigit()
+
+    # 3. Xác thực với mã OTP sai
+    wrong_otp_resp = client.post(
+        "/api/v1/auth/otp/verify",
+        json={"phone": test_phone, "otp_code": "000000", "full_name": test_name},
+    )
+    assert wrong_otp_resp.status_code == 400
+    assert "Mã xác thực OTP không chính xác" in wrong_otp_resp.json()["detail"]
+
+    # 4. Xác thực với mã OTP đúng
+    verify_resp = client.post(
+        "/api/v1/auth/otp/verify",
+        json={"phone": test_phone, "otp_code": otp_code, "full_name": test_name},
+    )
+    assert verify_resp.status_code == 200, verify_resp.text
+    auth_data = verify_resp.json()
+    assert "access_token" in auth_data
+    assert auth_data["token_type"] == "bearer"
+    user = auth_data["user"]
+    assert user["phone"] == test_phone
+    assert user["full_name"] == test_name
+    assert user["role"] == "user"
+    assert "destination:read" in user["permissions"]
+
+    # 5. Cố gắng sử dụng lại mã OTP cũ (chống Replay Attack)
+    replay_resp = client.post(
+        "/api/v1/auth/otp/verify",
+        json={"phone": test_phone, "otp_code": otp_code, "full_name": test_name},
+    )
+    assert replay_resp.status_code == 400
+    assert "Mã xác thực OTP không tồn tại hoặc đã hết hiệu lực" in replay_resp.json()["detail"]
+

@@ -277,6 +277,7 @@ class User(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     email: str = Field(index=True, unique=True, max_length=180)
+    phone: Optional[str] = Field(default=None, index=True, max_length=20)
     full_name: str = Field(max_length=160)
     hashed_password: str = Field(max_length=260)
     role: str = Field(default="user", index=True, max_length=50)
@@ -392,3 +393,19 @@ class AuditLog(SQLModel, table=True):
     summary: str = Field(max_length=400)
     changes_json: str = Field(default="{}", sa_column=Column(Text))
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+
+class SMSOTPVerification(SQLModel, table=True):
+    """Bảng lưu trữ và xác thực mã OTP gửi qua tin nhắn SMS."""
+
+    __tablename__ = "sms_otp_verifications"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    phone: str = Field(index=True, max_length=20)
+    otp_code: str = Field(max_length=10)
+    expires_at: datetime = Field(index=True)
+    is_used: bool = Field(default=False, index=True)
+    attempts: int = Field(default=0)
+    full_name: Optional[str] = Field(default=None, max_length=160)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+

@@ -34,9 +34,31 @@ class RegisterRequest(SQLModel):
     password: str
 
 
+class SendOtpRequest(SQLModel):
+    """Payload yêu cầu gửi mã xác thực OTP qua SMS."""
+    phone: str = Field(description="Số điện thoại di động Việt Nam (10 chữ số)")
+    full_name: Optional[str] = Field(default=None, description="Họ và tên người dùng (khi đăng ký)")
+
+
+class SendOtpResponse(SQLModel):
+    """Kết quả trả về khi gửi OTP SMS thành công."""
+    phone: str
+    message: str
+    expires_in_seconds: int = 300
+    debug_otp: Optional[str] = Field(default=None, description="Mã OTP phục vụ kiểm thử và môi trường phát triển")
+
+
+class VerifyOtpRequest(SQLModel):
+    """Payload xác thực mã OTP gửi qua SMS và đăng nhập / kích hoạt tài khoản."""
+    phone: str = Field(description="Số điện thoại nhận mã OTP")
+    otp_code: str = Field(description="Mã OTP 6 chữ số")
+    full_name: Optional[str] = Field(default=None, description="Họ và tên người dùng nếu đăng ký mới")
+
+
 class UserOut(SQLModel):
     id: int
     email: str
+    phone: Optional[str] = None
     full_name: str
     role: str
     role_id: Optional[int] = None
