@@ -1,0 +1,52 @@
+# Python / FastAPI Backend
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+*.db
+*.sqlite
+*.sqlite3
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+
+# Node / React Admin Web
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Flutter / Dart Mobile App
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+flutter_*.png
+linked_*.ds
+unlinked.ds
+unlinked_spec.ds
+*.iml
+*.ipr
+*.iws
+.idea/
+.flutter-plugins-dependencies
+
+# OS Specific
+.DS_Store
+Thumbs.db
+desktop.ini

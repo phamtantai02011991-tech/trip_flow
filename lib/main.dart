@@ -1,0 +1,271 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'core/config/app_config.dart';
+import 'core/providers/app_providers.dart';
+import 'core/storage/offline_cache_service.dart';
+import 'core/theme/app_theme.dart';
+import 'core/utils/app_state.dart';
+import 'features/home/home_screen.dart';
+import 'features/itinerary/itinerary_screen.dart';
+import 'features/local_foods/local_foods_screen.dart';
+import 'features/maps/map_corridor_screen.dart';
+import 'features/profile/profile_screen.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await OfflineCacheService.instance.init();
+  runApp(
+    const ProviderScope(
+      child: TripFlowApp(),
+    ),
+  );
+}
+
+/// Ứng dụng di động TripFlow (Travel Discovery) sử dụng Riverpod + Dio + Hive Offline-first.
+class TripFlowApp extends ConsumerWidget {
+  final TripFlowAppState? appState;
+
+  const TripFlowApp({super.key, this.appState});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final TripFlowAppState resolvedState =
+        appState ?? ref.watch(appStateProvider);
+    return MaterialApp(
+      title: AppConfig.appName,
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      home: ResponsivePhoneFrameWrapper(
+        child: MainNavigationShell(appState: resolvedState),
+      ),
+    );
+  }
+}
+
+/// Tự động hiển thị khung màn hình điện thoại di động khi mở trên trình duyệt máy tính (Chrome/Edge).
+class ResponsivePhoneFrameWrapper extends StatefulWidget {
+  final Widget child;
+
+  const ResponsivePhoneFrameWrapper({super.key, required this.child});
+
+  @override
+  State<ResponsivePhoneFrameWrapper> createState() =>
+      _ResponsivePhoneFrameWrapperState();
+}
+
+class _ResponsivePhoneFrameWrapperState
+    extends State<ResponsivePhoneFrameWrapper> {
+  bool _usePhoneFrame = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isDesktopViewport =
+            constraints.maxWidth > 540 && constraints.maxHeight > 650;
+        if (!isDesktopViewport || !_usePhoneFrame) {
+          return Stack(
+            children: [
+              widget.child,
+              if (isDesktopViewport)
+                Positioned(
+                  right: 16,
+                  bottom: 84,
+                  child: FloatingActionButton.extended(
+                    heroTag: 'toggle_phone_frame_btn',
+                    backgroundColor: const Color(0xFF0F172A),
+                    foregroundColor: Colors.white,
+                    onPressed: () => setState(() => _usePhoneFrame = true),
+                    icon: const Icon(Icons.smartphone_rounded, size: 18),
+                    label: const Text('Khung Điện Thoại'),
+                  ),
+                ),
+            ],
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: const Color(0xFF0F172A),
+          body: Stack(
+            children: [
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Container(
+                    width: 412,
+                    height: (constraints.maxHeight - 32).clamp(620.0, 880.0),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(44),
+                      border: Border.all(
+                        color: const Color(0xFF475569),
+                        width: 6,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black54,
+                          blurRadius: 36,
+                          offset: Offset(0, 18),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(34),
+                      child: Column(
+                        children: [
+                          // Thanh Status Bar của Điện thoại
+                          Container(
+                            height: 28,
+                            color: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  '09:41',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                                Container(
+                                  width: 76,
+                                  height: 14,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0F172A),
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                ),
+                                Row(
+                                  children: const [
+                                    Icon(
+                                      Icons.signal_cellular_alt_rounded,
+                                      size: 14,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                    SizedBox(width: 4),
+                                    Icon(
+                                      Icons.wifi_rounded,
+                                      size: 14,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                    SizedBox(width: 4),
+                                    Icon(
+                                      Icons.battery_full_rounded,
+                                      size: 15,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: MediaQuery(
+                              data: MediaQuery.of(context).copyWith(
+                                size: Size(
+                                  396,
+                                  (constraints.maxHeight - 76)
+                                      .clamp(560.0, 820.0),
+                                ),
+                              ),
+                              child: Navigator(
+                                onGenerateRoute: (_) => MaterialPageRoute(
+                                  builder: (_) => widget.child,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 16,
+                right: 20,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E293B),
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () => setState(() => _usePhoneFrame = false),
+                  icon: const Icon(Icons.fullscreen_rounded, size: 18),
+                  label: const Text('Mở Rộng Toàn Màn Hình'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Khung điều hướng 5 Tab dưới cùng theo đúng thiết kế Mục 5.2:
+/// 1. Khám phá  |  2. Bản đồ  |  3. Lịch trình  |  4. Ẩm thực  |  5. Cá nhân
+class MainNavigationShell extends StatelessWidget {
+  final TripFlowAppState appState;
+
+  const MainNavigationShell({super.key, required this.appState});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: appState,
+      builder: (context, _) {
+        final screens = [
+          HomeScreen(appState: appState),
+          MapCorridorScreen(appState: appState),
+          ItineraryScreen(appState: appState),
+          LocalFoodsScreen(appState: appState),
+          ProfileScreen(appState: appState),
+        ];
+
+        return Scaffold(
+          body: IndexedStack(
+            index: appState.currentTabIndex,
+            children: screens,
+          ),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: appState.currentTabIndex,
+            onDestinationSelected: (index) {
+              appState.setTabIndex(index);
+            },
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.explore_outlined),
+                selectedIcon: Icon(Icons.explore_rounded),
+                label: 'Khám phá',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.map_outlined),
+                selectedIcon: Icon(Icons.map_rounded),
+                label: 'Bản đồ',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.event_note_outlined),
+                selectedIcon: Icon(Icons.event_note_rounded),
+                label: 'Lịch trình',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.ramen_dining_outlined),
+                selectedIcon: Icon(Icons.ramen_dining_rounded),
+                label: 'Ẩm thực',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.person_outline_rounded),
+                selectedIcon: Icon(Icons.person_rounded),
+                label: 'Cá nhân',
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}

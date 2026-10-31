@@ -1,0 +1,599 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TripFlow - Vietnam Travel Discovery API",
+    "version": "2.0.0",
+    "description": "Backend RESTful API cho hệ thống TripFlow (Travel Discovery) — Kiến trúc tối ưu sử dụng SQLModel, PostgreSQL 15 thuần (B-Tree Index lat,lng), Goong Maps API, Cloudinary CDN, Bounding Box + Shapely Corridor Search, phân quyền RBAC (Role & Permission) và Rate Limiting (slowapi 10/minute)."
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["Root & Health"],
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["Root & Health"],
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/contract/swagger.json": {
+      "get": {
+        "tags": ["API Contract"],
+        "summary": "Get Swagger Contract",
+        "operationId": "get_swagger_contract_api_v1_contract_swagger_json_get",
+        "responses": { "200": { "description": "OpenAPI 3.1 Contract JSON" } }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["1. Auth & Tài khoản"],
+        "summary": "Login",
+        "description": "Đăng nhập nhận JWT chứa role và mảng permissions[] từ bảng Role & Permission.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TokenResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": ["1. Auth & Tài khoản"],
+        "summary": "Register",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegisterRequest" }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": ["1. Auth & Tài khoản"],
+        "summary": "Get Me",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/provinces": {
+      "get": {
+        "tags": ["2. Tỉnh / Thành phố (Provinces)"],
+        "summary": "List Provinces",
+        "description": "Lấy danh sách 10 tỉnh/thành phố du lịch Việt Nam kèm số lượng địa điểm, món ăn và nhà hàng. Hỗ trợ lọc theo vùng miền (?region=...) và tìm kiếm từ khóa (?q=...).",
+        "parameters": [
+          {
+            "name": "active_only",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean", "default": true },
+            "description": "Chỉ lấy các tỉnh/thành đang hiển thị"
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Lọc theo vùng miền: Bắc Bộ, Trung Bộ, Tây Nguyên, Nam Bộ"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Tìm kiếm theo tên tỉnh, mã tỉnh hoặc mô tả"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ProvinceOut" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/provinces/regions/summary": {
+      "get": {
+        "tags": ["2. Tỉnh / Thành phố (Provinces)"],
+        "summary": "Get Regions Summary",
+        "description": "Thống kê số lượng tỉnh/thành, địa điểm, đặc sản và nhà hàng theo 4 vùng miền Việt Nam (Bắc Bộ, Trung Bộ, Tây Nguyên, Nam Bộ).",
+        "parameters": [
+          {
+            "name": "active_only",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean", "default": true },
+            "description": "Chỉ thống kê các tỉnh/thành đang hoạt động"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/RegionSummaryOut" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/provinces/categories": {
+      "get": {
+        "tags": ["2. Tỉnh / Thành phố (Provinces)"],
+        "summary": "List Categories",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/provinces/{province_id}": {
+      "get": {
+        "tags": ["2. Tỉnh / Thành phố (Provinces)"],
+        "summary": "Get Province Detail",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/destinations": {
+      "get": {
+        "tags": ["3. Địa điểm du lịch (Destinations)"],
+        "summary": "List Destinations (kèm Cloudinary thumbnail_url c_fill,w_400,h_300,q_auto,f_auto)",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/destinations/{destination_id}": {
+      "get": {
+        "tags": ["3. Địa điểm du lịch (Destinations)"],
+        "summary": "Get Destination Detail (kèm Cloudinary detail_image_url w_1200,q_auto,f_auto)",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/destinations/{destination_id}/report": {
+      "post": {
+        "tags": ["3. Địa điểm du lịch (Destinations)"],
+        "summary": "Report Destination Issue",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/v1/local-foods": {
+      "get": {
+        "tags": ["4. Đặc sản & Món ăn địa phương (Local Foods)"],
+        "summary": "List Local Foods",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/local-foods/{food_id}": {
+      "get": {
+        "tags": ["4. Đặc sản & Món ăn địa phương (Local Foods)"],
+        "summary": "Get Local Food Detail",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/restaurants": {
+      "get": {
+        "tags": ["5. Nhà hàng & Tìm kiếm dọc lộ trình (Corridor Search)"],
+        "summary": "List Restaurants",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/restaurants/corridor-search": {
+      "post": {
+        "tags": ["5. Nhà hàng & Tìm kiếm dọc lộ trình (Corridor Search)"],
+        "summary": "Search Restaurants On Route Corridor (Goong Polyline + Bounding Box SQL + Shapely + slowapi 10/minute)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RouteCorridorRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RouteCorridorResponse" }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests (Exceeds 10 requests/minute per IP)"
+          }
+        }
+      }
+    },
+    "/api/v1/restaurants/on-route": {
+      "get": {
+        "tags": ["5. Nhà hàng & Tìm kiếm dọc lộ trình (Corridor Search)"],
+        "summary": "Get Restaurants On Route Query",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/restaurants/{restaurant_id}": {
+      "get": {
+        "tags": ["5. Nhà hàng & Tìm kiếm dọc lộ trình (Corridor Search)"],
+        "summary": "Get Restaurant Detail",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/itineraries": {
+      "get": {
+        "tags": ["6. Lịch trình tham quan (Itineraries)"],
+        "summary": "List Itineraries",
+        "responses": { "200": { "description": "Successful Response" } }
+      },
+      "post": {
+        "tags": ["6. Lịch trình tham quan (Itineraries)"],
+        "summary": "Create Itinerary",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/v1/itineraries/sync": {
+      "post": {
+        "tags": ["6. Lịch trình tham quan (Itineraries)"],
+        "summary": "Sync Offline Hive Itinerary To Server",
+        "responses": { "200": { "description": "Synced Itinerary" } }
+      }
+    },
+    "/api/v1/itineraries/{itinerary_id}": {
+      "get": {
+        "tags": ["6. Lịch trình tham quan (Itineraries)"],
+        "summary": "Get Itinerary Detail",
+        "responses": { "200": { "description": "Successful Response" } }
+      },
+      "put": {
+        "tags": ["6. Lịch trình tham quan (Itineraries)"],
+        "summary": "Update Itinerary",
+        "responses": { "200": { "description": "Successful Response" } }
+      },
+      "delete": {
+        "tags": ["6. Lịch trình tham quan (Itineraries)"],
+        "summary": "Delete Itinerary",
+        "responses": { "204": { "description": "No Content" } }
+      }
+    },
+    "/api/v1/itineraries/{itinerary_id}/stops": {
+      "post": {
+        "tags": ["6. Lịch trình tham quan (Itineraries)"],
+        "summary": "Add Stop Endpoint",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/itineraries/{itinerary_id}/smart-meal-stops": {
+      "post": {
+        "tags": ["6. Lịch trình tham quan (Itineraries)"],
+        "summary": "Suggest & Insert Smart Meal Stop Along Route Corridor",
+        "description": "Tự động phân tích khoảng cách và tuyến đường giữa các điểm tham quan sáng và chiều, tính điểm Smart Food Corridor Score (SFCS) và chèn điểm dừng ăn uống tối ưu vào lịch trình.",
+        "parameters": [
+          {
+            "name": "itinerary_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SmartMealStopRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SmartMealStopResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/favorites": {
+      "get": {
+        "tags": ["7. Danh sách Yêu thích (Favorites)"],
+        "summary": "List Favorites",
+        "responses": { "200": { "description": "Successful Response" } }
+      },
+      "post": {
+        "tags": ["7. Danh sách Yêu thích (Favorites)"],
+        "summary": "Toggle Favorite",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/admin/dashboard": {
+      "get": {
+        "tags": ["8. Quản trị Hệ thống (Website Admin & RBAC)"],
+        "summary": "Get Admin Dashboard",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/admin/upload-image": {
+      "post": {
+        "tags": ["8. Quản trị Hệ thống (Website Admin & RBAC)"],
+        "summary": "Upload Image To Cloudinary CDN",
+        "responses": { "200": { "description": "Cloudinary Upload Response" } }
+      }
+    },
+    "/api/v1/admin/roles-permissions": {
+      "get": {
+        "tags": ["8. Quản trị Hệ thống (Website Admin & RBAC)"],
+        "summary": "Get Roles And Permissions Tables",
+        "responses": { "200": { "description": "Roles & Permissions" } }
+      }
+    },
+    "/api/v1/admin/destinations": {
+      "get": {
+        "tags": ["8. Quản trị Hệ thống (Website Admin & RBAC)"],
+        "summary": "Admin List Destinations",
+        "responses": { "200": { "description": "Successful Response" } }
+      },
+      "post": {
+        "tags": ["8. Quản trị Hệ thống (Website Admin & RBAC)"],
+        "summary": "Admin Create Destination",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/v1/admin/restaurants": {
+      "get": {
+        "tags": ["8. Quản trị Hệ thống (Website Admin & RBAC)"],
+        "summary": "Admin List Restaurants",
+        "responses": { "200": { "description": "Successful Response" } }
+      },
+      "post": {
+        "tags": ["8. Quản trị Hệ thống (Website Admin & RBAC)"],
+        "summary": "Admin Create Restaurant",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/v1/admin/audit-logs": {
+      "get": {
+        "tags": ["8. Quản trị Hệ thống (Website Admin & RBAC)"],
+        "summary": "Admin List Audit Logs",
+        "responses": { "200": { "description": "Successful Response" } }
+      }
+    },
+    "/api/v1/admin/crawl": {
+      "get": {
+        "tags": ["9. AI Data Ingestion & Google Maps Crawler (Admin)"],
+        "summary": "List Crawl Jobs",
+        "responses": { "200": { "description": "Successful Response" } }
+      },
+      "post": {
+        "tags": ["9. AI Data Ingestion & Google Maps Crawler (Admin)"],
+        "summary": "Trigger Google Maps Crawl (BackgroundTasks)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CrawlTriggerRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrawlTriggerResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/crawl/{job_id}": {
+      "get": {
+        "tags": ["9. AI Data Ingestion & Google Maps Crawler (Admin)"],
+        "summary": "Get Crawl Job Status",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrawlJobOut" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CrawlTriggerRequest": {
+        "type": "object",
+        "properties": {
+          "keyword": { "type": "string", "default": "quán ăn ngon" },
+          "lat": { "type": "number", "default": 10.762622 },
+          "lng": { "type": "number", "default": 106.660172 },
+          "province_id": { "type": "integer", "default": 1 }
+        }
+      },
+      "CrawlTriggerResponse": {
+        "type": "object",
+        "properties": {
+          "job_id": { "type": "integer" },
+          "status": { "type": "string", "default": "PENDING" },
+          "keyword": { "type": "string" },
+          "lat": { "type": "number" },
+          "lng": { "type": "number" },
+          "message": { "type": "string" }
+        }
+      },
+      "CrawlJobOut": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "job_id": { "type": "integer" },
+          "keyword": { "type": "string" },
+          "lat": { "type": "number" },
+          "lng": { "type": "number" },
+          "status": { "type": "string" },
+          "total_scraped": { "type": "integer" },
+          "inserted_count": { "type": "integer" },
+          "duplicate_count": { "type": "integer" },
+          "error_message": { "type": "string" },
+          "created_at": { "type": "string" },
+          "completed_at": { "type": "string" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "required": ["email", "full_name", "password"],
+        "properties": {
+          "email": { "type": "string" },
+          "full_name": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "required": ["access_token", "user"],
+        "properties": {
+          "access_token": { "type": "string" },
+          "token_type": { "type": "string", "default": "bearer" },
+          "user": { "type": "object" }
+        }
+      },
+      "RouteCorridorRequest": {
+        "type": "object",
+        "required": ["origin_lat", "origin_lng", "destination_lat", "destination_lng"],
+        "properties": {
+          "province_id": { "type": "integer", "default": 1 },
+          "origin_name": { "type": "string" },
+          "origin_lat": { "type": "number" },
+          "origin_lng": { "type": "number" },
+          "destination_name": { "type": "string" },
+          "destination_lat": { "type": "number" },
+          "destination_lng": { "type": "number" },
+          "corridor_radius_km": { "type": "number", "default": 2.0 },
+          "cuisine_filter": { "type": "string" }
+        }
+      },
+      "RouteCorridorResponse": {
+        "type": "object",
+        "properties": {
+          "origin_name": { "type": "string" },
+          "destination_name": { "type": "string" },
+          "total_route_distance_km": { "type": "number" },
+          "corridor_radius_km": { "type": "number" },
+          "encoded_polyline": { "type": "string" },
+          "maps_provider": { "type": "string" },
+          "bounding_box": { "type": "object" },
+          "candidates_in_bbox_count": { "type": "integer" },
+          "shapely_engine_used": { "type": "boolean" },
+          "polyline": { "type": "array", "items": { "type": "object" } },
+          "results_count": { "type": "integer" },
+          "restaurants": { "type": "array", "items": { "type": "object" } }
+        }
+      },
+      "ProvinceOut": {
+        "type": "object",
+        "required": ["id", "code", "name", "region", "description", "center_lat", "center_lng", "is_active"],
+        "properties": {
+          "id": { "type": "integer" },
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "region": { "type": "string" },
+          "description": { "type": "string" },
+          "hero_image": { "type": "string" },
+          "center_lat": { "type": "number" },
+          "center_lng": { "type": "number" },
+          "is_active": { "type": "boolean" },
+          "data_source": { "type": "string" },
+          "destination_count": { "type": "integer", "default": 0 },
+          "food_count": { "type": "integer", "default": 0 },
+          "restaurant_count": { "type": "integer", "default": 0 }
+        }
+      },
+      "RegionSummaryOut": {
+        "type": "object",
+        "required": ["region", "province_count", "destination_count", "food_count", "restaurant_count", "provinces"],
+        "properties": {
+          "region": { "type": "string" },
+          "province_count": { "type": "integer" },
+          "destination_count": { "type": "integer" },
+          "food_count": { "type": "integer" },
+          "restaurant_count": { "type": "integer" },
+          "provinces": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "ReviewItem": {
+        "type": "object",
+        "required": ["author", "rating", "text"],
+        "properties": {
+          "author": { "type": "string" },
+          "rating": { "type": "number" },
+          "text": { "type": "string" },
+          "relative_time": { "type": "string" }
+        }
+      },
+      "SmartMealStopRequest": {
+        "type": "object",
+        "properties": {
+          "day_number": { "type": "integer", "default": 1 },
+          "preferred_time": { "type": "string", "default": "12:00" },
+          "corridor_radius_km": { "type": "number", "default": 2.0 },
+          "cuisine_filter": { "type": "string" }
+        }
+      },
+      "SmartMealStopResponse": {
+        "type": "object",
+        "required": ["itinerary_id", "day_number", "inserted_stop", "recommended_restaurant", "smart_score", "reasoning"],
+        "properties": {
+          "itinerary_id": { "type": "integer" },
+          "day_number": { "type": "integer" },
+          "inserted_stop": { "type": "object" },
+          "recommended_restaurant": { "type": "object" },
+          "smart_score": { "type": "number" },
+          "reasoning": { "type": "string" }
+        }
+      }
+    }
+  }
+}

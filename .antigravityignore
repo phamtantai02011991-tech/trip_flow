@@ -1,0 +1,125 @@
+# ==========================================
+# 1. IDE, OS & System Metadata
+# ==========================================
+.git/
+.idea/
+.vscode/
+*.iml
+trip_flow.iml
+.metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.log
+*.tmp
+*.bak
+*.swp
+
+# ==========================================
+# 2. Dart & Flutter Build / Cache / Ephemeral
+# ==========================================
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+build/
+coverage/
+**/ephemeral/
+
+# Bỏ qua các thư mục build & native boilerplate nặng không cần thiết khi code Dart/UI
+android/.gradle/
+android/.kotlin/
+android/app/build/
+android/gradle/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/AppFrameworkInfo.plist
+ios/Runner.xcodeproj/
+ios/Runner.xcworkspace/
+linux/
+macos/
+windows/
+web/icons/
+
+# ==========================================
+# 3. Backend (Python / FastAPI) Cache, DB & Env
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+ENV/
+
+# Bỏ qua Database local, SQLite WAL & Hive Offline Cache sinh ra khi chạy/test
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+*.hive
+*.lock
+
+# Bảo mật file .env thật nhưng giữ lại .env.example để Agent đọc cấu hình mẫu
+.env
+.env.*
+!.env.example
+
+# File OpenAPI tự động sinh (dài hàng nghìn dòng JSON, đã có script export_swagger.py)
+backend/swagger.json
+
+# ==========================================
+# 4. Admin Web (React / Vite / Node) Cache & Lockfiles
+# ==========================================
+node_modules/
+dist/
+dist-ssr/
+.vite/
+.next/
+.npm/
+.eslintcache
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ==========================================
+# 5. Heavy Binary, Media & Document Files
+# ==========================================
+*.pdf
+trip_flow.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.ico
+*.svg
+*.mp4
+*.mov
+*.mp3
+*.zip
+*.tar.gz
+*.ttf
+*.otf
+*.woff
+*.woff2
+
+# ==========================================
+# 6. Agent Workspace Temp / Logs
+# (Giữ lại .agents/workspace/*.md để 3 Agent đọc plan/report)
+# ==========================================
+.agents/workspace/*.log
+.agents/workspace/tmp/
+
+.agents/workspace/tmp/

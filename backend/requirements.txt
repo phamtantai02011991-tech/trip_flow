@@ -1,0 +1,19 @@
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+sqlmodel>=0.0.16
+sqlalchemy>=2.0.25
+pydantic>=2.6.0
+pydantic-settings>=2.1.0
+shapely>=2.0.2
+slowapi>=0.1.9
+cloudinary>=1.39.0
+httpx>=0.26.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.9
+playwright>=1.42.0
+beautifulsoup4>=4.12.3
+alembic>=1.13.1
+pytest>=8.0.0
+# Optional PostgreSQL driver for production deployment (postgres:15-alpine):
+# psycopg2-binary>=2.9.9

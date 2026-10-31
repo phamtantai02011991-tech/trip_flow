@@ -1,0 +1,33 @@
+name: trip_flow
+description: "TripFlow - Ứng dụng Khám phá Du lịch, Đặc sản & Tìm nhà hàng dọc lộ trình Việt Nam."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  # Quản lý State tập trung, an toàn compile-time (Mục 2.2 Kế hoạch tối ưu)
+  flutter_riverpod: ^2.5.1
+  # HTTP Client mạnh mẽ với Interceptor, Timeout & Error Handling
+  dio: ^5.4.3+1
+  # Lưu trữ cục bộ NoSQL siêu tốc cho kiến trúc Offline-first
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  # Bản đồ tương tác kết hợp Goong Maps Tiles & Polyline
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.1
+  shared_preferences: ^2.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
