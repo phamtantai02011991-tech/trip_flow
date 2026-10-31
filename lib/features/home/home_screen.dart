@@ -3,23 +3,25 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/app_state.dart';
 import '../../core/utils/mock_data.dart';
 import '../../core/widgets/common_widgets.dart';
-import '../../core/widgets/travel_destination_card.dart';
 import '../destinations/destination_detail_screen.dart';
 import '../destinations/destinations_screen.dart';
 import '../favorites/favorites_screen.dart';
 import '../itinerary/screens/trip_planner_wizard_screen.dart';
+import '../maps/map_corridor_screen.dart';
 import '../provinces/provinces_screen.dart';
 import '../restaurants/restaurant_detail_screen.dart';
+import 'widgets/hero_trip_carousel.dart';
+import 'widgets/popular_destination_card.dart';
 
-/// Tab 1: Màn hình Trang chủ Khám phá (HomeScreen - Mục 5.1.1 & Mục 5.2).
-/// Gồm:
-/// - Chọn tỉnh/thành phố (Mặc định: TP. Hồ Chí Minh) + Nút mở Danh sách Yêu thích
-/// - Tìm kiếm nhanh địa điểm
-/// - Thanh danh mục địa điểm
-/// - Danh sách Địa điểm nổi bật
-/// - Thẻ điều hướng nhanh tới Tìm nhà hàng dọc lộ trình (Corridor Search)
-/// - Gợi ý Đặc sản & Nhà hàng địa phương
-/// - Gợi ý Lịch trình mẫu (Áp dụng 1 chạm).
+/// Tab 1: Màn hình Trang Chủ Khám Phá (HomeScreen)
+/// Thiết kế 100% chuẩn theo Dribbble Reference (Màn hình 1):
+/// - Header lớn phong cách Editorial: "Xin chào, Du khách 👋" + Tiêu đề đậm "Đi Đâu Tiếp Theo?"
+/// - Huy hiệu chọn Tỉnh/Thành phố thông minh + Nút Tìm kiếm & Yêu thích
+/// - Thanh tìm kiếm tinh tế + Chips danh mục lướt ngang
+/// - 3D Card Deck Carousel hiển thị Chuyến đi nổi bật với nút ↗ và Pill kính mờ
+/// - Danh sách lướt ngang "Điểm Đến Thịnh Hành" với ảnh tràn viền nghệ thuật & huy hiệu ⭐
+/// - Khu vực "Ẩm Thực Đặc Sản Địa Phương" dạng thẻ ảnh ngang bắt mắt
+/// - Thẻ gọi nhanh "Lập Lịch Trình Dọc Tuyến (Corridor Search)"
 class HomeScreen extends StatelessWidget {
   final TripFlowAppState appState;
 
@@ -31,624 +33,633 @@ class HomeScreen extends StatelessWidget {
       animation: appState,
       builder: (context, _) {
         final currentProv = appState.selectedProvince;
-        final featured = appState.featuredDestinations.isNotEmpty
+        final featuredDestinations = appState.featuredDestinations.isNotEmpty
             ? appState.featuredDestinations
             : appState.destinationsForSelectedProvince;
-        final foods = appState.localFoodsForSelectedProvince.take(3).toList();
-        final templates = appState.sampleItinerariesForSelectedProvince;
+        final foods = appState.localFoodsForSelectedProvince;
 
         return Scaffold(
-          appBar: AppBar(
-            title: InkWell(
-              borderRadius: BorderRadius.circular(10),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ProvincesScreen(appState: appState),
-                  ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.location_on_rounded,
-                      color: AppTheme.primaryTeal,
-                      size: 20,
+          backgroundColor: const Color(0xFFF8FAFC),
+          body: SafeArea(
+            bottom: false,
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 90),
+              children: [
+                // 1. Cảnh báo Offline / Vị trí nếu có
+                if (appState.isOfflineSimulated)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: OfflineModeBanner(
+                      onRetryOnline: () {
+                        appState.toggleOfflineSimulation(false);
+                        appState.syncFromBackend();
+                      },
                     ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        currentProv.name,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              IconButton(
-                tooltip: 'Tìm kiếm địa điểm',
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => DestinationsScreen(appState: appState),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.search_rounded),
-              ),
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  IconButton(
-                    tooltip: 'Danh sách yêu thích',
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => FavoritesScreen(appState: appState),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.favorite_border_rounded),
                   ),
-                  if (appState.totalFavoritesCount > 0)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          '${appState.totalFavoritesCount}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
-          body: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              // Cảnh báo Offline / Quyền vị trí nếu đang bật giả lập (TC-09)
-              if (appState.isOfflineSimulated)
-                OfflineModeBanner(
-                  onRetryOnline: () {
-                    appState.toggleOfflineSimulation(false);
-                    appState.syncFromBackend();
-                  },
-                ),
-              if (appState.locationPermission == LocationPermissionState.denied)
-                LocationPermissionNotice(
-                  onGrantPermission: () {
-                    appState.setLocationPermission(
-                      LocationPermissionState.granted,
-                    );
-                  },
-                ),
-
-              // Thanh tìm kiếm nhanh
-              InkWell(
-                borderRadius: BorderRadius.circular(14),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => DestinationsScreen(appState: appState),
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 13,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFCBD5E1)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.search_rounded,
-                        color: Color(0xFF64748B),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Tìm địa điểm, món ăn, nhà hàng tại ${currentProv.name}...',
-                          style: const TextStyle(
-                            color: Color(0xFF64748B),
-                            fontSize: 13.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Danh mục nhanh
-              SizedBox(
-                height: 38,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: MockDataRepository.categories.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final cat = MockDataRepository.categories[index];
-                    return ActionChip(
-                      label: Text(cat['name']!),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => DestinationsScreen(
-                              appState: appState,
-                              initialCategory: cat['code']!,
-                            ),
-                          ),
+                if (appState.locationPermission ==
+                    LocationPermissionState.denied)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: LocationPermissionNotice(
+                      onGrantPermission: () {
+                        appState.setLocationPermission(
+                          LocationPermissionState.granted,
                         );
                       },
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 18),
-
-              // Hero Banner: Chuyến Đi Tiếp Theo? • Lập Lịch Trình Thông Minh (Theo phong cách Ảnh 1)
-              Container(
-                height: 220,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0F172A).withValues(alpha: 0.15),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
                     ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Stack(
+                  ),
+
+                const SizedBox(height: 12),
+
+                // 2. HEADER EDITORIAL (Theo chuẩn Dribbble Ảnh 1)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Ảnh nền phong cảnh danh thắng
-                      Positioned.fill(
-                        child: Image.network(
-                          currentProv.heroImage,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Color(0xFF0F766E), Color(0xFF1E293B)],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Lớp chuyển màu mờ nghệ thuật
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.black.withValues(alpha: 0.25),
-                                Colors.black.withValues(alpha: 0.75),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Nội dung Hero Banner
-                      Padding(
-                        padding: const EdgeInsets.all(18),
+                      // Lời chào & Tiêu đề lớn
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.25),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: Colors.white30),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.auto_awesome_rounded, color: Color(0xFF5EEAD4), size: 14),
-                                      SizedBox(width: 5),
-                                      Text(
-                                        'Trình Lập Lịch Trình Thông Minh',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.arrow_outward_rounded,
-                                    size: 16,
-                                    color: Color(0xFF0F172A),
-                                  ),
-                                ),
-                              ],
+                            const Text(
+                              'Xin chào, Du khách 👋',
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF64748B),
+                              ),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Chuyến Đi Tiếp Theo Tại ${currentProv.name}?',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 19,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -0.3,
+                            const SizedBox(height: 3),
+                            const Text(
+                              'Đi Đâu Tiếp Theo?',
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF0F172A),
+                                letterSpacing: -0.6,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+
+                            // Pill Chọn Tỉnh/Thành phố
+                            InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ProvincesScreen(appState: appState),
                                   ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
                                 ),
-                                const SizedBox(height: 5),
-                                const Text(
-                                  'Nhập điểm đi, điểm đến & sở thích. Tự động tính tuyến đường, điểm dừng chân, quán ăn và chi phí.',
-                                  style: TextStyle(
-                                    color: Color(0xFFE2E8F0),
-                                    fontSize: 12,
-                                    height: 1.35,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE2E8F0),
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                                const SizedBox(height: 12),
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: const Color(0xFF0F172A),
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    elevation: 0,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => TripPlannerWizardScreen(appState: appState),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.location_on_rounded,
+                                      size: 14,
+                                      color: Color(0xFFFF4B55),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      currentProv.name,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF1E293B),
                                       ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.explore_rounded, color: AppTheme.primaryTeal, size: 18),
-                                  label: const Text(
-                                    'Bắt Đầu Lập Lộ Trình Ngay',
-                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-                                  ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      size: 16,
+                                      color: Color(0xFF475569),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
 
-              const SizedBox(height: 22),
-
-              // Khu vực 1: Địa điểm nổi bật
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Địa điểm nổi bật • ${currentProv.name}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => DestinationsScreen(appState: appState),
-                        ),
-                      );
-                    },
-                    child: const Text('Xem tất cả'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-
-              ...featured.take(4).map((dest) {
-                return TravelDestinationCard(
-                  destination: dest,
-                  appState: appState,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => DestinationDetailScreen(
-                          destination: dest,
-                          appState: appState,
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }),
-
-              const SizedBox(height: 10),
-
-              // Khu vực 2: CTA Tìm nhà hàng trên lộ trình (Corridor Search - Mục 9)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0D9488), Color(0xFF115E59)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: const [
-                        Icon(Icons.route_rounded, color: Colors.white),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Tìm Nhà Hàng Dọc Lộ Trình Di Chuyển',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Bạn đang di chuyển tham quan tại ${currentProv.name}? Tìm ngay quán ăn nằm trong hành lang dọc tuyến đường đi mà không cần vòng xa.',
-                      style: const TextStyle(color: Color(0xFFCCFBF1), fontSize: 12.5),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppTheme.primaryDark,
-                      ),
-                      onPressed: () {
-                        appState.setTabIndex(1); // Chuyển sang Tab 2: Bản đồ
-                      },
-                      icon: const Icon(Icons.map_outlined, size: 18),
-                      label: const Text('Mở Bản Đồ & Tìm Dọc Tuyến Đường'),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 22),
-
-              // Khu vực 3: Đặc sản & Ẩm thực địa phương
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Đặc sản & Ẩm thực • ${currentProv.name}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      appState.setTabIndex(3); // Chuyển sang Tab 4: Ẩm thực
-                    },
-                    child: const Text('Khám phá Ẩm thực'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              ...foods.map((food) {
-                final recRests = appState.allRestaurants
-                    .where((r) => food.recommendedRestaurantIds.contains(r.id))
-                    .toList();
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(12),
-                    onTap: () => appState.setTabIndex(3),
-                    leading: CircleAvatar(
-                      radius: 24,
-                      backgroundColor: const Color(0xFFFEF3C7),
-                      child: const Icon(
-                        Icons.ramen_dining_rounded,
-                        color: Color(0xFFD97706),
-                      ),
-                    ),
-                    title: Text(
-                      food.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                      ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 3),
-                        Text(
-                          '${food.avgPriceRange} • ${food.bestSeasonOrTime}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFFB45309),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        if (recRests.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Wrap(
-                            spacing: 6,
-                            children: recRests.take(2).map((r) {
-                              return ActionChip(
-                                visualDensity: VisualDensity.compact,
-                                label: Text(
-                                  r.name,
-                                  style: const TextStyle(fontSize: 11),
+                      // Nhóm Nút Tác vụ (Yêu thích & Chuông Thông báo)
+                      Row(
+                        children: [
+                          // Nút Danh sách Yêu thích
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              IconButton(
+                                tooltip: 'Yêu thích',
+                                style: IconButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  elevation: 1,
                                 ),
                                 onPressed: () {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
-                                      builder: (_) => RestaurantDetailScreen(
-                                        restaurant: r,
-                                        appState: appState,
-                                      ),
+                                      builder: (_) =>
+                                          FavoritesScreen(appState: appState),
                                     ),
                                   );
                                 },
-                              );
-                            }).toList(),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                );
-              }),
-
-              const SizedBox(height: 18),
-
-              // Khu vực 4: Lịch trình mẫu gợi ý
-              Text(
-                'Lịch trình mẫu gợi ý • ${currentProv.name}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 10),
-              ...templates.map((tpl) {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFEF3C7),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              '${tpl.totalDays} Ngày • ${tpl.stops.length} Điểm dừng',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF92400E),
+                                icon: const Icon(
+                                  Icons.favorite_rounded,
+                                  color: Color(0xFFFF4B55),
+                                  size: 20,
+                                ),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        tpl.title,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        tpl.description,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF64748B),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              appState.applyTemplateToMyItinerary(tpl);
-                              appState.setTabIndex(2); // Mở Tab Lịch trình
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Đã áp dụng mẫu "${tpl.title}" vào lịch trình của bạn!',
+                              if (appState.totalFavoritesCount > 0)
+                                Positioned(
+                                  right: 4,
+                                  top: 4,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFF4B55),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: Text(
+                                      '${appState.totalFavoritesCount}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
                                   ),
-                                  backgroundColor: AppTheme.primaryTeal,
+                                ),
+                            ],
+                          ),
+                          const SizedBox(width: 8),
+
+                          // Nút Chuông thông báo
+                          IconButton(
+                            tooltip: 'Thông báo',
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              elevation: 1,
+                            ),
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Bạn có 3 gợi ý địa điểm mới nhất từ ban biên tập!',
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
                                 ),
                               );
                             },
-                            icon: const Icon(Icons.copy_all_rounded, size: 16),
-                            label: const Text('Áp dụng Lịch trình mẫu này'),
+                            icon: const Icon(
+                              Icons.notifications_none_rounded,
+                              color: Color(0xFF0F172A),
+                              size: 20,
+                            ),
                           ),
                         ],
                       ),
                     ],
                   ),
-                );
-              }),
-            ],
+                ),
+
+                const SizedBox(height: 18),
+
+                // 3. THANH TÌM KIẾM NHANH TINH TẾ
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              DestinationsScreen(appState: appState),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFE2E8F0),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.search_rounded,
+                            color: Color(0xFF64748B),
+                            size: 22,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Tìm địa điểm, danh thắng, món ngon tại ${currentProv.name}...',
+                              style: const TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 13.5,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.tune_rounded,
+                              color: Color(0xFF475569),
+                              size: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // 4. DANH MỤC NHANH TRƯỢT NGANG
+                SizedBox(
+                  height: 38,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: MockDataRepository.categories.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final cat = MockDataRepository.categories[index];
+                      return ActionChip(
+                        elevation: 0,
+                        backgroundColor: Colors.white,
+                        side: const BorderSide(
+                          color: Color(0xFFE2E8F0),
+                          width: 1,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        label: Text(
+                          cat['name']!,
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF334155),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => DestinationsScreen(
+                                appState: appState,
+                                initialCategory: cat['code']!,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // 5. HERO 3D CARD DECK CAROUSEL (Chuẩn theo Ảnh 1 Dribbble)
+                HeroTripCarousel(appState: appState),
+
+                const SizedBox(height: 26),
+
+                // 6. PHẦN "ĐIỂM ĐẾN THỊNH HÀNH" (POPULAR DESTINATION)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Điểm Đến Thịnh Hành',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF0F172A),
+                          letterSpacing: -0.4,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  DestinationsScreen(appState: appState),
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFFFF4B55),
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text(
+                          'Xem tất cả',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                // DANH SÁCH THẺ ĐIỂM ĐẾN TRƯỢT NGANG (165 x 215px, bo góc 22px)
+                SizedBox(
+                  height: 220,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: featuredDestinations.length,
+                    itemBuilder: (context, index) {
+                      final dest = featuredDestinations[index];
+                      return PopularDestinationCard(
+                        destination: dest,
+                        appState: appState,
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 26),
+
+                // 7. PHẦN "ẨM THỰC ĐẶC SẢN NỔI TIẾNG"
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Ẩm Thực & Món Ngon',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF0F172A),
+                          letterSpacing: -0.4,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          appState.setTabIndex(3); // Chuyển sang Tab Ẩm thực
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFFFF4B55),
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text(
+                          'Xem tất cả',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                // DANH SÁCH THẺ ẨM THỰC TRƯỢT NGANG
+                SizedBox(
+                  height: 175,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: foods.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 14),
+                    itemBuilder: (context, index) {
+                      final food = foods[index];
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        onTap: () {
+                          final restaurants = appState
+                              .restaurantsForSelectedProvince
+                              .where((r) =>
+                                  food.recommendedRestaurantIds.contains(r.id))
+                              .toList();
+                          if (restaurants.isNotEmpty) {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => RestaurantDetailScreen(
+                                  restaurant: restaurants.first,
+                                  appState: appState,
+                                ),
+                              ),
+                            );
+                          } else {
+                            appState.setTabIndex(3);
+                          }
+                        },
+                        child: Container(
+                          width: 140,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(18),
+                                ),
+                                child: Image.network(
+                                  food.imageUrl,
+                                  width: 140,
+                                  height: 95,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 140,
+                                    height: 95,
+                                    color: const Color(0xFFCBD5E1),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      food.name,
+                                      style: const TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF0F172A),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      food.avgPriceRange,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFFFF4B55),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // 8. CARD TÍNH NĂNG "TÌM NHÀ HÀNG DỌC TUYẾN (CORRIDOR SEARCH)"
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0F172A).withValues(alpha: 0.25),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFF4B55),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Text(
+                                  'Tính năng Độc quyền',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Tìm Quán Ăn Dọc Tuyến',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Tự động quét bán kính 500m quanh lộ trình bạn đang đi',
+                                style: TextStyle(
+                                  color: Color(0xFF94A3B8),
+                                  fontSize: 11.5,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Material(
+                          color: const Color(0xFFFF4B55),
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => MapCorridorScreen(
+                                    appState: appState,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.all(14),
+                              child: Icon(
+                                Icons.near_me_rounded,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

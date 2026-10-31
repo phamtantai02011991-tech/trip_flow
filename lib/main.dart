@@ -227,45 +227,115 @@ class MainNavigationShell extends StatelessWidget {
         ];
 
         return Scaffold(
+          extendBody: true,
           body: IndexedStack(
             index: appState.currentTabIndex,
             children: screens,
           ),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: appState.currentTabIndex,
-            onDestinationSelected: (index) {
-              appState.setTabIndex(index);
-            },
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.explore_outlined),
-                selectedIcon: Icon(Icons.explore_rounded),
-                label: 'Khám phá',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.map_outlined),
-                selectedIcon: Icon(Icons.map_rounded),
-                label: 'Bản đồ',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.event_note_outlined),
-                selectedIcon: Icon(Icons.event_note_rounded),
-                label: 'Lịch trình',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.ramen_dining_outlined),
-                selectedIcon: Icon(Icons.ramen_dining_rounded),
-                label: 'Ẩm thực',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.person_outline_rounded),
-                selectedIcon: Icon(Icons.person_rounded),
-                label: 'Cá nhân',
-              ),
-            ],
-          ),
+          bottomNavigationBar: _buildFloatingBottomBar(context, appState),
         );
       },
+    );
+  }
+
+  Widget _buildFloatingBottomBar(
+      BuildContext context, TripFlowAppState appState) {
+    final navItems = [
+      (
+        icon: Icons.explore_outlined,
+        activeIcon: Icons.explore_rounded,
+        label: 'Khám phá'
+      ),
+      (
+        icon: Icons.map_outlined,
+        activeIcon: Icons.map_rounded,
+        label: 'Bản đồ'
+      ),
+      (
+        icon: Icons.event_note_outlined,
+        activeIcon: Icons.event_note_rounded,
+        label: 'Lịch trình'
+      ),
+      (
+        icon: Icons.ramen_dining_outlined,
+        activeIcon: Icons.ramen_dining_rounded,
+        label: 'Ẩm thực'
+      ),
+      (
+        icon: Icons.person_outline_rounded,
+        activeIcon: Icons.person_rounded,
+        label: 'Cá nhân'
+      ),
+    ];
+
+    return SafeArea(
+      child: Container(
+        height: 60,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0F172A).withValues(alpha: 0.12),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
+          border: Border.all(
+            color: const Color(0xFFE2E8F0),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: List.generate(navItems.length, (index) {
+            final item = navItems[index];
+            final isSelected = appState.currentTabIndex == index;
+
+            return GestureDetector(
+              onTap: () => appState.setTabIndex(index),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isSelected ? 12 : 8,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFFFF4B55)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isSelected ? item.activeIcon : item.icon,
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF64748B),
+                      size: 20,
+                    ),
+                    if (isSelected) ...[
+                      const SizedBox(width: 5),
+                      Text(
+                        item.label,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          }),
+        ),
+      ),
     );
   }
 }
