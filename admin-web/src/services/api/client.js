@@ -2,7 +2,7 @@ import axios from "axios";
 import { INITIAL_ADMIN_DATA } from "./mockAdminData";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
-const LOCAL_STORE_KEY = "tripflow_admin_fallback_store_v1";
+const LOCAL_STORE_KEY = "tripflow_admin_fallback_store_v2";
 const TOKEN_KEY = "tripflow_admin_jwt_token";
 
 const http = axios.create({
@@ -22,7 +22,10 @@ function getLocalStore() {
   try {
     const raw = localStorage.getItem(LOCAL_STORE_KEY);
     if (raw) {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.localFoods) && Array.isArray(parsed.destinations)) {
+        return parsed;
+      }
     }
   } catch (e) {
     console.warn("Could not parse local fallback store:", e);

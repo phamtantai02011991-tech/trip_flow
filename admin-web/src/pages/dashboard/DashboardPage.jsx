@@ -72,22 +72,22 @@ export default function DashboardPage({ snapshot, setActiveTab }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Tỉnh / Thành Phố"
-          value={dash.total_provinces ?? snapshot.provinces.length}
+          value={dash.total_provinces ?? (snapshot.provinces?.length || 0)}
           subtitle="TP. Hồ Chí Minh (Trọng tâm), Đà Nẵng, Hà Nội"
           icon={Map}
           colorClass="bg-teal-600"
         />
         <StatCard
           title="Địa điểm Du lịch"
-          value={dash.total_destinations ?? snapshot.destinations.length}
+          value={dash.total_destinations ?? (snapshot.destinations?.length || 0)}
           subtitle="Đã xác thực tọa độ GPS & bản quyền ảnh"
           icon={MapPin}
           colorClass="bg-blue-600"
         />
         <StatCard
           title="Đặc sản & Nhà hàng"
-          value={`${dash.total_local_foods ?? snapshot.localFoods.length} món • ${
-            dash.total_restaurants ?? snapshot.restaurants.length
+          value={`${dash.total_local_foods ?? (snapshot.localFoods?.length || 0)} món • ${
+            dash.total_restaurants ?? (snapshot.restaurants?.length || 0)
           } quán`}
           subtitle="Sẵn sàng cho tìm kiếm hành lang lộ trình"
           icon={UtensilsCrossed}

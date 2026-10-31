@@ -1319,6 +1319,285 @@ export const INITIAL_ADMIN_DATA = {
     },
   ],
 
+  localFoods: [
+    {
+      id: 1,
+      province_id: 1,
+      province_name: "TP. Hồ Chí Minh",
+      name: "Cơm tấm Sài Gòn (Sườn - Bì - Chả)",
+      description:
+        "Hạt gạo tấm dẻo thơm ăn kèm sườn cốt lết nướng than hồng vàng óng, bì heo trộn thính, chả trứng chưng, mỡ hành và nước mắm kẹo chua ngọt.",
+      story_origin:
+        "Bắt nguồn từ bữa ăn dân dã của người dân Nam Bộ và công nhân bến cảng Sài Gòn xưa, nay đã trở thành biểu tượng ẩm thực được vinh danh quốc tế.",
+      image_url:
+        "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Quanh năm (Ngon nhất vào bữa sáng 07:00 - 09:30 hoặc bữa trưa)",
+      avg_price_range: "45.000đ - 120.000đ",
+      recommended_restaurant_ids: [1, 8, 3, 4],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow • Ảnh CC0/Unsplash",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 2,
+      province_id: 1,
+      province_name: "TP. Hồ Chí Minh",
+      name: "Bánh mì Sài Gòn đặc ruột giòn rụm",
+      description:
+        "Ổ bánh mì nướng vỏ mỏng giòn tan, ruột mềm xốp, phết lớp bơ trứng gà béo ngậy và pate gan thơm lừng, kẹp đầy đặn thịt nguội, chả lụa, chà bông.",
+      story_origin:
+        "Biến tấu sáng tạo của người Sài Gòn đưa danh từ 'Bánh Mì' vào từ điển Oxford thế giới.",
+      image_url:
+        "https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Quanh năm (Bữa sáng hoặc xế chiều 15:00 - 21:00)",
+      avg_price_range: "25.000đ - 70.000đ",
+      recommended_restaurant_ids: [2, 4],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 3,
+      province_id: 1,
+      province_name: "TP. Hồ Chí Minh",
+      name: "Hủ tiếu Nam Vang (Khô & Nước)",
+      description:
+        "Sợi hủ tiếu dai mềm trụng vừa tới, nổi bật với phiên bản Hủ tiếu khô trộn sốt xì dầu đậm đà kèm tô nước dùng ninh xương ống ngọt thanh, tôm sú tươi.",
+      story_origin:
+        "Món ăn giao thoa văn hóa ẩm thực Khmer - Hoa - Việt được người Sài Gòn tinh chỉnh vị nước lèo trong vắt.",
+      image_url:
+        "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Quanh năm (Bữa sáng 06:30 - 10:00 hoặc ăn đêm)",
+      avg_price_range: "55.000đ - 95.000đ",
+      recommended_restaurant_ids: [7, 4],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 4,
+      province_id: 1,
+      province_name: "TP. Hồ Chí Minh",
+      name: "Bánh xèo miền Nam rau rừng",
+      description:
+        "Chiếc bánh xèo vàng nghệ rộng vành tráng mỏng trên chảo gang lửa lớn, viền bánh giòn rụm, nhân tôm đất, thịt ba rọi cuốn cùng hơn 10 loại rau rừng.",
+      story_origin:
+        "Tên gọi bắt nguồn từ âm thanh 'xèo... xèo...' vui tai khi đổ bột gạo pha nước cốt dừa vào chảo gang nóng già.",
+      image_url:
+        "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Buổi chiều tối mát trời tại Sài Gòn",
+      avg_price_range: "75.000đ - 150.000đ",
+      recommended_restaurant_ids: [5, 3, 4],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 5,
+      province_id: 1,
+      province_name: "TP. Hồ Chí Minh",
+      name: "Phở Sài Gòn kèm tương đen & rau thơm",
+      description:
+        "Tô Phở Sài Gòn có nước dùng đậm hương thảo quả, hồi, quế, luôn dọn kèm đĩa rau quế, ngò gai, giá trụng đầy đặn và chén tương đen pha tương ớt.",
+      story_origin:
+        "Phát triển thành phong cách Phở miền Nam đặc trưng dọc đường Pasteur Quận 1 - Quận 3 từ thập niên 1950.",
+      image_url:
+        "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Quanh năm (Buổi sáng sớm từ 06:00)",
+      avg_price_range: "65.000đ - 110.000đ",
+      recommended_restaurant_ids: [6, 4],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 6,
+      province_id: 1,
+      province_name: "TP. Hồ Chí Minh",
+      name: "Cà phê sữa đá & Cà phê vợt Sài Gòn",
+      description:
+        "Ly cà phê pha phin hoặc pha bằng vợt vải truyền thống hòa quyện cùng sữa đặc ngọt béo và đá viên mát lạnh.",
+      story_origin:
+        "Cà phê vợt có tuổi đời hơn 70 năm tại các con hẻm Phú Nhuận và Chợ Lớn.",
+      image_url:
+        "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Buổi sáng 07:00 - 10:30",
+      avg_price_range: "20.000đ - 55.000đ",
+      recommended_restaurant_ids: [4, 3],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 7,
+      province_id: 2,
+      province_name: "TP. Đà Nẵng",
+      name: "Mì Quảng Tôm Thịt Trứng Cút Đà Nẵng",
+      description:
+        "Sợi mì gạo tráng dày chan lượng nước nhân đậm đà vừa xâm xấp, ăn kèm bánh tráng mè nướng giòn và rau sống Trà Quế.",
+      story_origin: "Niềm tự hào ẩm thực của người dân xứ Quảng - Đà Nẵng.",
+      image_url:
+        "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Bữa sáng và bữa trưa",
+      avg_price_range: "40.000đ - 85.000đ",
+      recommended_restaurant_ids: [9],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 9,
+      province_id: 3,
+      province_name: "Thủ đô Hà Nội",
+      name: "Phở Bò Gia Truyền Hà Nội",
+      description:
+        "Tô phở Bắc chuẩn vị với nước dùng trong vắt ninh từ xương ống bò và gừng nướng, bánh phở mềm mỏng, thịt bò tái chín.",
+      story_origin: "Tinh hoa ẩm thực đất Kinh kỳ gắn liền với phố cổ Hoàn Kiếm.",
+      image_url:
+        "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Bữa sáng sớm (06:00 - 10:00)",
+      avg_price_range: "55.000đ - 100.000đ",
+      recommended_restaurant_ids: [11],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 11,
+      province_id: 4,
+      province_name: "Quảng Ninh (Vịnh Hạ Long)",
+      name: "Chả Mực Giã Tay Hạ Long",
+      description:
+        "Những miếng chả mực vàng ruộm được giã tay thủ công từ mực nang tươi đánh bắt tại vịnh Hạ Long.",
+      story_origin: "Đặc sản nằm trong Top 50 món ăn nổi tiếng nhất Việt Nam.",
+      image_url:
+        "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Quanh năm",
+      avg_price_range: "60.000đ - 150.000đ",
+      recommended_restaurant_ids: [13],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 13,
+      province_id: 5,
+      province_name: "Lào Cai (Sa Pa)",
+      name: "Lẩu Cá Hồi Vân & Cá Tầm Sa Pa",
+      description:
+        "Cá hồi vân nuôi bằng nguồn nước suối lạnh dưới chân đỉnh Fansipan nhúng lẩu chua cay ăn kèm rau cải mèo.",
+      story_origin: "Nét ẩm thực độc đáo của vùng núi cao ôn đới Sa Pa.",
+      image_url:
+        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Buổi tối se lạnh tại Sa Pa",
+      avg_price_range: "250.000đ - 500.000đ",
+      recommended_restaurant_ids: [15],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 15,
+      province_id: 6,
+      province_name: "Thừa Thiên Huế (Cố đô Huế)",
+      name: "Bún Bò Huế Cố Đô",
+      description:
+        "Sợi bún nhỏ chan nước dùng ninh xương bò hòa quyện mắm ruốc Huế và sả cây thơm lừng.",
+      story_origin: "Di sản ẩm thực trứ danh của đất Thần Kinh.",
+      image_url:
+        "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Buổi sáng (06:00 - 10:30)",
+      avg_price_range: "40.000đ - 75.000đ",
+      recommended_restaurant_ids: [17],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 17,
+      province_id: 7,
+      province_name: "Quảng Nam (Phố cổ Hội An)",
+      name: "Cao Lầu Phố Cổ Hội An",
+      description:
+        "Sợi mì vàng ươm dai giòn trộn cùng thịt xá xíu, tóp mỡ giòn và rau sống Trà Quế.",
+      story_origin: "Món ăn độc nhất vô nhị gắn liền với cảng thị Hội An.",
+      image_url:
+        "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Trưa và tối",
+      avg_price_range: "40.000đ - 75.000đ",
+      recommended_restaurant_ids: [19],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 19,
+      province_id: 8,
+      province_name: "Khánh Hòa (Nha Trang)",
+      name: "Nem Nướng Ninh Hòa Nha Trang",
+      description:
+        "Thịt heo quết mịn nướng trên than hồng cuốn bánh tráng chiên giòn, rau sống và nước tương nếp.",
+      story_origin: "Đặc sản gốc vùng Ninh Hòa (Khánh Hòa).",
+      image_url:
+        "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Trưa và chiều tối",
+      avg_price_range: "55.000đ - 110.000đ",
+      recommended_restaurant_ids: [21],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 21,
+      province_id: 9,
+      province_name: "Lâm Đồng (Đà Lạt)",
+      name: "Lẩu Gà Lá É Đà Lạt",
+      description:
+        "Nồi lẩu gà ta thả đồi nấu cùng măng củ giòn ngọt và nắm lá é trắng nhúng tái thơm the mát.",
+      story_origin: "Món ăn hội tụ hương vị thảo mộc vùng cao nguyên Lâm Viên.",
+      image_url:
+        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Buổi trưa và buổi tối se lạnh",
+      avg_price_range: "150.000đ - 300.000đ",
+      recommended_restaurant_ids: [23],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+    {
+      id: 23,
+      province_id: 10,
+      province_name: "Kiên Giang (Đảo Ngọc Phú Quốc)",
+      name: "Bún Quậy Kiến Xây Phú Quốc",
+      description:
+        "Tô bún độc đáo với sợi bún gạo ép trực tiếp vào nồi nước sôi, chả tôm và chả cá tươi quết quanh thành tô.",
+      story_origin: "Sáng tạo ẩm thực trứ danh tại thị trấn Dương Đông Phú Quốc.",
+      image_url:
+        "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=80",
+      best_season_or_time: "Quanh năm (Sáng và tối)",
+      avg_price_range: "55.000đ - 95.000đ",
+      recommended_restaurant_ids: [25],
+      status: "published",
+      data_source: "internal",
+      license_info: "Ban Biên Tập Ẩm thực TripFlow",
+      updated_at: "2026-10-30T08:00:00Z",
+    },
+  ],
+
   restaurants: [
     {
       id: 1,
