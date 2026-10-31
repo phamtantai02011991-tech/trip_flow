@@ -3,6 +3,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/app_state.dart';
 import '../../core/utils/mock_data.dart';
 import '../../core/widgets/common_widgets.dart';
+import '../../core/widgets/travel_destination_card.dart';
 import 'destination_detail_screen.dart';
 
 /// Màn hình Tìm kiếm và Lọc Địa điểm Du lịch theo Tỉnh/Thành, Danh mục và Từ khóa (Mục 5.1.3).
@@ -133,14 +134,14 @@ class _DestinationsScreenState extends State<DestinationsScreen> {
                           });
                         },
                       )
-                    : ListView.separated(
+                    : ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: filtered.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final dest = filtered[index];
-                          return InkWell(
-                            borderRadius: BorderRadius.circular(16),
+                          return TravelDestinationCard(
+                            destination: dest,
+                            appState: widget.appState,
                             onTap: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
@@ -151,131 +152,6 @@ class _DestinationsScreenState extends State<DestinationsScreen> {
                                 ),
                               );
                             },
-                            child: Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: const Color(0xFFE2E8F0),
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 3,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFCCFBF1),
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          dest.categoryName,
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppTheme.primaryDark,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      if (dest.isSponsored)
-                                        SponsoredBadgeWidget(
-                                          label: dest.sponsorLabel,
-                                        ),
-                                      const Spacer(),
-                                      const Icon(
-                                        Icons.star_rounded,
-                                        size: 16,
-                                        color: Colors.amber,
-                                      ),
-                                      const SizedBox(width: 3),
-                                      Text(
-                                        dest.rating.toString(),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    dest.name,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
-                                      color: Color(0xFF0F172A),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    dest.address,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF64748B),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    dest.description,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 12.5,
-                                      color: Color(0xFF334155),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        'Nguồn: ${dest.dataSource == "partner" ? "Đối tác" : "Nội bộ xác thực"} • Cập nhật: ${dest.updatedAt}',
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Color(0xFF64748B),
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      TextButton.icon(
-                                        onPressed: () {
-                                          widget.appState
-                                              .addDestinationToActiveItinerary(
-                                            dest,
-                                          );
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                'Đã thêm "${dest.name}" vào lịch trình!',
-                                              ),
-                                              backgroundColor:
-                                                  AppTheme.primaryTeal,
-                                            ),
-                                          );
-                                        },
-                                        icon: const Icon(
-                                          Icons.add_circle_outline_rounded,
-                                          size: 16,
-                                        ),
-                                        label: const Text(
-                                          'Thêm lịch trình',
-                                          style: TextStyle(fontSize: 12),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
                           );
                         },
                       ),

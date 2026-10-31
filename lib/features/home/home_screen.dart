@@ -3,6 +3,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/app_state.dart';
 import '../../core/utils/mock_data.dart';
 import '../../core/widgets/common_widgets.dart';
+import '../../core/widgets/travel_destination_card.dart';
 import '../destinations/destination_detail_screen.dart';
 import '../destinations/destinations_screen.dart';
 import '../favorites/favorites_screen.dart';
@@ -244,122 +245,19 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 8),
 
               ...featured.take(4).map((dest) {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(18),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => DestinationDetailScreen(
-                            destination: dest,
-                            appState: appState,
-                          ),
+                return TravelDestinationCard(
+                  destination: dest,
+                  appState: appState,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => DestinationDetailScreen(
+                          destination: dest,
+                          appState: appState,
                         ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFCCFBF1),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  dest.categoryName,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppTheme.primaryDark,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              if (dest.isSponsored)
-                                SponsoredBadgeWidget(label: dest.sponsorLabel),
-                              const Spacer(),
-                              const Icon(
-                                Icons.star_rounded,
-                                size: 16,
-                                color: Colors.amber,
-                              ),
-                              const SizedBox(width: 3),
-                              Text(
-                                '${dest.rating}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            dest.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            dest.address,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF64748B),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            dest.description,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 12.5,
-                              color: Color(0xFF334155),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Nguồn: ${dest.dataSource == "partner" ? "Đối tác địa phương" : "Nội bộ TripFlow"} • Vé: ${dest.ticketPriceInfo}',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Color(0xFF64748B),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                size: 14,
-                                color: AppTheme.primaryTeal,
-                              ),
-                            ],
-                          ),
-                        ],
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 );
               }),
 
