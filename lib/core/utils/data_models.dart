@@ -532,7 +532,6 @@ class CorridorRestaurantResult {
         'corridor_score': corridorScore,
       };
 }
-}
 
 /// Phản hồi tổng hợp từ API `POST /api/v1/restaurants/corridor-search` (Goong Maps + Bounding Box + Shapely)
 class CorridorSearchResponseModel {

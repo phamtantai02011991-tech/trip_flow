@@ -1326,13 +1326,6 @@ export const INITIAL_ADMIN_DATA = {
       data_source: "internal",
       last_updated_at: "2026-10-30T08:00:00Z",
     },
-        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80",
-      is_sponsored: false,
-      sponsor_label: null,
-      status: "published",
-      data_source: "internal",
-      last_updated_at: "2026-10-30T08:00:00Z",
-    },
     {
       id: 9,
       province_id: 2,

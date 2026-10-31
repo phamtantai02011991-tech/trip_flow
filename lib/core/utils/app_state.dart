@@ -642,61 +642,6 @@ class TripFlowAppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Gợi ý và chèn điểm dừng ăn uống thông minh (Smart Meal Stop) vào ngày chỉ định
-  void addSmartMealStop({
-    required RestaurantModel restaurant,
-    int dayNumber = 1,
-    String preferredTime = '12:00 - 13:00',
-    String? reasoning,
-  }) {
-    final current = activeItinerary;
-    final dayStops =
-        current.stops.where((s) => s.dayNumber == dayNumber).toList();
-    final insertOrder = dayStops.length >= 2 ? 2 : dayStops.length + 1;
-
-    final newStop = ItineraryStopModel(
-      id: DateTime.now().millisecondsSinceEpoch,
-      dayNumber: dayNumber,
-      stopOrder: insertOrder,
-      stopType: 'meal',
-      referenceId: restaurant.id,
-      title: 'Dừng ăn trưa: ${restaurant.name}',
-      address: restaurant.address,
-      latitude: restaurant.latitude,
-      longitude: restaurant.longitude,
-      plannedTime: preferredTime,
-      durationMins: 60,
-      notes: reasoning ??
-          'Quán ăn được đánh giá cao (${restaurant.rating}⭐, ${restaurant.reviewsCount}+ đánh giá). Món ngon: ${restaurant.specialties.isNotEmpty ? restaurant.specialties : restaurant.specialtyDishes}',
-    );
-
-    final newStops = <ItineraryStopModel>[];
-    for (final s in current.stops) {
-      if (s.dayNumber == dayNumber && s.stopOrder >= insertOrder) {
-        newStops.add(s.copyWith(stopOrder: s.stopOrder + 1));
-      } else {
-        newStops.add(s);
-      }
-    }
-    newStops.add(newStop);
-    newStops.sort((a, b) {
-      final dayCmp = a.dayNumber.compareTo(b.dayNumber);
-      if (dayCmp != 0) return dayCmp;
-      return a.stopOrder.compareTo(b.stopOrder);
-    });
-
-    final updatedItin = current.copyWith(
-      stops: newStops,
-      isSyncedWithServer: !_isOfflineSimulated,
-    );
-    _userItineraries[_activeItineraryIndex] = updatedItin;
-    _persistItinerariesToHive();
-    if (!_isOfflineSimulated) {
-      apiClient.syncItineraryToBackend(updatedItin);
-    }
-    notifyListeners();
-  }
-
   void removeStopFromActiveItinerary(int index) {
     final current = activeItinerary;
     if (index < 0 || index >= current.stops.length) return;

@@ -369,12 +369,6 @@ export default function RestaurantsPage({
                           </button>
                         )}
                       </div>
-                            className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
                     </td>
                   </tr>
                 );
