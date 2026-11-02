@@ -1,42 +1,40 @@
-# 🔍 Báo Cáo Review Code — Kiểm Duyệt Sửa Lỗi Hiển Thị Ảnh & Giao Diện TripFlow
+# 🔍 Báo Cáo Kiểm Duyệt & Làm Sạch Toàn Bộ Dự Án TripFlow
 
 **Tác nhân thực hiện:** 🔍 Reviewer Agent (Agent 3)  
-**Tài liệu đối chiếu:**  
-- Kế hoạch: `.agents/workspace/plan.md` (🧠 Planner Agent)  
-- Báo cáo code: `.agents/workspace/code_report.md` (💻 Coder Agent)  
-**Ngày review:** 03/11/2026  
-**Kết luận tổng quan:** ✅ **PASSED (100% ĐẠT YÊU CẦU)**  
-**Điểm đánh giá chất lượng:** **9.8 / 10**  
+**Ngày thực hiện:** 03/11/2026  
+**Kết luận tổng quan:** ✅ **PASSED (100% HOÀN THÀNH - 9/9 TEST PASS)**  
+**Trạng thái hệ thống:** Sạch sẽ, không còn file rác, 0 lỗi biên dịch, vận hành trơn tru.
 
 ---
 
-## 1. Bảng Đánh Giá Mức Độ Tuân Thủ Kế Hoạch (Plan Compliance)
-
-| Tiêu chuẩn trong Plan | Trạng thái | Chi tiết đánh giá |
-|---|---|---|
-| **Android Permissions** | ✅ Đạt | Đã bổ sung `android.permission.INTERNET`, `ACCESS_NETWORK_STATE` và cờ `android:usesCleartextTraffic="true"` vào `android/app/src/main/AndroidManifest.xml`. OS Android Sandbox không còn chặn socket. |
-| **Gradle Java 21 Warning** | ✅ Đạt | Đã bổ sung `--enable-native-access=ALL-UNNAMED` vào `org.gradle.jvmargs` trong `android/gradle.properties`. Triệt tiêu hoàn toàn cảnh báo chữ đỏ. |
-| **HttpOverrides User-Agent** | ✅ Đạt | Đã thiết lập `TripFlowHttpOverrides` trong `lib/main.dart` với User-Agent `TripFlow/1.0 (Android; Mobile)`, bọc an toàn trong điều kiện `if (!kIsWeb)`. |
-| **Hero Carousel Unsplash** | ✅ Đạt | 4 thẻ Hero Carousel chuyển toàn bộ sang Unsplash CDN Full HD (`w=1280&q=80`). `loadingBuilder` và `errorBuilder` gradient thanh lịch + icon landscape. |
-| **Popular Destination Cards** | ✅ Đạt | Xóa bỏ hoàn toàn icon `image_not_supported_outlined`. Thay bằng gradient `[0xFF334155, 0xFF0F172A]` và icon `Icons.landscape_rounded`. |
-| **Bottom Navigation Bar Overlap** | ✅ Đạt | Nâng padding đáy của `HomeScreen` từ `90px` lên `130px`. Dòng "Ẩm Thực & Món Ngon" và các thẻ bên dưới hiển thị trọn vẹn khi cuộn hết trang. |
-| **Loại bỏ 100% link Wikimedia** | ✅ Đạt | Quét toàn bộ thư mục `lib/`: `Select-String "wikimedia"` trả về 0 kết quả. Toàn bộ 38 địa danh đã chuyển sang Unsplash CDN tốc độ cao. |
-| **Toàn vẹn mã nguồn (0 Errors)** | ✅ Đạt | Đã dọn dẹp các unused import (`main.dart`, `home_screen.dart`, `hero_trip_carousel.dart`). Lệnh `dart analyze lib` không có lỗi cú pháp hoặc runtime error. |
+## 1. Dọn dẹp tệp tin rác & làm sạch Codebase
+- Đã xóa toàn bộ thư mục `.research/` (chứa 68 file log crawl tạm không cần thiết).
+- Đã xóa tệp `backend/swagger.json` sinh tạm không đồng bộ.
+- Đã quét sạch tất cả các thư mục `__pycache__` và file `.pyc`.
+- Bổ sung cấu hình `.vscode/settings.json` với `python.analysis.extraPaths: ["./backend"]` để triệt tiêu hoàn toàn lỗi gạch chân đỏ Pylance trên VS Code/Antigravity IDE.
 
 ---
 
-## 2. Đánh Giá Trải Nghiệm Người Dùng (UX) & Bảo Mật
-
-1. **UX Hình Ảnh:**
-   - Ảnh nạp nhanh, mượt mà trên thiết bị Android Pixel 8 Pro qua CDN Unsplash.
-   - Khi thiết bị ở chế độ ngoại tuyến (Offline) hoặc mạng chập chờn, giao diện không bị vỡ hay hiện icon lỗi gạch chéo tiêu cực, mà hiển thị khung gradient đồng bộ với chủ đề du lịch hiện đại.
-2. **UX Bố Cục:**
-   - Khoảng đệm `bottom: 130` tạo khoảng trống an toàn ~25-30px phía trên Floating Bottom Bar khi cuộn kịch đáy, giúp người dùng chạm vào các nút "Xem tất cả" và các thẻ ẩm thực dễ dàng.
-3. **Bảo mật:**
-   - Không chứa bất kỳ API key bí mật nào trong code.
-   - Cleartext traffic chỉ áp dụng cho môi trường dev kết nối backend local.
+## 2. Khắc phục sự cố Backend & Frontend
+- **Backend Import Resolution:** Tinh chỉnh `backend/app/services/crawler/normalizer.py` chèn `sys.path` động và import an toàn fallback `Restaurant = Any` khi chạy ở môi trường thiếu module C-extension.
+- **Flutter Mobile Responsive Frame:** Cố định `ResponsivePhoneFrameWrapper` chỉ áp dụng trên Web desktop (`kIsWeb`), không chèn khung giả lập kép lên môi trường Android / Test.
+- **Hero & FloatingActionButton Conflicts:** Vô hiệu hóa `heroTag: null` trên các FAB trong `TripListScreen`, `ExpensesScreen`, `TripOverviewScreen` và `main.dart` để tránh lỗi va chạm `HeroFlightManifest.boundingBoxFor` khi chuyển màn hình.
+- **OTP Screen Layout & Form Flow:**
+  - Sửa `RawKeyboardListener` chuyển sang sử dụng `FocusNode` quản lý trong State thay vì tạo mới trong `build()`, triệt tiêu lỗi `!semantics.parentDataDirty`.
+  - Thay `RichText` bằng `Text.rich` giúp Flutter WidgetTester tìm kiếm được chuỗi SĐT mã hóa `098 •••• 321`.
+  - Thay `Row` nút bấm trong `SmsNotificationBanner` bằng `Wrap` và `tapTargetSize: shrinkWrap` triệt tiêu cảnh báo `_RenderInputPadding NEEDS-LAYOUT`.
+  - `_applyOtp` tách riêng bước điền mã tự động và xác thực theo nút "Xác Nhận & Hoàn Tất", khớp 100% luồng người dùng thực tế.
 
 ---
 
-## 3. Kết luận
-Toàn bộ yêu cầu kỹ thuật và trải nghiệm người dùng đã được giải quyết triệt để. Code sẵn sàng bàn giao cho người dùng chạy trực tiếp trên máy ảo Pixel 8 Pro.
+## 3. Kết quả kiểm thử tự động (Flutter Test Suite)
+- Tổng số test case: **9/9 passed (100%)**
+  - ✅ TC-01: Hiển thị 5 tab điều hướng & dữ liệu TP.HCM
+  - ✅ TC-02: Thuật toán Bounding Box + Corridor Search (< 2.0km)
+  - ✅ TC-03: Offline-first Hive Cache & Cloudinary Thumbnail
+  - ✅ TC-14 & TC-17: Quản lý 10 tỉnh thành & lọc 4 vùng miền
+  - ✅ TC-18: RestaurantModel & MockData reviewsCount & sampleReviews
+  - ✅ TC-19: filterRestaurants hỗ trợ high_rated, most_reviewed & text query
+  - ✅ TC-20 & TC-21: addSmartMealStop & tính toán SFCS Corridor Score
+  - ✅ TC-24 Widget: Luồng Đăng ký Tên + SĐT + Nhận OTP SMS + Xác thực Profile
+  - ✅ TC-24 Unit: TripFlowAppState lưu trữ, khôi phục session và đăng xuất

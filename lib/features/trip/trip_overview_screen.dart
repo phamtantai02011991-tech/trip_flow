@@ -66,7 +66,7 @@ class _TripOverviewScreenState extends ConsumerState<TripOverviewScreen> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       floatingActionButton: FloatingActionButton(
-        heroTag: 'assistant_fab',
+        heroTag: null,
         backgroundColor: AppColors.ink,
         foregroundColor: Colors.white,
         onPressed: () => Navigator.of(context).push(

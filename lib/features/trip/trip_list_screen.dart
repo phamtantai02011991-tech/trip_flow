@@ -73,6 +73,7 @@ class _TripListScreenState extends ConsumerState<TripListScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: null,
         onPressed: _openPlanner,
         backgroundColor: AppColors.coral,
         foregroundColor: Colors.white,

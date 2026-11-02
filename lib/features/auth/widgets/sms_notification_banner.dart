@@ -124,12 +124,15 @@ class SmsNotificationBanner extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 8,
+            runSpacing: 6,
             children: [
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   visualDensity: VisualDensity.compact,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   side: const BorderSide(color: Color(0xFF059669)),
                   foregroundColor: const Color(0xFF059669),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -149,11 +152,11 @@ class SmsNotificationBanner extends StatelessWidget {
                 icon: const Icon(Icons.copy_rounded, size: 14),
                 label: const Text('Sao chép mã', style: TextStyle(fontSize: 12)),
               ),
-              if (onAutoFillPressed != null) ...[
-                const SizedBox(width: 8),
+              if (onAutoFillPressed != null)
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     visualDensity: VisualDensity.compact,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     backgroundColor: AppTheme.primaryTeal,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -168,7 +171,6 @@ class SmsNotificationBanner extends StatelessWidget {
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                   ),
                 ),
-              ],
             ],
           ),
         ],

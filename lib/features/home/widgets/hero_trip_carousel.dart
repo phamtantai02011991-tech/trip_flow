@@ -383,14 +383,19 @@ class _HeroTripCarouselState extends State<HeroTripCarousel> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        trip.subtitle,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.88),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                      Expanded(
+                        child: Text(
+                          trip.subtitle,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.88),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const SizedBox(width: 8),
                       // Nhóm Avatar xếp đè + số lượng người
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -443,12 +448,16 @@ class _HeroTripCarouselState extends State<HeroTripCarousel> {
                                 size: 15,
                               ),
                               const SizedBox(width: 7),
-                              Text(
-                                trip.durationText,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w700,
+                              Flexible(
+                                child: Text(
+                                  trip.durationText,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],

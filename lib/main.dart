@@ -80,7 +80,7 @@ class _ResponsivePhoneFrameWrapperState
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktopViewport =
-            constraints.maxWidth > 540 && constraints.maxHeight > 650;
+            kIsWeb && constraints.maxWidth > 540 && constraints.maxHeight > 650;
         if (!isDesktopViewport || !_usePhoneFrame) {
           return Stack(
             children: [
@@ -90,7 +90,7 @@ class _ResponsivePhoneFrameWrapperState
                   right: 16,
                   bottom: 84,
                   child: FloatingActionButton.extended(
-                    heroTag: 'toggle_phone_frame_btn',
+                    heroTag: null,
                     backgroundColor: const Color(0xFF0F172A),
                     foregroundColor: Colors.white,
                     onPressed: () => setState(() => _usePhoneFrame = true),

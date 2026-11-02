@@ -97,6 +97,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   ),
                 ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: null,
         onPressed: _openAddSheet,
         backgroundColor: AppColors.coral,
         foregroundColor: Colors.white,

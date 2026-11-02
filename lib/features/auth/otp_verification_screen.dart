@@ -31,6 +31,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       List.generate(_otpLength, (_) => TextEditingController());
   final List<FocusNode> _focusNodes =
       List.generate(_otpLength, (_) => FocusNode());
+  final List<FocusNode> _keyboardFocusNodes =
+      List.generate(_otpLength, (_) => FocusNode());
 
   Timer? _timer;
   int _countdownSeconds = 60;
@@ -54,6 +56,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       c.dispose();
     }
     for (final f in _focusNodes) {
+      f.dispose();
+    }
+    for (final f in _keyboardFocusNodes) {
       f.dispose();
     }
     super.dispose();
@@ -112,7 +117,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     }
     if (clean.length >= _otpLength) {
       _focusNodes[_otpLength - 1].unfocus();
-      _handleVerify();
     } else if (clean.isNotEmpty) {
       _focusNodes[clean.length.clamp(0, _otpLength - 1)].requestFocus();
     }
@@ -290,9 +294,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     const SizedBox(height: 8),
 
                     Center(
-                      child: RichText(
+                      child: Text.rich(
                         textAlign: TextAlign.center,
-                        text: TextSpan(
+                        TextSpan(
                           style: const TextStyle(
                             fontSize: 14,
                             color: Color(0xFF64748B),
@@ -326,7 +330,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           width: 46,
                           height: 54,
                           child: RawKeyboardListener(
-                            focusNode: FocusNode(),
+                            focusNode: _keyboardFocusNodes[index],
                             onKey: (event) {
                               if (event is RawKeyDownEvent &&
                                   event.logicalKey ==

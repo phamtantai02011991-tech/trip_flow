@@ -316,14 +316,13 @@ class DioApiClient {
         'debug_otp': data['debug_otp']?.toString(),
       };
     } on DioException catch (e) {
-      if (e.response != null && e.response?.data != null) {
-        final data = e.response!.data;
-        final detail = (data is Map<String, dynamic>)
-            ? data['detail']?.toString() ?? 'Lỗi gửi mã OTP'
-            : 'Lỗi gửi mã OTP';
+      if (e.response != null &&
+          e.response?.data is Map<String, dynamic> &&
+          (e.response!.data as Map).containsKey('detail')) {
+        final data = e.response!.data as Map<String, dynamic>;
         return {
           'success': false,
-          'message': detail,
+          'message': data['detail']?.toString() ?? 'Lỗi gửi mã OTP',
         };
       }
       // Offline fallback: Mô phỏng mã OTP ngẫu nhiên 6 số giúp trải nghiệm không bị gián đoạn
@@ -369,14 +368,13 @@ class DioApiClient {
         'user': data['user'] ?? {},
       };
     } on DioException catch (e) {
-      if (e.response != null && e.response?.data != null) {
-        final data = e.response!.data;
-        final detail = (data is Map<String, dynamic>)
-            ? data['detail']?.toString() ?? 'Mã OTP không hợp lệ'
-            : 'Mã OTP không hợp lệ';
+      if (e.response != null &&
+          e.response?.data is Map<String, dynamic> &&
+          (e.response!.data as Map).containsKey('detail')) {
+        final data = e.response!.data as Map<String, dynamic>;
         return {
           'success': false,
-          'message': detail,
+          'message': data['detail']?.toString() ?? 'Mã OTP không hợp lệ',
         };
       }
       // Offline Fallback cho OTP: nếu nhập 888999 hoặc bất kỳ 6 số hợp lệ

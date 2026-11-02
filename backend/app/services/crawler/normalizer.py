@@ -3,19 +3,30 @@ Bộ làm sạch dữ liệu (Data Normalizer), kiểm tra tọa độ lãnh th�
 và chống trùng lặp bằng truy vấn ILIKE cho Module AI Data Ingestion.
 """
 
+import os
 import re
+import sys
+from pathlib import Path
 from typing import Any, Dict, Optional, Type
+
+# Đảm bảo thư mục backend luôn nằm trong sys.path để hỗ trợ cả 2 cách import
+_BACKEND_DIR = str(Path(__file__).resolve().parents[3])
+if _BACKEND_DIR not in sys.path:
+    sys.path.insert(0, _BACKEND_DIR)
 
 try:
     from sqlalchemy import or_
     from sqlmodel import SQLModel, Session, select
-    from app.models.restaurant import Restaurant
+    try:
+        from app.models.models import Restaurant
+    except ImportError:
+        from backend.app.models.models import Restaurant
 except Exception:
     or_ = None
     SQLModel = Any  # type: ignore
     Session = Any  # type: ignore
     select = None
-    Restaurant = None  # type: ignore
+    Restaurant = Any  # type: ignore
 
 # Khung tọa độ địa lý hợp lệ của lãnh thổ Việt Nam (Đất liền & Hải đảo)
 VN_MIN_LAT = 8.18
