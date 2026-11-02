@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trip_flow/core/config/app_config.dart';
 import 'package:trip_flow/core/utils/app_state.dart';
+import 'package:trip_flow/core/utils/data_models.dart';
 import 'package:trip_flow/core/utils/geo_utils.dart';
 import 'package:trip_flow/core/utils/mock_data.dart';
 import 'package:trip_flow/main.dart';
