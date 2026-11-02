@@ -1,3 +1,5 @@
+import 'dart:io' show HttpOverrides, HttpClient, SecurityContext;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,15 +9,28 @@ import 'core/storage/offline_cache_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/app_state.dart';
 import 'features/home/home_screen.dart';
-import 'features/itinerary/itinerary_screen.dart';
 import 'features/assistant/assistant_screen.dart';
 import 'features/local_foods/local_foods_screen.dart';
 import 'features/nearby/nearby_screen.dart';
 import 'features/profile/profile_screen.dart';
 import 'features/trip/trip_list_screen.dart';
 
+/// HttpOverrides tùy chỉnh để cấp User-Agent hợp lệ cho mọi request tải ảnh và dữ liệu mạng,
+/// ngăn chặn việc bị máy chủ CDN (Wikimedia, Cloudflare, ...) chặn 403 Forbidden.
+class TripFlowHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..userAgent = 'TripFlow/1.0 (Android; Mobile)';
+  }
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Kích hoạt HttpOverrides trên nền tảng di động (Android / iOS)
+  if (!kIsWeb) {
+    HttpOverrides.global = TripFlowHttpOverrides();
+  }
   await OfflineCacheService.instance.init();
   runApp(
     const ProviderScope(

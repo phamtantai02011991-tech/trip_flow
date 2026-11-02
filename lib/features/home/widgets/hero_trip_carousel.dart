@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../core/utils/app_state.dart';
-import '../../../core/utils/data_models.dart';
 import '../../../core/utils/smart_itinerary_engine.dart';
 import '../../itinerary/screens/smart_itinerary_result_screen.dart';
 import '../../itinerary/screens/trip_planner_wizard_screen.dart';
@@ -60,7 +59,7 @@ class _HeroTripCarouselState extends State<HeroTripCarousel> {
       subtitle: 'Khởi hành từ 350.000đ',
       durationText: '3 ngày 2 đêm • 12 điểm dừng',
       heroImageUrl:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Dinh_%C4%90%E1%BB%99c_L%E1%BA%ADp_2022.jpg/1280px-Dinh_%C4%90%E1%BB%99c_L%E1%BA%ADp_2022.jpg',
+          'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1280&q=80',
       priceStarting: '350.000đ',
       travelersText: '2 người',
       provinceId: 1,
@@ -72,7 +71,7 @@ class _HeroTripCarouselState extends State<HeroTripCarousel> {
       subtitle: 'Khởi hành từ 480.000đ',
       durationText: '2 ngày 1 đêm • 8 điểm dừng',
       heroImageUrl:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/The_Huc_Bridge_-_Hanoi.jpg/1280px-The_Huc_Bridge_-_Hanoi.jpg',
+          'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1280&q=80',
       priceStarting: '480.000đ',
       travelersText: '2-4 người',
       provinceId: 2,
@@ -84,7 +83,7 @@ class _HeroTripCarouselState extends State<HeroTripCarousel> {
       subtitle: 'Khởi hành từ 520.000đ',
       durationText: '4 ngày 3 đêm • 14 điểm dừng',
       heroImageUrl:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Dragon_Bridge_at_night_Da_Nang_Vietnam.jpg/1280px-Dragon_Bridge_at_night_Da_Nang_Vietnam.jpg',
+          'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1280&q=80',
       priceStarting: '520.000đ',
       travelersText: '2 người',
       provinceId: 3,
@@ -96,7 +95,7 @@ class _HeroTripCarouselState extends State<HeroTripCarousel> {
       subtitle: 'Khởi hành từ 390.000đ',
       durationText: '3 ngày 2 đêm • 10 điểm dừng',
       heroImageUrl:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Ga_%C4%90%C3%A0_L%E1%BA%A1t.jpg/1280px-Ga_%C4%90%C3%A0_L%E1%BA%A1t.jpg',
+          'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1280&q=80',
       priceStarting: '390.000đ',
       travelersText: '2 người',
       provinceId: 4,
@@ -232,15 +231,44 @@ class _HeroTripCarouselState extends State<HeroTripCarousel> {
         borderRadius: BorderRadius.circular(28),
         child: Stack(
           children: [
-            // 1. Ảnh phong cảnh toàn màn hình của card
+            // 1. Ảnh phong cảnh toàn màn hình của card với loadingBuilder và errorBuilder mượt mà
             Positioned.fill(
               child: Image.network(
                 trip.heroImageUrl,
                 fit: BoxFit.cover,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          const Color(0xFFFF4B55).withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ),
+                  );
+                },
                 errorBuilder: (_, __, ___) => Container(
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Color(0xFF0D9488), Color(0xFF0F172A)],
+                      colors: [Color(0xFF0F766E), Color(0xFF0F172A)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.landscape_rounded,
+                      size: 64,
+                      color: Colors.white.withValues(alpha: 0.25),
                     ),
                   ),
                 ),

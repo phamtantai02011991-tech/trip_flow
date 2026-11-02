@@ -35,9 +35,9 @@ class StopDetailSheet extends StatelessWidget {
 
     final List<String> galleryUrls = dest?.images.map((img) => img.imageUrl).toList() ?? [
       stop.imageUrl,
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Dinh_%C4%90%E1%BB%99c_L%E1%BA%ADp_2022.jpg/1280px-Dinh_%C4%90%E1%BB%99c_L%E1%BA%ADp_2022.jpg',
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Saigon_Post_Office_-_Ho_Chi_Minh_City_Vietnam.jpg/1280px-Saigon_Post_Office_-_Ho_Chi_Minh_City_Vietnam.jpg',
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Notre-Dame_Cathedral_Basilica_of_Saigon_2017.jpg/1280px-Notre-Dame_Cathedral_Basilica_of_Saigon_2017.jpg',
+      'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1080&q=80',
+      'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1080&q=80',
+      'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=1080&q=80',
     ];
 
     // Khoảng cách định dạng chuẩn

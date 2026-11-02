@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/utils/app_state.dart';
 import '../../core/utils/mock_data.dart';
 import '../../core/widgets/common_widgets.dart';
-import '../destinations/destination_detail_screen.dart';
 import '../destinations/destinations_screen.dart';
 import '../favorites/favorites_screen.dart';
-import '../itinerary/screens/trip_planner_wizard_screen.dart';
 import '../maps/map_corridor_screen.dart';
 import '../provinces/provinces_screen.dart';
 import '../restaurants/restaurant_detail_screen.dart';
@@ -43,7 +40,7 @@ class HomeScreen extends StatelessWidget {
           body: SafeArea(
             bottom: false,
             child: ListView(
-              padding: const EdgeInsets.only(bottom: 90),
+              padding: const EdgeInsets.only(bottom: 130),
               children: [
                 // 1. Cảnh báo Offline / Vị trí nếu có
                 if (appState.isOfflineSimulated)

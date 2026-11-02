@@ -59,7 +59,7 @@ class PopularDestinationCard extends StatelessWidget {
                 },
             child: Stack(
               children: [
-                // 1. Ảnh tràn viền
+                // 1. Ảnh tràn viền với loading và error builder cao cấp
                 Positioned.fill(
                   child: Image.network(
                     heroUrl,
@@ -67,23 +67,40 @@ class PopularDestinationCard extends StatelessWidget {
                     loadingBuilder: (context, child, progress) {
                       if (progress == null) return child;
                       return Container(
-                        color: const Color(0xFFE2E8F0),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFFE2E8F0), Color(0xFFCBD5E1)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
                         child: const Center(
                           child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFFFF4B55),
+                              ),
+                            ),
                           ),
                         ),
                       );
                     },
                     errorBuilder: (_, __, ___) => Container(
-                      color: const Color(0xFFCBD5E1),
-                      child: const Center(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF334155), Color(0xFF0F172A)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Center(
                         child: Icon(
-                          Icons.image_not_supported_outlined,
-                          color: Color(0xFF64748B),
-                          size: 32,
+                          Icons.landscape_rounded,
+                          color: Colors.white.withValues(alpha: 0.28),
+                          size: 38,
                         ),
                       ),
                     ),

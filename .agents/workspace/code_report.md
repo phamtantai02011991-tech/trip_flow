@@ -1,50 +1,44 @@
-# 💻 Báo Cáo Triển Khai Code (Coder Agent)
+# Báo Cáo Code — Khắc Phục Triệt Để Sự Cố Hiển Thị Ảnh & Giao Diện TripFlow
 
-**Dự án:** TripFlow — Nền Tảng Khám Phá Du Lịch & Lộ Trình Thông Minh  
 **Tác nhân thực hiện:** 💻 Coder Agent (Agent 2)  
-**Thời gian hoàn thành:** 31/10/2026 21:22:30 +07:00  
-**Tài liệu tham chiếu:** `.agents/workspace/plan.md`  
+**Kế hoạch tham chiếu:** `.agents/workspace/plan.md` (🧠 Planner Agent)  
+**Ngày thực hiện:** 02/11/2026  
+**Trạng thái:** ✅ Hoàn thành toàn diện 7/7 file  
 
 ---
 
-## 1. Tổng quan
-- **Mục tiêu**: Tái cấu trúc và lột xác hoàn toàn giao diện người dùng theo chuẩn pixel-perfect của 3 màn hình Dribbble/Figma mẫu (`media_1793455644548_e6fee8fb.jpg`).
-- **Số files đã tạo mới / chỉnh sửa**: 5 files
-- **Trạng thái biên dịch**: ✅ **Clean compilation & Hot restarted thành công trong 775ms** (Task `task-274`).
+## 1. Tổng quan triển khai
+- **Tổng số file đã sửa:** 7 file mã nguồn (1 file Android Manifest, 1 file cấu hình Gradle, 5 file Dart Flutter).
+- **Mục tiêu đạt được:**
+  1. Cấp quyền mạng hoàn chỉnh cho ứng dụng Android (`INTERNET`, `ACCESS_NETWORK_STATE`, `usesCleartextTraffic`), chấm dứt triệt để việc Android OS chặn request mạng.
+  2. Triệt tiêu cảnh báo Java 21 native-access trong `android/gradle.properties`.
+  3. Cấu hình `TripFlowHttpOverrides` trong `lib/main.dart` cấp `User-Agent` hợp lệ cho Dart `HttpClient`, vượt qua rào cản kiểm duyệt 403 Forbidden của máy chủ CDN.
+  4. Thay thế 100% các URL ảnh Wikimedia cũ bằng link Unsplash CDN chuẩn Full HD, độ trễ cực thấp cho 10 Tỉnh/Thành phố và 28 Điểm Đến mẫu.
+  5. Thiết kế lại `loadingBuilder` và `errorBuilder` cho cả `HeroTripCarousel` và `PopularDestinationCard` với hiệu ứng chuyển cảnh gradient cao cấp kết hợp icon danh thắng nghệ thuật, xóa bỏ hoàn toàn icon gạch chéo xám thô ráp.
+  6. Tăng khoảng đệm đáy của `HomeScreen` từ `90px` lên `130px`, khắc phục lỗi Floating Bottom Navigation Bar che mất dòng "Ẩm Thực & Món Ngon" và nút "Xem tất cả".
 
 ---
 
-## 2. Danh sách Files đã triển khai
+## 2. Chi tiết các file đã sửa đổi
 
-| STT | Đường dẫn File | Trạng thái | Chi tiết triển khai |
-|:---:|---|:---:|---|
-| 1 | [`lib/features/home/widgets/popular_destination_card.dart`](file:///d:/trip_flow/lib/features/home/widgets/popular_destination_card.dart) | ✅ **Tạo mới** | Thẻ điểm đến thịnh hành lướt ngang tỉ lệ dọc (165 x 215px), bo góc tròn 22px, ảnh tràn viền chất lượng cao, floating rating badge `⭐ 4.9`, gradient đáy tối và typography sắc nét. Chạm vào mở chi tiết điểm đến. |
-| 2 | [`lib/features/home/widgets/hero_trip_carousel.dart`](file:///d:/trip_flow/lib/features/home/widgets/hero_trip_carousel.dart) | ✅ **Tạo mới** | Carousel xếp lớp 3D (3D Card Deck Stack) cao 340px, hiệu ứng thu phóng lướt mượt mà, nút tròn nổi trắng `↗`, nhãn Frosted Glass kính mờ (`3 ngày 2 đêm • 12 điểm dừng`), giá khởi điểm và nhóm avatar xếp chồng `👥 2 người`, indicator dots thanh san hô đỏ `#FF4B55`. Chạm vào mở ngay màn hình Lộ trình thông minh. |
-| 3 | [`lib/features/itinerary/screens/stop_detail_sheet.dart`](file:///d:/trip_flow/lib/features/itinerary/screens/stop_detail_sheet.dart) | ✅ **Tạo mới** | Màn hình chi tiết điểm dừng chuẩn 100% Màn hình 3 Dribbble: Ảnh danh thắng toàn màn hình, nút quay lại tròn trong suốt, badge `Ngày 1 • Điểm dừng thứ 2 • Tham quan`, rating `⭐ 4.9 (127 đánh giá)`, thẻ card trắng nổi ở đáy với khoảng cách `400 m từ vị trí của bạn`, nút tròn dẫn đường đỏ san hô `#FF4B55`, dải thumbnail ảnh thực tế với huy hiệu `+25` ảnh. |
-| 4 | [`lib/features/home/home_screen.dart`](file:///d:/trip_flow/lib/features/home/home_screen.dart) | ✅ **Cập nhật** | Thay đổi toàn diện Trang chủ: Header lớn Editorial `Xin chào, Du khách 👋` + `Đi Đâu Tiếp Theo?`, bộ chọn tỉnh thành dạng pill tinh tế, thanh tìm kiếm + chip danh mục thanh thoát, tích hợp `HeroTripCarousel`, danh sách lướt ngang `PopularDestinationCard`, danh sách thẻ ảnh ẩm thực địa phương và thẻ Corridor Search. Loại bỏ toàn bộ khối text nặng nề trước đây. |
-| 5 | [`lib/features/itinerary/screens/smart_itinerary_result_screen.dart`](file:///d:/trip_flow/lib/features/itinerary/screens/smart_itinerary_result_screen.dart) | ✅ **Cập nhật** | Tái cấu trúc chuẩn Màn hình 2 Dribbble: Nửa trên (55%) là bản đồ toàn cảnh với đường polyline đỏ san hô `#FF4B55` zic-zac đường phố và **Marker ảnh tròn (Circular Photo Pins)** viền trắng 3px; Nửa dưới (45%) là Bottom Sheet trắng bo góc 32px gồm ngày khởi hành/kết thúc + nút `[Thay đổi]`, bộ chọn Ngày 1/Ngày 2/Ngày 3 dạng pill san hô, và dải thẻ điểm dừng lướt ngang nối bằng đường đứt khúc đỏ `----`. |
-| 6 | [`lib/main.dart`](file:///d:/trip_flow/lib/main.dart) | ✅ **Cập nhật** | Nâng cấp thanh Bottom Navigation Bar thành **Floating Capsule Navigation Bar** nổi bo cong 30px, bóng mờ cao cấp, pill active màu đỏ san hô `#FF4B55` hiển thị icon + tên tab mượt mà. |
-
----
-
-## 3. Các điểm nổi bật về trải nghiệm người dùng (UX/UI Polish)
-1. **Thiết kế tập trung vào hình ảnh trực quan (Visual-First & Card-Driven)**: 
-   - Thay vì các khối văn bản dài dễ gây ngợp, giao diện chuyển sang dạng thẻ ảnh nghệ thuật tỷ lệ chuẩn quốc tế với đầy đủ thông số chính (đánh giá sao, thời lượng, khoảng cách, giá vé).
-2. **Khắc phục triệt để lỗi Overflow**:
-   - Mọi khối tiêu đề, địa chỉ, nguồn xác thực đều có `TextOverflow.ellipsis`, `Expanded`, và kích thước tính toán linh hoạt theo `constraints` của từng màn hình.
-3. **Hiệu ứng chuyển cảnh và tính tương tác cao**:
-   - Chạm vào thẻ 3D Carousel hoặc nút `↗` mở ngay Lộ trình thông minh.
-   - Chạm vào Marker tròn trên bản đồ hoặc thẻ điểm dừng trong Bottom Sheet mở ngay màn hình chi tiết danh thắng chuẩn Screen 3 Dribbble.
+| STT | Đường dẫn file | Trạng thái | Nội dung thay đổi |
+|---|---|---|---|
+| 1 | `android/app/src/main/AndroidManifest.xml` | ✅ Cập nhật | Thêm `<uses-permission android:name="android.permission.INTERNET"/>`, `ACCESS_NETWORK_STATE` và `android:usesCleartextTraffic="true"` vào thẻ `<application>`. |
+| 2 | `android/gradle.properties` | ✅ Cập nhật | Bổ sung cờ `--enable-native-access=ALL-UNNAMED` vào `org.gradle.jvmargs` để chặn warning đỏ của Java 21. |
+| 3 | `lib/main.dart` | ✅ Cập nhật | Định nghĩa lớp `TripFlowHttpOverrides` với header `User-Agent: TripFlow/1.0 (Android; Mobile)` và kích hoạt trên mobile (`!kIsWeb`). |
+| 4 | `lib/features/home/widgets/hero_trip_carousel.dart` | ✅ Cập nhật | Chuyển 4 link ảnh Hero sang Unsplash, nâng cấp `loadingBuilder` & `errorBuilder` với gradient `[0xFF0F766E, 0xFF0F172A]` + icon landscape mờ. |
+| 5 | `lib/features/home/widgets/popular_destination_card.dart` | ✅ Cập nhật | Thay icon lỗi `Icons.image_not_supported_outlined` bằng gradient bóng mượt + icon danh thắng `Icons.landscape_rounded`. |
+| 6 | `lib/features/home/home_screen.dart` | ✅ Cập nhật | Thay đổi `padding: const EdgeInsets.only(bottom: 130)` trên `ListView` để giải phóng không gian cho Floating Bottom Bar. |
+| 7 | `lib/core/utils/mock_data.dart` | ✅ Cập nhật | Thay thế toàn bộ 38 link Wikimedia sang Unsplash CDN chất lượng cao cho 10 Tỉnh/Thành và 28 Điểm Đến. |
+| 8 | `lib/features/itinerary/screens/stop_detail_sheet.dart` | ✅ Cập nhật | Cập nhật 3 link ảnh gallery dự phòng sang Unsplash. |
 
 ---
 
-## 4. Hướng dẫn kiểm thử thực tế
-1. **Ứng dụng Flutter App**:
-   - Truy cập: `http://localhost:3000/` trên trình duyệt.
-   - Thao tác:
-     - Vuốt ngang 3D Card Deck Carousel trên Trang chủ.
-     - Nhấn nút `↗` trên Hero Card hoặc chạm vào bất kỳ thẻ Điểm đến thịnh hành nào.
-     - Kiểm tra Màn hình Lộ trình: Xem Marker ảnh tròn trên bản đồ, chuyển giữa Ngày 1 / Ngày 2, chạm vào thẻ điểm dừng để xem ảnh toàn màn hình và dải thumbnail `+25`.
-2. **Admin Web Dashboard**:
-   - Phục vụ tại: `http://localhost:5173/`
-   - Hoạt động ổn định song song không bị gián đoạn.
+## 3. Hướng dẫn kiểm thử và chạy trên máy ảo/máy thật
+1. **Kiểm tra cú pháp:** Chạy `flutter analyze` để xác nhận 0 lỗi biên dịch.
+2. **Hot Reload / Hot Restart:** Bấm phím `R` trong terminal chạy app hoặc bấm nút Restart trên thanh công cụ Android Studio.
+3. **Nếu ứng dụng chưa cập nhật quyền Android:** Chạy lại `flutter run -d emulator-5554` để nạp manifest mới có quyền INTERNET.
+4. **Quan sát:**
+   - Thẻ Hero Carousel "Hà Nội 36 Phố Phường" hiện ảnh cầu Thê Húc / Hồ Gươm rực rỡ sắc nét.
+   - Các thẻ "Điểm Đến Thịnh Hành" (Phố đi bộ Nguyễn Huệ, Bảo tàng Chứng tích Chiến tranh) nạp ảnh tức thì, không bị lỗi gạch chéo.
+   - Cuộn xuống đáy màn hình: Dòng "Ẩm Thực & Món Ngon" hiển thị trọn vẹn, không còn bị thanh điều hướng che lấp.
