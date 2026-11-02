@@ -4,7 +4,8 @@ Tách khỏi `models.py` (catalog) để không phá 18 bảng cũ. Mọi bảng
 khoá ngoại thật và index theo `trip_id` để truy vấn theo chuyến.
 """
 
-from datetime import date, datetime
+import datetime as dt
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 
@@ -66,7 +67,7 @@ class Trip(SQLModel, table=True):
     destination_lat: Optional[float] = None
     destination_lng: Optional[float] = None
 
-    start_date: Optional[date] = None
+    start_date: Optional[dt.date] = None
     total_days: int = Field(default=1, ge=1, le=14)
     party_size: int = Field(default=2, ge=1, le=20)
     vehicle: VehicleType = VehicleType.motorbike
@@ -90,7 +91,7 @@ class TripDay(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     trip_id: int = Field(foreign_key="trips.id", index=True)
     day_number: int = Field(ge=1)
-    date: Optional[date] = None
+    date: Optional[dt.date] = None
     title: Optional[str] = Field(default=None, max_length=200)
     note: Optional[str] = None
 

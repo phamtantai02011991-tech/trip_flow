@@ -14,19 +14,13 @@ _BACKEND_DIR = str(Path(__file__).resolve().parents[3])
 if _BACKEND_DIR not in sys.path:
     sys.path.insert(0, _BACKEND_DIR)
 
+from sqlalchemy import or_
+from sqlmodel import SQLModel, Session, select
+
 try:
-    from sqlalchemy import or_
-    from sqlmodel import SQLModel, Session, select
-    try:
-        from app.models.models import Restaurant
-    except ImportError:
-        from backend.app.models.models import Restaurant
-except Exception:
-    or_ = None
-    SQLModel = Any  # type: ignore
-    Session = Any  # type: ignore
-    select = None
-    Restaurant = Any  # type: ignore
+    from app.models.models import Restaurant
+except ImportError:
+    from backend.app.models.models import Restaurant  # type: ignore
 
 # Khung tọa độ địa lý hợp lệ của lãnh thổ Việt Nam (Đất liền & Hải đảo)
 VN_MIN_LAT = 8.18
