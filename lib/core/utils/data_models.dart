@@ -4,6 +4,22 @@ import '../config/app_config.dart';
 /// Đồng bộ 100% với cấu trúc JSON của FastAPI Backend (`SQLModel` Schemas & `/api/v1/*`).
 
 class ProvinceModel {
+  static const ProvinceModel vietnamAll = ProvinceModel(
+    id: 0,
+    code: 'ALL',
+    name: 'Toàn quốc 🇻🇳 — Khám Phá Việt Nam',
+    region: 'Toàn quốc',
+    description:
+        'Khám phá dải đất hình chữ S với hơn 3.000km bờ biển tuyệt mỹ, các cung đường đèo kỳ vĩ và di sản văn hóa nghìn năm.',
+    heroImage:
+        'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1280&q=80',
+    centerLat: 16.0544,
+    centerLng: 108.2022,
+    destinationCount: 64,
+    foodCount: 48,
+    restaurantCount: 52,
+  );
+
   final int id;
   final String code;
   final String name;
@@ -345,6 +361,48 @@ class ReviewItemModel {
       };
 }
 
+class DishModel {
+  final int id;
+  final String name;
+  final int priceVnd;
+  final String priceDisplay;
+  final String description;
+  final String imageUrl;
+  final bool isSignature;
+
+  const DishModel({
+    required this.id,
+    required this.name,
+    required this.priceVnd,
+    required this.priceDisplay,
+    required this.description,
+    required this.imageUrl,
+    this.isSignature = false,
+  });
+
+  factory DishModel.fromJson(Map<String, dynamic> json) {
+    return DishModel(
+      id: (json['id'] as num?)?.toInt() ?? 1,
+      name: (json['name'] ?? '').toString(),
+      priceVnd: (json['price_vnd'] as num?)?.toInt() ?? 50000,
+      priceDisplay: (json['price_display'] ?? '50.000đ').toString(),
+      description: (json['description'] ?? '').toString(),
+      imageUrl: (json['image_url'] ?? '').toString(),
+      isSignature: json['is_signature'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'price_vnd': priceVnd,
+        'price_display': priceDisplay,
+        'description': description,
+        'image_url': imageUrl,
+        'is_signature': isSignature,
+      };
+}
+
 class RestaurantModel {
   final int id;
   final int provinceId;
@@ -364,6 +422,7 @@ class RestaurantModel {
   final int reviewsCount;
   final bool isHighRated;
   final List<ReviewItemModel> sampleReviews;
+  final List<DishModel> dishes;
   final String imageUrl;
   final String? thumbnailUrl;
   final bool isSponsored;
@@ -390,6 +449,7 @@ class RestaurantModel {
     this.reviewsCount = 120,
     this.isHighRated = true,
     this.sampleReviews = const [],
+    this.dishes = const [],
     required this.imageUrl,
     this.thumbnailUrl,
     this.isSponsored = false,
@@ -406,6 +466,10 @@ class RestaurantModel {
     final rawReviews = (json['sample_reviews'] as List<dynamic>?) ?? [];
     final parsedReviews = rawReviews
         .map((r) => ReviewItemModel.fromJson(Map<String, dynamic>.from(r as Map)))
+        .toList();
+    final rawDishes = (json['dishes'] as List<dynamic>?) ?? [];
+    final parsedDishes = rawDishes
+        .map((d) => DishModel.fromJson(Map<String, dynamic>.from(d as Map)))
         .toList();
 
     final rScore = (json['rating'] as num?)?.toDouble() ?? 4.6;
@@ -434,6 +498,7 @@ class RestaurantModel {
       reviewsCount: revCnt,
       isHighRated: isHigh,
       sampleReviews: parsedReviews,
+      dishes: parsedDishes,
       imageUrl: rawUrl,
       thumbnailUrl: json['thumbnail_url']?.toString() ??
           AppConfig.buildThumbnailUrl(rawUrl),
@@ -463,6 +528,7 @@ class RestaurantModel {
         'reviews_count': reviewsCount,
         'is_high_rated': isHighRated,
         'sample_reviews': sampleReviews.map((e) => e.toJson()).toList(),
+        'dishes': dishes.map((e) => e.toJson()).toList(),
         'image_url': imageUrl,
         'thumbnail_url': resolvedThumbnailUrl,
         'is_sponsored': isSponsored,
@@ -793,6 +859,467 @@ class ContentReportRecord {
     required this.issueType,
     required this.description,
     this.status = 'pending',
+    required this.createdAt,
+  });
+}
+
+/// ==========================================
+/// SUPER APP ECOSYSTEM MODELS
+/// ==========================================
+
+/// Model Khách sạn, Homestay & Resort
+class HotelModel {
+  final int id;
+  final int provinceId;
+  final String provinceName;
+  final String name;
+  final String hotelType; // 'resort' | 'homestay' | 'hotel' | 'villa'
+  final String address;
+  final String hotline;
+  final double latitude;
+  final double longitude;
+  final double rating;
+  final int reviewCount;
+  final int pricePerNightVnd;
+  final String originalPriceDisplay;
+  final List<String> imageUrls;
+  final List<String> amenities; // ['Hồ bơi vô cực', 'View săn mây', 'Gần biển', 'Bữa sáng miễn phí', 'Chỗ để ô tô']
+  final List<HotelRoomModel> rooms;
+  final bool isVerified;
+  final String checkInTime;
+  final String checkOutTime;
+  final String description;
+
+  const HotelModel({
+    required this.id,
+    required this.provinceId,
+    required this.provinceName,
+    required this.name,
+    required this.hotelType,
+    required this.address,
+    required this.hotline,
+    required this.latitude,
+    required this.longitude,
+    required this.rating,
+    required this.reviewCount,
+    required this.pricePerNightVnd,
+    required this.originalPriceDisplay,
+    required this.imageUrls,
+    required this.amenities,
+    required this.rooms,
+    this.isVerified = true,
+    this.checkInTime = '14:00',
+    this.checkOutTime = '12:00',
+    this.description = '',
+  });
+
+  String get heroImage => imageUrls.isNotEmpty ? imageUrls.first : '';
+  String get priceDisplay => '${AppConfig.formatVnd(pricePerNightVnd)}/đêm';
+
+  factory HotelModel.fromJson(Map<String, dynamic> json) {
+    final rawImgs = (json['image_urls'] as List<dynamic>?) ?? [];
+    final rawAmenities = (json['amenities'] as List<dynamic>?) ?? [];
+    final rawRooms = (json['rooms'] as List<dynamic>?) ?? [];
+    return HotelModel(
+      id: (json['id'] as num).toInt(),
+      provinceId: (json['province_id'] as num?)?.toInt() ?? 1,
+      provinceName: (json['province_name'] ?? 'Toàn quốc').toString(),
+      name: (json['name'] ?? '').toString(),
+      hotelType: (json['hotel_type'] ?? 'hotel').toString(),
+      address: (json['address'] ?? '').toString(),
+      hotline: (json['hotline'] ?? '1900 6868').toString(),
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 10.7769,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 106.7009,
+      rating: (json['rating'] as num?)?.toDouble() ?? 4.8,
+      reviewCount: (json['review_count'] as num?)?.toInt() ?? 120,
+      pricePerNightVnd: (json['price_per_night_vnd'] as num?)?.toInt() ?? 850000,
+      originalPriceDisplay: (json['original_price_display'] ?? '').toString(),
+      imageUrls: rawImgs.map((e) => e.toString()).toList(),
+      amenities: rawAmenities.map((e) => e.toString()).toList(),
+      rooms: rawRooms
+          .map((r) => HotelRoomModel.fromJson(Map<String, dynamic>.from(r as Map)))
+          .toList(),
+      isVerified: json['is_verified'] as bool? ?? true,
+      checkInTime: (json['check_in_time'] ?? '14:00').toString(),
+      checkOutTime: (json['check_out_time'] ?? '12:00').toString(),
+      description: (json['description'] ?? '').toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'province_id': provinceId,
+        'province_name': provinceName,
+        'name': name,
+        'hotel_type': hotelType,
+        'address': address,
+        'hotline': hotline,
+        'latitude': latitude,
+        'longitude': longitude,
+        'rating': rating,
+        'review_count': reviewCount,
+        'price_per_night_vnd': pricePerNightVnd,
+        'original_price_display': originalPriceDisplay,
+        'image_urls': imageUrls,
+        'amenities': amenities,
+        'rooms': rooms.map((r) => r.toJson()).toList(),
+        'is_verified': isVerified,
+        'check_in_time': checkInTime,
+        'check_out_time': checkOutTime,
+        'description': description,
+      };
+}
+
+class HotelRoomModel {
+  final int id;
+  final String name;
+  final int priceVnd;
+  final int maxGuests;
+  final String bedInfo;
+  final String imageUrl;
+
+  const HotelRoomModel({
+    required this.id,
+    required this.name,
+    required this.priceVnd,
+    required this.maxGuests,
+    required this.bedInfo,
+    required this.imageUrl,
+  });
+
+  String get priceDisplay => '${AppConfig.formatVnd(priceVnd)}/đêm';
+
+  factory HotelRoomModel.fromJson(Map<String, dynamic> json) {
+    return HotelRoomModel(
+      id: (json['id'] as num).toInt(),
+      name: (json['name'] ?? '').toString(),
+      priceVnd: (json['price_vnd'] as num?)?.toInt() ?? 600000,
+      maxGuests: (json['max_guests'] as num?)?.toInt() ?? 2,
+      bedInfo: (json['bed_info'] ?? '1 Giường đôi King').toString(),
+      imageUrl: (json['image_url'] ?? '').toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'price_vnd': priceVnd,
+        'max_guests': maxGuests,
+        'bed_info': bedInfo,
+        'image_url': imageUrl,
+      };
+}
+
+/// Model Đặt vé Giao thông (Vé xe Limousine, Tàu hoả SE1, Máy bay)
+class TransportTicketModel {
+  final int id;
+  final String type; // 'bus' | 'train' | 'flight'
+  final String operatorName; // 'Phương Trang FUTA', 'Đường Sắt Việt Nam (SE1)', 'Vietnam Airlines'
+  final String operatorLogoUrl;
+  final String fromCity;
+  final String toCity;
+  final String departureTime;
+  final String arrivalTime;
+  final String durationText;
+  final String seatClass; // 'Limousine 24 Phòng VIP', 'Khoang 4 Giường Nằm Mềm', 'Phổ Thông Linh Hoạt'
+  final int priceVnd;
+  final int availableSeats;
+  final String vehicleCode; // 'VN123', 'SE1', 'FUTA-51B'
+
+  const TransportTicketModel({
+    required this.id,
+    required this.type,
+    required this.operatorName,
+    required this.operatorLogoUrl,
+    required this.fromCity,
+    required this.toCity,
+    required this.departureTime,
+    required this.arrivalTime,
+    required this.durationText,
+    required this.seatClass,
+    required this.priceVnd,
+    required this.availableSeats,
+    required this.vehicleCode,
+  });
+
+  String get priceDisplay => AppConfig.formatVnd(priceVnd);
+
+  factory TransportTicketModel.fromJson(Map<String, dynamic> json) {
+    return TransportTicketModel(
+      id: (json['id'] as num).toInt(),
+      type: (json['type'] ?? 'bus').toString(),
+      operatorName: (json['operator_name'] ?? '').toString(),
+      operatorLogoUrl: (json['operator_logo_url'] ?? '').toString(),
+      fromCity: (json['from_city'] ?? '').toString(),
+      toCity: (json['to_city'] ?? '').toString(),
+      departureTime: (json['departure_time'] ?? '').toString(),
+      arrivalTime: (json['arrival_time'] ?? '').toString(),
+      durationText: (json['duration_text'] ?? '').toString(),
+      seatClass: (json['seat_class'] ?? '').toString(),
+      priceVnd: (json['price_vnd'] as num?)?.toInt() ?? 250000,
+      availableSeats: (json['available_seats'] as num?)?.toInt() ?? 10,
+      vehicleCode: (json['vehicle_code'] ?? '').toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'type': type,
+        'operator_name': operatorName,
+        'operator_logo_url': operatorLogoUrl,
+        'from_city': fromCity,
+        'to_city': toCity,
+        'departure_time': departureTime,
+        'arrival_time': arrivalTime,
+        'duration_text': durationText,
+        'seat_class': seatClass,
+        'price_vnd': priceVnd,
+        'available_seats': availableSeats,
+        'vehicle_code': vehicleCode,
+      };
+}
+
+typedef TransportModel = TransportTicketModel;
+
+/// Model Tour Du Lịch Tuyển Chọn & Phượt Mạo Hiểm
+class TourModel {
+  final int id;
+  final int provinceId;
+  final String provinceName;
+  final String title;
+  final String category; // 'trekking' | 'motorbike_loop' | 'diving' | 'culture'
+  final int durationDays;
+  final String durationText; // '3 Ngày 2 Đêm'
+  final String difficulty; // 'Dễ' | 'Vừa phải' | 'Thử thách (Challenging)'
+  final int priceVnd;
+  final double rating;
+  final int reviewCount;
+  final String heroImage;
+  final List<String> galleryImages;
+  final List<String> highlights;
+  final List<String> dailySchedule;
+  final List<String> inclusions;
+  final String guideName;
+  final String guidePhone;
+
+  const TourModel({
+    required this.id,
+    required this.provinceId,
+    required this.provinceName,
+    required this.title,
+    required this.category,
+    required this.durationDays,
+    required this.durationText,
+    required this.difficulty,
+    required this.priceVnd,
+    required this.rating,
+    required this.reviewCount,
+    required this.heroImage,
+    required this.galleryImages,
+    required this.highlights,
+    required this.dailySchedule,
+    required this.inclusions,
+    required this.guideName,
+    required this.guidePhone,
+  });
+
+  String get priceDisplay => '${AppConfig.formatVnd(priceVnd)}/người';
+
+  factory TourModel.fromJson(Map<String, dynamic> json) {
+    final rawGalleries = (json['gallery_images'] as List<dynamic>?) ?? [];
+    final rawHighlights = (json['highlights'] as List<dynamic>?) ?? [];
+    final rawSchedule = (json['daily_schedule'] as List<dynamic>?) ?? [];
+    final rawInclusions = (json['inclusions'] as List<dynamic>?) ?? [];
+    return TourModel(
+      id: (json['id'] as num).toInt(),
+      provinceId: (json['province_id'] as num?)?.toInt() ?? 1,
+      provinceName: (json['province_name'] ?? 'Toàn quốc').toString(),
+      title: (json['title'] ?? '').toString(),
+      category: (json['category'] ?? 'trekking').toString(),
+      durationDays: (json['duration_days'] as num?)?.toInt() ?? 2,
+      durationText: (json['duration_text'] ?? '2 Ngày 1 Đêm').toString(),
+      difficulty: (json['difficulty'] ?? 'Vừa phải').toString(),
+      priceVnd: (json['price_vnd'] as num?)?.toInt() ?? 1500000,
+      rating: (json['rating'] as num?)?.toDouble() ?? 4.9,
+      reviewCount: (json['review_count'] as num?)?.toInt() ?? 95,
+      heroImage: (json['hero_image'] ?? '').toString(),
+      galleryImages: rawGalleries.map((e) => e.toString()).toList(),
+      highlights: rawHighlights.map((e) => e.toString()).toList(),
+      dailySchedule: rawSchedule.map((e) => e.toString()).toList(),
+      inclusions: rawInclusions.map((e) => e.toString()).toList(),
+      guideName: (json['guide_name'] ?? 'Trưởng đoàn TripFlow').toString(),
+      guidePhone: (json['guide_phone'] ?? '1900 6868').toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'province_id': provinceId,
+        'province_name': provinceName,
+        'title': title,
+        'category': category,
+        'duration_days': durationDays,
+        'duration_text': durationText,
+        'difficulty': difficulty,
+        'price_vnd': priceVnd,
+        'rating': rating,
+        'review_count': reviewCount,
+        'hero_image': heroImage,
+        'gallery_images': galleryImages,
+        'highlights': highlights,
+        'daily_schedule': dailySchedule,
+        'inclusions': inclusions,
+        'guide_name': guideName,
+        'guide_phone': guidePhone,
+      };
+}
+
+/// Model Điểm dừng chân phượt (Biker Road-trip POI)
+class BikerPOIModel {
+  final int id;
+  final String name;
+  final String category; // 'gas_station' | 'mechanic' | 'viewpoint' | 'pass' | 'rest_stop'
+  final String address;
+  final double latitude;
+  final double longitude;
+  final String? phone;
+  final String description;
+  final String imageUrl;
+
+  const BikerPOIModel({
+    required this.id,
+    required this.name,
+    required this.category,
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+    this.phone,
+    required this.description,
+    required this.imageUrl,
+  });
+
+  factory BikerPOIModel.fromJson(Map<String, dynamic> json) {
+    return BikerPOIModel(
+      id: (json['id'] as num).toInt(),
+      name: (json['name'] ?? '').toString(),
+      category: (json['category'] ?? 'gas_station').toString(),
+      address: (json['address'] ?? '').toString(),
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 10.7769,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 106.7009,
+      phone: json['phone']?.toString(),
+      description: (json['description'] ?? '').toString(),
+      imageUrl: (json['image_url'] ?? '').toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'category': category,
+        'address': address,
+        'latitude': latitude,
+        'longitude': longitude,
+        'phone': phone,
+        'description': description,
+        'image_url': imageUrl,
+      };
+}
+
+typedef BikerPoiModel = BikerPOIModel;
+
+/// Booking Records
+class HotelBookingRecord {
+  final String bookingId;
+  final int hotelId;
+  final String hotelName;
+  final String roomName;
+  final String checkInDate;
+  final String checkOutDate;
+  final int guests;
+  final String customerName;
+  final String customerPhone;
+  final int totalPrice;
+  final String voucherCode;
+  final String status;
+  final String createdAt;
+
+  const HotelBookingRecord({
+    required this.bookingId,
+    required this.hotelId,
+    required this.hotelName,
+    required this.roomName,
+    required this.checkInDate,
+    required this.checkOutDate,
+    required this.guests,
+    required this.customerName,
+    required this.customerPhone,
+    required this.totalPrice,
+    required this.voucherCode,
+    this.status = 'confirmed',
+    required this.createdAt,
+  });
+}
+
+class TransportBookingRecord {
+  final String bookingId;
+  final int ticketId;
+  final String operatorName;
+  final String fromCity;
+  final String toCity;
+  final String departureTime;
+  final String seatClass;
+  final String passengerName;
+  final String passengerPhone;
+  final int totalPrice;
+  final String ticketCode;
+  final String status;
+  final String createdAt;
+
+  const TransportBookingRecord({
+    required this.bookingId,
+    required this.ticketId,
+    required this.operatorName,
+    required this.fromCity,
+    required this.toCity,
+    required this.departureTime,
+    required this.seatClass,
+    required this.passengerName,
+    required this.passengerPhone,
+    required this.totalPrice,
+    required this.ticketCode,
+    this.status = 'confirmed',
+    required this.createdAt,
+  });
+}
+
+class TourBookingRecord {
+  final String bookingId;
+  final int tourId;
+  final String tourTitle;
+  final String startDate;
+  final int partySize;
+  final String contactName;
+  final String contactPhone;
+  final int totalAmount;
+  final String guideName;
+  final String guidePhone;
+  final String voucherCode;
+  final String status;
+  final String createdAt;
+
+  const TourBookingRecord({
+    required this.bookingId,
+    required this.tourId,
+    required this.tourTitle,
+    required this.startDate,
+    required this.partySize,
+    required this.contactName,
+    required this.contactPhone,
+    required this.totalAmount,
+    required this.guideName,
+    required this.guidePhone,
+    required this.voucherCode,
+    this.status = 'confirmed',
     required this.createdAt,
   });
 }

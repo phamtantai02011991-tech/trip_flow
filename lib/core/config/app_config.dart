@@ -40,6 +40,21 @@ class AppConfig {
   static const int maxItineraryStops = 20;
   static const int corridorRateLimitPerMinute = 10;
 
+  /// Định dạng số tiền VNĐ (ví dụ: 1200000 -> 1.200.000đ)
+  static String formatVnd(int amount) {
+    final str = amount.toString();
+    final buffer = StringBuffer();
+    int count = 0;
+    for (int i = str.length - 1; i >= 0; i--) {
+      buffer.write(str[i]);
+      count++;
+      if (count % 3 == 0 && i > 0) {
+        buffer.write('.');
+      }
+    }
+    return '${buffer.toString().split('').reversed.join()}đ';
+  }
+
   /// Sinh URL ảnh Thumbnail nhẹ (c_fill,w_400,h_300,q_auto,f_auto) cho danh sách Flutter
   static String buildThumbnailUrl(String originalUrl) {
     if (originalUrl.isEmpty) {

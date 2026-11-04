@@ -24,7 +24,7 @@ void main() {
     };
   });
   testWidgets(
-    'TripFlow Mobile (Riverpod + Dio + Hive) hiển thị đầy đủ 5 tab điều hướng và dữ liệu TP. Hồ Chí Minh',
+    'TripFlow Mobile hiển thị BrandIdentityHeader, SuperAppServiceGrid và mặc định Toàn quốc 🇻🇳',
     (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
@@ -38,22 +38,26 @@ void main() {
       await tester.pumpAndSettle();
       tester.takeException();
 
-      // TC-01: Hiển thị mặc định TP. Hồ Chí Minh và tab điều hướng chuẩn
-      expect(find.text('TP. Hồ Chí Minh'), findsWidgets);
+      // TC-01: Hiển thị mặc định Toàn quốc 🇻🇳 và Brand Identity Hero Header
+      expect(find.textContaining('Toàn quốc 🇻🇳'), findsWidgets);
+      expect(find.text('TRIPFLOW'), findsOneWidget);
+      expect(find.text('SUPER APP'), findsOneWidget);
+      expect(find.text('1900 6868'), findsOneWidget);
       expect(find.text('Khám phá'), findsOneWidget);
-      expect(find.byIcon(Icons.map_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.map_outlined), findsWidgets);
       expect(find.byIcon(Icons.event_note_outlined), findsOneWidget);
       expect(find.byIcon(Icons.ramen_dining_outlined), findsOneWidget);
       expect(find.byIcon(Icons.person_outline_rounded), findsOneWidget);
 
-      // Hiển thị địa điểm nổi bật tại TP.HCM
-      expect(
-        find.textContaining('Dinh Độc Lập'),
-        findsWidgets,
-      );
+      // Hiển thị 5 dịch vụ Super App
+      expect(find.text('Khách Sạn'), findsOneWidget);
+      expect(find.text('Vé Xe & Tàu'), findsOneWidget);
+      expect(find.text('Tour Tuyển'), findsOneWidget);
+      expect(find.text('Lập Lịch Phượt'), findsOneWidget);
+      expect(find.text('Ẩm Thực'), findsWidgets);
 
       // Chuyển sang Tab 1: Gần đây
-      await tester.tap(find.byIcon(Icons.map_outlined));
+      await tester.tap(find.byIcon(Icons.map_outlined).last);
       await tester.pumpAndSettle();
       tester.takeException();
       expect(find.text('Gần đây'), findsOneWidget);
@@ -356,6 +360,149 @@ void main() {
       expect(appState.userPhone, isEmpty);
       expect(appState.isOtpVerified, isFalse);
       expect(appState.userName, contains('Guest Mode'));
+    },
+  );
+
+  test(
+    'TC-SuperApp-01: MockDataRepository chứa đầy đủ dữ liệu Toàn Quốc, Khách sạn, Vé xe tàu, Tour và Biker POIs',
+    () {
+      // 1. Kiểm tra hằng số Toàn quốc
+      expect(MockDataRepository.vietnamAll.id, equals(0));
+      expect(MockDataRepository.vietnamAll.name, contains('Toàn quốc'));
+      expect(MockDataRepository.vietnamAll.code, equals('ALL'));
+
+      // 2. Kiểm tra Khách sạn & Resort
+      final hotels = MockDataRepository.hotels;
+      expect(hotels.isNotEmpty, isTrue);
+      expect(hotels.any((h) => h.hotelType == 'resort'), isTrue);
+      expect(hotels.any((h) => h.hotelType == 'homestay'), isTrue);
+      expect(hotels.first.rooms.isNotEmpty, isTrue);
+      expect(hotels.first.hotline.isNotEmpty, isTrue);
+      expect(hotels.first.pricePerNightVnd, greaterThan(0));
+
+      // 3. Kiểm tra Vé xe/tàu/bay
+      final transports = MockDataRepository.transportTickets;
+      expect(transports.isNotEmpty, isTrue);
+      expect(transports.any((t) => t.type == 'bus'), isTrue);
+      expect(transports.any((t) => t.type == 'train'), isTrue);
+      expect(transports.any((t) => t.type == 'flight'), isTrue);
+      expect(transports.first.priceVnd, greaterThan(0));
+      expect(transports.first.vehicleCode.isNotEmpty, isTrue);
+
+      // 4. Kiểm tra Tours tuyển chọn
+      final tours = MockDataRepository.tours;
+      expect(tours.isNotEmpty, isTrue);
+      expect(tours.any((t) => t.category == 'trekking'), isTrue);
+      expect(tours.any((t) => t.category == 'motorbike_loop'), isTrue);
+      expect(tours.first.dailySchedule.isNotEmpty, isTrue);
+      expect(tours.first.inclusions.isNotEmpty, isTrue);
+      expect(tours.first.guidePhone.isNotEmpty, isTrue);
+
+      // 5. Kiểm tra Biker POIs
+      final pois = MockDataRepository.bikerPOIs;
+      expect(pois.isNotEmpty, isTrue);
+      expect(pois.any((p) => p.category == 'gas_station'), isTrue);
+      expect(pois.any((p) => p.category == 'mechanic'), isTrue);
+      expect(pois.any((p) => p.category == 'viewpoint'), isTrue);
+      expect(pois.any((p) => p.category == 'pass'), isTrue);
+    },
+  );
+
+  test(
+    'TC-SuperApp-02: TripFlowAppState mặc định Toàn quốc 🇻🇳 và chuyển đổi mượt mà giữa Toàn quốc và Tỉnh thành',
+    () {
+      final appState = TripFlowAppState();
+
+      // Mặc định khởi động ở chế độ Toàn quốc
+      expect(appState.isNationalMode, isTrue);
+      expect(appState.selectedProvince.id, equals(0));
+      expect(appState.selectedProvince.name, contains('Toàn quốc'));
+      expect(appState.hotelsForDisplay.isNotEmpty, isTrue);
+      expect(appState.toursForDisplay.isNotEmpty, isTrue);
+      expect(appState.transportTicketsForDisplay.isNotEmpty, isTrue);
+      expect(appState.bikerPOIsForDisplay.isNotEmpty, isTrue);
+
+      // Chuyển sang Tỉnh Lâm Đồng (Đà Lạt)
+      final daLat = appState.provinces.firstWhere((p) => p.code == 'LD');
+      appState.selectProvince(daLat);
+      expect(appState.isNationalMode, isFalse);
+      expect(appState.selectedProvince.id, equals(9));
+      expect(appState.selectedProvince.name, contains('Lâm Đồng'));
+
+      // Danh sách khách sạn hiển thị riêng cho Lâm Đồng
+      for (final h in appState.hotelsForDisplay) {
+        expect(h.provinceId, equals(9));
+      }
+
+      // Quay lại Toàn quốc
+      appState.selectNational();
+      expect(appState.isNationalMode, isTrue);
+      expect(appState.selectedProvince.id, equals(0));
+      expect(appState.hotelsForDisplay.length, equals(MockDataRepository.hotels.length));
+    },
+  );
+
+  test(
+    'TC-SuperApp-03: Luồng đặt phòng E-Voucher, đặt vé E-Ticket và đặt tour lưu trữ chính xác trong AppState',
+    () {
+      final appState = TripFlowAppState();
+
+      // Đặt phòng khách sạn
+      const hotelBooking = HotelBookingRecord(
+        bookingId: 'BK-TEST-001',
+        hotelId: 1,
+        hotelName: 'InterContinental Danang',
+        roomName: 'Resort Classic Oceanview King',
+        checkInDate: '14:00 hôm nay',
+        checkOutDate: '12:00 ngày mai',
+        guests: 2,
+        customerName: 'Nguyễn Văn Phượt',
+        customerPhone: '0987654321',
+        totalPrice: 7800000,
+        voucherCode: 'TF-HTL-TEST001',
+        createdAt: 'Vừa xong',
+      );
+      appState.bookHotel(hotelBooking);
+      expect(appState.hotelBookings.length, equals(1));
+      expect(appState.hotelBookings.first.voucherCode, equals('TF-HTL-TEST001'));
+
+      // Đặt vé giao thông
+      const transportBooking = TransportBookingRecord(
+        bookingId: 'TBK-TEST-002',
+        ticketId: 1,
+        operatorName: 'Phương Trang FUTA',
+        fromCity: 'Sài Gòn',
+        toCity: 'Đà Lạt',
+        departureTime: '23:00',
+        seatClass: 'Limousine 24 Phòng VIP',
+        passengerName: 'Nguyễn Văn Phượt',
+        passengerPhone: '0987654321',
+        totalPrice: 320000,
+        ticketCode: 'ETKT-FUTA-TEST002',
+        createdAt: 'Vừa xong',
+      );
+      appState.bookTransport(transportBooking);
+      expect(appState.transportBookings.length, equals(1));
+      expect(appState.transportBookings.first.ticketCode, equals('ETKT-FUTA-TEST002'));
+
+      // Đặt tour trải nghiệm
+      const tourBooking = TourBookingRecord(
+        bookingId: 'TRBK-TEST-003',
+        tourId: 1,
+        tourTitle: 'Trekking Tà Năng - Phan Dũng',
+        startDate: 'Thứ Bảy tuần này',
+        partySize: 2,
+        contactName: 'Nguyễn Văn Phượt',
+        contactPhone: '0987654321',
+        totalAmount: 5700000,
+        guideName: 'A Sáng',
+        guidePhone: '0978 123 456',
+        voucherCode: 'TF-TOUR-TEST003',
+        createdAt: 'Vừa xong',
+      );
+      appState.bookTour(tourBooking);
+      expect(appState.tourBookings.length, equals(1));
+      expect(appState.tourBookings.first.voucherCode, equals('TF-TOUR-TEST003'));
     },
   );
 }

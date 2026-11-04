@@ -217,7 +217,99 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
                 ),
               ),
 
-              // 2. Danh sách Tỉnh/Thành phố sau khi lọc
+              // 2. Thẻ Toàn Quốc 🇻🇳 Đặc Biệt (Chế độ Toàn quốc)
+              if (_selectedRegion == 'Tất cả' && _searchQuery.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(18),
+                    onTap: () {
+                      widget.appState.selectNational();
+                      Navigator.of(context).pop();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: widget.appState.isNationalMode
+                              ? const Color(0xFFFF4B55)
+                              : const Color(0xFF334155),
+                          width: widget.appState.isNationalMode ? 2 : 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFF0F172A).withValues(alpha: 0.15),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF4B55)
+                                  .withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.public_rounded,
+                              color: Color(0xFFFF4B55),
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text(
+                                      'Toàn quốc 🇻🇳 — Khám Phá Việt Nam',
+                                      style: TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    if (widget.appState.isNationalMode) ...[
+                                      const SizedBox(width: 6),
+                                      const Icon(
+                                        Icons.check_circle_rounded,
+                                        size: 16,
+                                        color: Color(0xFF10B981),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  'Tổng quan 63 tỉnh thành • Danh thắng 3 miền Bắc - Trung - Nam',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 14,
+                            color: Colors.white70,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+              // 3. Danh sách Tỉnh/Thành phố sau khi lọc
               Expanded(
                 child: filteredProvinces.isEmpty
                     ? Center(

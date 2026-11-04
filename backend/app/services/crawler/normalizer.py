@@ -15,6 +15,7 @@ if _BACKEND_DIR not in sys.path:
     sys.path.insert(0, _BACKEND_DIR)
 
 from sqlalchemy import or_
+# pyrefly: ignore[missing-import]
 from sqlmodel import SQLModel, Session, select
 
 try:

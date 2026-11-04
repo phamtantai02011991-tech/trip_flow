@@ -333,7 +333,10 @@ class _TripOverviewScreenState extends ConsumerState<TripOverviewScreen> {
           children: [
             _totalItem('Quãng đường', '${trip.totals.distanceKm.toStringAsFixed(0)} km'),
             _totalItem('Di chuyển', _duration(trip.totals.travelMins)),
-            _totalItem('Dự kiến', money(trip.totals.estCost)),
+            InkWell(
+              onTap: () => _openCostSheet(trip),
+              child: _totalItem('Dự kiến', money(trip.totals.estCost)),
+            ),
           ],
         ),
       );

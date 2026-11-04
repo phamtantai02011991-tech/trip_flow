@@ -9,6 +9,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
+# pyrefly: ignore[missing-import]
 from sqlmodel import Field, SQLModel
 
 

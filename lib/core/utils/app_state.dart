@@ -36,8 +36,10 @@ class TripFlowAppState extends ChangeNotifier {
   int _currentTabIndex = 0;
   int get currentTabIndex => _currentTabIndex;
 
-  ProvinceModel _selectedProvince = MockDataRepository.provinces.first;
+  ProvinceModel _selectedProvince = MockDataRepository.vietnamAll;
   ProvinceModel get selectedProvince => _selectedProvince;
+  bool get isNationalMode => _selectedProvince.id == 0;
+  ProvinceModel get currentProvinceDisplay => _selectedProvince;
 
   List<ProvinceModel> _provinces = List.of(MockDataRepository.provinces);
   List<ProvinceModel> get provinces => _provinces;
@@ -209,15 +211,19 @@ class TripFlowAppState extends ChangeNotifier {
     );
   }
 
-  /// Lấy danh sách địa điểm thuộc tỉnh đang chọn
-  List<DestinationModel> get destinationsForSelectedProvince => _allDestinations
-      .where((d) => d.provinceId == _selectedProvince.id)
-      .toList();
+  /// Lấy danh sách địa điểm thuộc tỉnh đang chọn (hoặc Toàn quốc nếu isNationalMode)
+  List<DestinationModel> get destinationsForSelectedProvince => isNationalMode
+      ? _allDestinations
+      : _allDestinations
+          .where((d) => d.provinceId == _selectedProvince.id)
+          .toList();
 
-  List<DestinationModel> get featuredDestinations =>
-      destinationsForSelectedProvince.where((d) => d.isFeatured).toList();
+  List<DestinationModel> get featuredDestinations => isNationalMode
+      ? _allDestinations.where((d) => d.isFeatured).toList()
+      : destinationsForSelectedProvince.where((d) => d.isFeatured).toList();
 
   List<LocalFoodModel> get localFoodsForSelectedProvince {
+    if (isNationalMode) return _allLocalFoods;
     final list = _allLocalFoods
         .where((f) => f.provinceId == _selectedProvince.id)
         .toList();
@@ -225,10 +231,59 @@ class TripFlowAppState extends ChangeNotifier {
   }
 
   List<RestaurantModel> get restaurantsForSelectedProvince {
+    if (isNationalMode) return _allRestaurants;
     final list = _allRestaurants
         .where((r) => r.provinceId == _selectedProvince.id)
         .toList();
     return list.isNotEmpty ? list : _allRestaurants;
+  }
+
+  /// Danh sách dịch vụ Super App cho chế độ hiển thị Toàn Quốc hoặc Tỉnh thành
+  List<HotelModel> get hotelsForDisplay => isNationalMode
+      ? MockDataRepository.hotels
+      : MockDataRepository.hotels
+          .where((h) => h.provinceId == _selectedProvince.id)
+          .toList();
+
+  List<TourModel> get toursForDisplay => isNationalMode
+      ? MockDataRepository.tours
+      : MockDataRepository.tours
+          .where((t) => t.provinceId == _selectedProvince.id || t.provinceId == 0)
+          .toList();
+
+  List<TransportTicketModel> get transportTicketsForDisplay =>
+      MockDataRepository.transportTickets;
+
+  List<BikerPOIModel> get bikerPOIsForDisplay =>
+      MockDataRepository.bikerPOIs;
+
+  /// Quản lý danh sách Booking cá nhân
+  final List<HotelBookingRecord> _hotelBookings = [];
+  final List<TransportBookingRecord> _transportBookings = [];
+  final List<TourBookingRecord> _tourBookings = [];
+
+  List<HotelBookingRecord> get hotelBookings => _hotelBookings;
+  List<TransportBookingRecord> get transportBookings => _transportBookings;
+  List<TourBookingRecord> get tourBookings => _tourBookings;
+
+  void bookHotel(HotelBookingRecord record) {
+    _hotelBookings.insert(0, record);
+    notifyListeners();
+  }
+
+  void bookTransport(TransportBookingRecord record) {
+    _transportBookings.insert(0, record);
+    notifyListeners();
+  }
+
+  void bookTour(TourBookingRecord record) {
+    _tourBookings.insert(0, record);
+    notifyListeners();
+  }
+
+  void selectNational() {
+    _selectedProvince = MockDataRepository.vietnamAll;
+    notifyListeners();
   }
 
   /// Lọc và tìm kiếm quán ăn nâng cao theo rating, số lượng review, món đặc trưng và nội dung bình luận
@@ -281,6 +336,7 @@ class TripFlowAppState extends ChangeNotifier {
   }
 
   List<ItineraryModel> get sampleItinerariesForSelectedProvince {
+    if (isNationalMode) return _sampleItineraries;
     final list = _sampleItineraries
         .where((i) => i.provinceId == _selectedProvince.id)
         .toList();
@@ -315,8 +371,12 @@ class TripFlowAppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void selectProvince(ProvinceModel province) {
-    _selectedProvince = province;
+  void selectProvince(ProvinceModel? province) {
+    if (province == null || province.id == 0) {
+      _selectedProvince = MockDataRepository.vietnamAll;
+    } else {
+      _selectedProvince = province;
+    }
     notifyListeners();
   }
 
@@ -347,9 +407,11 @@ class TripFlowAppState extends ChangeNotifier {
       _allRestaurants = results[3] as List<RestaurantModel>;
       _sampleItineraries = results[4] as List<ItineraryModel>;
 
-      final currentProv = _provinces.where((p) => p.id == _selectedProvince.id);
-      if (currentProv.isNotEmpty) {
-        _selectedProvince = currentProv.first;
+      if (_selectedProvince.id != 0) {
+        final currentProv = _provinces.where((p) => p.id == _selectedProvince.id);
+        if (currentProv.isNotEmpty) {
+          _selectedProvince = currentProv.first;
+        }
       }
     } finally {
       _isLoading = false;

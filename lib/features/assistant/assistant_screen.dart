@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/assistant_api.dart';
 import '../../state/trips_provider.dart';
 import '../../ui/tokens/app_tokens.dart';
-import '../trip/trip_list_screen.dart' show money;
 
 class _Msg {
   const _Msg({required this.text, required this.fromUser, this.tips = const [], this.applied = const []});

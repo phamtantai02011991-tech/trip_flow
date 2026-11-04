@@ -61,6 +61,12 @@ class _PlannerWizardScreenState extends ConsumerState<PlannerWizardScreen> {
   String _budgetLevel = 'balanced';
   DateTime _startDate = DateTime.now().add(const Duration(days: 7));
 
+  bool _enableCorridorPoi = true;
+  bool _scanGasStation = true;
+  bool _scanMechanic = true;
+  bool _scanScenicPass = true;
+  bool _scanFoodStop = true;
+
   bool _generating = false;
   int _progressStep = 0;
   String? _error;
@@ -240,28 +246,131 @@ class _PlannerWizardScreenState extends ConsumerState<PlannerWizardScreen> {
   Widget _stepHow() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Đi mấy ngày?', style: AppText.display),
+          Text('Thời lượng & Phương tiện', style: AppText.display),
+          const SizedBox(height: 6),
+          Text(
+            'Chọn gói ngày hoặc điều chỉnh theo ý muốn của bạn.',
+            style: AppText.bodySm,
+          ),
           const SizedBox(height: 16),
-          _stepper('Số ngày', _days, 1, 14, (v) => setState(() => _days = v)),
-          const SizedBox(height: 12),
-          _stepper('Số người', _party, 1, 20, (v) => setState(() => _party = v)),
-          const SizedBox(height: 20),
-          Text('Phương tiện', style: AppText.label),
+
+          // Presets thời gian đi phượt
+          Text('Gói thời gian điển hình', style: AppText.label),
           const SizedBox(height: 8),
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              for (final (code, label) in const [
-                ('motorbike', 'Xe máy'),
-                ('car', 'Ô tô'),
-                ('coach', 'Xe khách'),
-              ])
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child:
-                      _chip(label, _vehicle == code, () => setState(() => _vehicle = code)),
-                ),
+              _chip('1 Ngày (Khám phá)', _days == 1, () => setState(() => _days = 1)),
+              _chip('2N1Đ (Cuối tuần)', _days == 2, () => setState(() => _days = 2)),
+              _chip('3N2Đ (Trọn vẹn)', _days == 3, () => setState(() => _days = 3)),
+              _chip('4N3Đ (Chuyên sâu)', _days == 4, () => setState(() => _days = 4)),
+              _chip('Xuyên Việt (7-14N)', _days >= 7, () => setState(() => _days = 7)),
             ],
           ),
+          const SizedBox(height: 14),
+
+          _stepper('Số ngày cụ thể', _days, 1, 14, (v) => setState(() => _days = v)),
+          const SizedBox(height: 10),
+          _stepper('Số người đi cùng', _party, 1, 20, (v) => setState(() => _party = v)),
+          const SizedBox(height: 20),
+
+          Text('Phương tiện di chuyển', style: AppText.label),
+          const SizedBox(height: 8),
+          Column(
+            children: [
+              _vehicleCard(
+                code: 'motorbike',
+                icon: Icons.two_wheeler_rounded,
+                title: '🏍️ Xe máy đi phượt (Motorbike Road-trip)',
+                desc: 'Tối ưu cung đèo ngắm cảnh, vận tốc an toàn 40-45 km/h, ưu tiên trạm xăng & vá xe ven đường.',
+              ),
+              const SizedBox(height: 8),
+              _vehicleCard(
+                code: 'car',
+                icon: Icons.directions_car_rounded,
+                title: '🚗 Ô tô tự lái (Self-drive Car)',
+                desc: 'Tối ưu lộ trình cao tốc, trạm dừng chân quy mô lớn, trạm sạc điện EV và bãi đỗ xe an toàn.',
+              ),
+              const SizedBox(height: 8),
+              _vehicleCard(
+                code: 'coach',
+                icon: Icons.airport_shuttle_rounded,
+                title: '🚌 Xe khách / Tour du lịch',
+                desc: 'Phù hợp gia đình và nhóm bạn, dừng nghỉ ngơi tại các trạm dừng chân tiêu chuẩn.',
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // Tùy chọn Quét Biker Corridor POI
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.route_rounded, color: Color(0xFFFF4B55), size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'Quét Tiện Ích Ven Tuyến Phượt',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Switch(
+                      value: _enableCorridorPoi,
+                      activeThumbColor: const Color(0xFFFF4B55),
+                      onChanged: (val) => setState(() => _enableCorridorPoi = val),
+                    ),
+                  ],
+                ),
+                Text(
+                  'Thuật toán Bounding Box quét cây xăng, tiệm sửa xe, đèo săn mây trong bán kính 2km dọc hành lang đường đi.',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    height: 1.35,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                ),
+                if (_enableCorridorPoi) ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _poiChip('⛽ Cây xăng', _scanGasStation, () {
+                        setState(() => _scanGasStation = !_scanGasStation);
+                      }),
+                      _poiChip('🔧 Quán sửa xe máy', _scanMechanic, () {
+                        setState(() => _scanMechanic = !_scanMechanic);
+                      }),
+                      _poiChip('☁️ Đèo & Viewpoint', _scanScenicPass, () {
+                        setState(() => _scanScenicPass = !_scanScenicPass);
+                      }),
+                      _poiChip('🍛 Quán ăn ven đường', _scanFoodStop, () {
+                        setState(() => _scanFoodStop = !_scanFoodStop);
+                      }),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+
           const SizedBox(height: 20),
           Text('Ngày khởi hành', style: AppText.label),
           const SizedBox(height: 8),
@@ -283,6 +392,89 @@ class _PlannerWizardScreenState extends ConsumerState<PlannerWizardScreen> {
           ],
         ],
       );
+
+  Widget _vehicleCard({
+    required String code,
+    required IconData icon,
+    required String title,
+    required String desc,
+  }) {
+    final active = _vehicle == code;
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () => setState(() => _vehicle = code),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: active ? const Color(0xFFFFF1F2) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: active ? const Color(0xFFFF4B55) : const Color(0xFFE2E8F0),
+            width: active ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: active ? const Color(0xFFFF4B55) : const Color(0xFF64748B),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: active ? const Color(0xFF991B1B) : const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    desc,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF64748B),
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _poiChip(String label, bool active, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? const Color(0xFFFF4B55) : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: active ? const Color(0xFFFF4B55) : const Color(0xFF334155),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: active ? Colors.white : const Color(0xFFCBD5E1),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _stepper(String label, int value, int min, int max, ValueChanged<int> onChanged) {
     return Row(
@@ -438,7 +630,7 @@ class _PlannerWizardScreenState extends ConsumerState<PlannerWizardScreen> {
     final api = ref.read(tripsApiProvider);
     try {
       final title = _titleController.text.trim().isEmpty
-          ? '${_destination?.name ?? 'Khám phá'} · ${_days} ngày'
+          ? '${_destination?.name ?? 'Khám phá'} · $_days ngày'
           : _titleController.text.trim();
 
       final Trip created = await api.create(

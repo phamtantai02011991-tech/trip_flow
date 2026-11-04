@@ -1,0 +1,364 @@
+import 'package:flutter/material.dart';
+import '../../../core/utils/app_state.dart';
+import '../../planner/planner_wizard_screen.dart';
+import '../../restaurants/restaurants_screen.dart';
+import '../../services/hotels_screen.dart';
+import '../../services/tours_screen.dart';
+import '../../services/transport_screen.dart';
+
+/// Hub 5 Dịch vụ cốt lõi của TripFlow Super App (Anti-AI-Slop Standard)
+/// Gồm:
+/// 1. 🏨 Khách Sạn & Homestay (Đặt phòng & E-Voucher)
+/// 2. 🎫 Vé Xe, Tàu & Bay (Đặt vé Limousine, Tàu SE, Máy bay & E-Ticket)
+/// 3. 🗺️ Tour & Trải Nghiệm (Trekking Tà Năng, Fansipan, Hà Giang Loop, Lặn Phú Quốc)
+/// 4. 🏍️ Lập Lịch Phượt (Road-trip Wizard đa ngày, xe máy phượt & ô tô tự lái)
+/// 5. 🍜 Ẩm Thực Quán Ngon (Dữ liệu cào Google Maps / mạng xã hội thực tế)
+class SuperAppServiceGrid extends StatelessWidget {
+  final TripFlowAppState appState;
+
+  const SuperAppServiceGrid({super.key, required this.appState});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section Heading
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Dịch Vụ Du Lịch & Phượt',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF0F172A),
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Hệ sinh thái đặt dịch vụ & tiện ích toàn diện',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFEDEE),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  '5 Tiện Ích',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFFFF4B55),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Hàng 1: 3 dịch vụ du lịch (Khách sạn, Vé xe tàu, Tour)
+          Row(
+            children: [
+              Expanded(
+                child: _ServiceTile(
+                  icon: Icons.hotel_rounded,
+                  iconColor: const Color(0xFF7C3AED),
+                  bgColor: const Color(0xFFF5F3FF),
+                  borderColor: const Color(0xFFDDD6FE),
+                  title: 'Khách Sạn',
+                  subtitle: 'Resort & Stay',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => HotelsScreen(appState: appState),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ServiceTile(
+                  icon: Icons.directions_bus_filled_rounded,
+                  iconColor: const Color(0xFF2563EB),
+                  bgColor: const Color(0xFFEFF6FF),
+                  borderColor: const Color(0xFFBFDBFE),
+                  title: 'Vé Xe & Tàu',
+                  subtitle: 'Limousine, Bay',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => TransportScreen(appState: appState),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ServiceTile(
+                  icon: Icons.terrain_rounded,
+                  iconColor: const Color(0xFF059669),
+                  bgColor: const Color(0xFFECFDF5),
+                  borderColor: const Color(0xFFA7F3D0),
+                  title: 'Tour Tuyển',
+                  subtitle: 'Trekking & Phượt',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ToursScreen(appState: appState),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          // Hàng 2: 2 dịch vụ mũi nhọn mở rộng (Lập Lịch Phượt Biker & Ẩm Thực Quán Ngon)
+          Row(
+            children: [
+              // Lập Lịch Phượt Biker
+              Expanded(
+                flex: 6,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PlannerWizardScreen(),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0F172A).withValues(alpha: 0.12),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF4B55).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.two_wheeler_rounded,
+                            color: Color(0xFFFF4B55),
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'Lập Lịch Phượt',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text('🏍️', style: TextStyle(fontSize: 12)),
+                                ],
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Xuyên Việt • Biker POI',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  color: Color(0xFF94A3B8),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 10),
+
+              // Ẩm Thực Quán Ngon
+              Expanded(
+                flex: 5,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => RestaurantsScreen(appState: appState),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF7ED),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFFED7AA)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEA580C).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.restaurant_menu_rounded,
+                            color: Color(0xFFEA580C),
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Ẩm Thực',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF9A3412),
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Quán ngon thực tế',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  color: Color(0xFFC2410C),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ServiceTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final Color bgColor;
+  final Color borderColor;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _ServiceTile({
+    required this.icon,
+    required this.iconColor,
+    required this.bgColor,
+    required this.borderColor,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: 1),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: iconColor.withValues(alpha: 0.15),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF0F172A),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF64748B),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

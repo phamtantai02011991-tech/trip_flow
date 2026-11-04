@@ -3,12 +3,12 @@ import '../../core/utils/app_state.dart';
 import '../../core/utils/mock_data.dart';
 import '../../core/widgets/common_widgets.dart';
 import '../destinations/destinations_screen.dart';
-import '../favorites/favorites_screen.dart';
 import '../maps/map_corridor_screen.dart';
-import '../provinces/provinces_screen.dart';
 import '../restaurants/restaurant_detail_screen.dart';
+import 'widgets/brand_identity_header.dart';
 import 'widgets/hero_trip_carousel.dart';
 import 'widgets/popular_destination_card.dart';
+import 'widgets/super_app_service_grid.dart';
 
 /// Tab 1: Màn hình Trang Chủ Khám Phá (HomeScreen)
 /// Thiết kế 100% chuẩn theo Dribbble Reference (Màn hình 1):
@@ -68,173 +68,13 @@ class HomeScreen extends StatelessWidget {
 
                 const SizedBox(height: 12),
 
-                // 2. HEADER EDITORIAL (Theo chuẩn Dribbble Ảnh 1)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Lời chào & Tiêu đề lớn
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Xin chào, Du khách 👋',
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF64748B),
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            const Text(
-                              'Đi Đâu Tiếp Theo?',
-                              style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFF0F172A),
-                                letterSpacing: -0.6,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
+                // 2. BRAND IDENTITY HERO HEADER (Chuẩn Anti-AI-Slop Super App)
+                BrandIdentityHeader(appState: appState),
 
-                            // Pill Chọn Tỉnh/Thành phố
-                            InkWell(
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        ProvincesScreen(appState: appState),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE2E8F0),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.location_on_rounded,
-                                      size: 14,
-                                      color: Color(0xFFFF4B55),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      currentProv.name,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFF1E293B),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 2),
-                                    const Icon(
-                                      Icons.keyboard_arrow_down_rounded,
-                                      size: 16,
-                                      color: Color(0xFF475569),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                // 3. SUPER APP SERVICE GRID (5 Dịch vụ: Khách Sạn, Vé Tàu Xe, Tour, Lập Lịch Phượt, Ẩm Thực)
+                SuperAppServiceGrid(appState: appState),
 
-                      // Nhóm Nút Tác vụ (Yêu thích & Chuông Thông báo)
-                      Row(
-                        children: [
-                          // Nút Danh sách Yêu thích
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              IconButton(
-                                tooltip: 'Yêu thích',
-                                style: IconButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  elevation: 1,
-                                ),
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          FavoritesScreen(appState: appState),
-                                    ),
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.favorite_rounded,
-                                  color: Color(0xFFFF4B55),
-                                  size: 20,
-                                ),
-                              ),
-                              if (appState.totalFavoritesCount > 0)
-                                Positioned(
-                                  right: 4,
-                                  top: 4,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 5,
-                                      vertical: 1,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFF4B55),
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
-                                    child: Text(
-                                      '${appState.totalFavoritesCount}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(width: 8),
-
-                          // Nút Chuông thông báo
-                          IconButton(
-                            tooltip: 'Thông báo',
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              elevation: 1,
-                            ),
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Bạn có 3 gợi ý địa điểm mới nhất từ ban biên tập!',
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            },
-                            icon: const Icon(
-                              Icons.notifications_none_rounded,
-                              color: Color(0xFF0F172A),
-                              size: 20,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
 
                 // 3. THANH TÌM KIẾM NHANH TINH TẾ
                 Padding(
@@ -279,7 +119,9 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Tìm địa điểm, danh thắng, món ngon tại ${currentProv.name}...',
+                              appState.isNationalMode
+                                  ? 'Tìm điểm đến, khách sạn, tour, quán ngon toàn quốc...'
+                                  : 'Tìm địa điểm, danh thắng, món ngon tại ${currentProv.name}...',
                               style: const TextStyle(
                                 color: Color(0xFF94A3B8),
                                 fontSize: 13.5,
@@ -363,10 +205,12 @@ class HomeScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Điểm Đến Thịnh Hành',
-                          style: TextStyle(
+                          appState.isNationalMode
+                              ? 'Danh Thắng Thịnh Hành 3 Miền'
+                              : 'Điểm Đến Thịnh Hành Tại ${currentProv.name}',
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
                             color: Color(0xFF0F172A),
@@ -430,10 +274,12 @@ class HomeScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Ẩm Thực & Món Ngon',
-                          style: TextStyle(
+                          appState.isNationalMode
+                              ? 'Đặc Sản Trứ Danh Bắc - Trung - Nam'
+                              : 'Ẩm Thực Đặc Sản ${currentProv.name}',
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
                             color: Color(0xFF0F172A),
@@ -615,7 +461,7 @@ class HomeScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               const Text(
-                                'Tìm Quán Ăn Dọc Tuyến',
+                                'Lập Cung Đường Phượt Dọc Tuyến',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -624,7 +470,7 @@ class HomeScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               const Text(
-                                'Tự động quét bán kính 500m quanh lộ trình bạn đang đi',
+                                'Quét trạm xăng, quán sửa xe, quán cà phê săn mây & trạm dừng ven đường',
                                 style: TextStyle(
                                   color: Color(0xFF94A3B8),
                                   fontSize: 11.5,
