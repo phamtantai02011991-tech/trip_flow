@@ -301,13 +301,13 @@ class MainNavigationShell extends StatelessWidget {
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.12),
-              blurRadius: 18,
+              color: const Color(0xFFE05638).withValues(alpha: 0.10),
+              blurRadius: 20,
               offset: const Offset(0, 6),
             ),
           ],
           border: Border.all(
-            color: const Color(0xFFE2E8F0),
+            color: const Color(0xFFEAE3D9),
             width: 1,
           ),
         ),
@@ -326,10 +326,27 @@ class MainNavigationShell extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFFFF4B55)
-                      : Colors.transparent,
+                  gradient: isSelected
+                      ? const LinearGradient(
+                          colors: [
+                            Color(0xFFE05638), // Terracotta Brick
+                            Color(0xFFF43F5E), // Rose Pink
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  color: isSelected ? null : Colors.transparent,
                   borderRadius: BorderRadius.circular(22),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFFE05638).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

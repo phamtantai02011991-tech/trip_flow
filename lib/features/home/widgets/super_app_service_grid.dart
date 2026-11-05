@@ -8,12 +8,13 @@ import '../../services/transport_screen.dart';
 import '../../services/ota_partner_hub_screen.dart';
 
 /// Hub 5 Dịch vụ cốt lõi của TripFlow Super App (Anti-AI-Slop Standard)
+/// Phối màu tươi sáng: Màu Gạch Terracotta, Hồng đậm nhạt, Xanh biển & Mint tươi mát
 /// Gồm:
-/// 1. 🏨 Khách Sạn & Homestay (Đặt phòng & E-Voucher)
-/// 2. 🎫 Vé Xe, Tàu & Bay (Đặt vé Limousine, Tàu SE, Máy bay & E-Ticket)
-/// 3. 🗺️ Tour & Trải Nghiệm (Trekking Tà Năng, Fansipan, Hà Giang Loop, Lặn Phú Quốc)
-/// 4. 🏍️ Lập Lịch Phượt (Road-trip Wizard đa ngày, xe máy phượt & ô tô tự lái)
-/// 5. 🍜 Ẩm Thực Quán Ngon (Dữ liệu cào Google Maps / mạng xã hội thực tế)
+/// 1. 🏨 Khách Sạn & Homestay (Đặt phòng & E-Voucher) - Tông Hồng Đậm Nhạt
+/// 2. 🎫 Vé Xe, Tàu & Bay (Đặt vé Limousine, Tàu SE, Máy bay & E-Ticket) - Tông Xanh Biển Tươi
+/// 3. 🗺️ Tour & Trải Nghiệm (Trekking Tà Năng, Fansipan, Hà Giang Loop, Lặn Phú Quốc) - Tông Xanh Mint Tươi
+/// 4. 🏍️ Lập Lịch Phượt (Road-trip Wizard đa ngày, xe máy phượt & ô tô tự lái) - Tông Màu Gạch Nung Terracotta
+/// 5. 🍜 Ẩm Thực Quán Ngon (Dữ liệu cào Google Maps / mạng xã hội thực tế) - Tông Cam Đất Ấm Áp
 class SuperAppServiceGrid extends StatelessWidget {
   final TripFlowAppState appState;
 
@@ -38,7 +39,7 @@ class SuperAppServiceGrid extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF0F172A),
+                      color: Color(0xFF1E293B),
                       letterSpacing: -0.4,
                     ),
                   ),
@@ -56,15 +57,16 @@ class SuperAppServiceGrid extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFEDEE),
+                  color: const Color(0xFFFDF2F8),
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFCE7F3)),
                 ),
                 child: const Text(
                   '5 Tiện Ích',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFFFF4B55),
+                    color: Color(0xFFE11D48),
                   ),
                 ),
               ),
@@ -73,15 +75,15 @@ class SuperAppServiceGrid extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // Hàng 1: 3 dịch vụ du lịch (Khách sạn, Vé xe tàu, Tour)
+          // Hàng 1: 3 dịch vụ du lịch (Khách sạn [Hồng], Vé xe tàu [Xanh biển], Tour [Mint])
           Row(
             children: [
               Expanded(
                 child: _ServiceTile(
                   icon: Icons.hotel_rounded,
-                  iconColor: const Color(0xFF7C3AED),
-                  bgColor: const Color(0xFFF5F3FF),
-                  borderColor: const Color(0xFFDDD6FE),
+                  iconColor: const Color(0xFFE11D48),
+                  bgColor: const Color(0xFFFFF1F2),
+                  borderColor: const Color(0xFFFECDD3),
                   title: 'Khách Sạn',
                   subtitle: 'Resort & Stay',
                   onTap: () {
@@ -97,9 +99,9 @@ class SuperAppServiceGrid extends StatelessWidget {
               Expanded(
                 child: _ServiceTile(
                   icon: Icons.directions_bus_filled_rounded,
-                  iconColor: const Color(0xFF2563EB),
-                  bgColor: const Color(0xFFEFF6FF),
-                  borderColor: const Color(0xFFBFDBFE),
+                  iconColor: const Color(0xFF0284C7),
+                  bgColor: const Color(0xFFF0F9FF),
+                  borderColor: const Color(0xFFBAE6FD),
                   title: 'Vé Xe & Tàu',
                   subtitle: 'Limousine, Bay',
                   onTap: () {
@@ -134,10 +136,10 @@ class SuperAppServiceGrid extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          // Hàng 2: 2 dịch vụ mũi nhọn mở rộng (Lập Lịch Phượt Biker & Ẩm Thực Quán Ngon)
+          // Hàng 2: 2 dịch vụ mũi nhọn mở rộng (Lập Lịch Phượt Biker [Terracotta Brick] & Ẩm Thực Quán Ngon [Cam Đất])
           Row(
             children: [
-              // Lập Lịch Phượt Biker
+              // Lập Lịch Phượt Biker (Màu Gạch Terracotta)
               Expanded(
                 flex: 6,
                 child: InkWell(
@@ -152,11 +154,18 @@ class SuperAppServiceGrid extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F172A),
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFFE05638), // Terracotta Brick
+                          Color(0xFFEA580C),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0F172A).withValues(alpha: 0.12),
+                          color: const Color(0xFFE05638).withValues(alpha: 0.25),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -167,12 +176,12 @@ class SuperAppServiceGrid extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF4B55).withValues(alpha: 0.2),
+                            color: Colors.white.withValues(alpha: 0.22),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
                             Icons.two_wheeler_rounded,
-                            color: Color(0xFFFF4B55),
+                            color: Colors.white,
                             size: 22,
                           ),
                         ),
@@ -200,8 +209,8 @@ class SuperAppServiceGrid extends StatelessWidget {
                                 'Xuyên Việt • Biker POI',
                                 style: TextStyle(
                                   fontSize: 10.5,
-                                  color: Color(0xFF94A3B8),
-                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -400,7 +409,7 @@ class _ServiceTile extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
+                color: Color(0xFF1E293B),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -422,4 +431,3 @@ class _ServiceTile extends StatelessWidget {
     );
   }
 }
-

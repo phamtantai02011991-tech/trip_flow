@@ -11,14 +11,15 @@ import 'widgets/popular_destination_card.dart';
 import 'widgets/super_app_service_grid.dart';
 
 /// Tab 1: Màn hình Trang Chủ Khám Phá (HomeScreen)
-/// Thiết kế 100% chuẩn theo Dribbble Reference (Màn hình 1):
-/// - Header lớn phong cách Editorial: "Xin chào, Du khách 👋" + Tiêu đề đậm "Đi Đâu Tiếp Theo?"
-/// - Huy hiệu chọn Tỉnh/Thành phố thông minh + Nút Tìm kiếm & Yêu thích
+/// Thiết kế 100% chuẩn theo Dribbble Reference:
+/// - Nền tươi sáng màu kem ấm (#FAF8F5), hài hòa giữa Terracotta Brick, Hồng đậm nhạt và Xanh biển/Mint
+/// - Header Brand Identity Terracotta Brick sang trọng, lượn cong mềm mại
+/// - 5 Dịch vụ Super App phân loại màu sắc tươi mát, nổi bật
 /// - Thanh tìm kiếm tinh tế + Chips danh mục lướt ngang
 /// - 3D Card Deck Carousel hiển thị Chuyến đi nổi bật với nút ↗ và Pill kính mờ
 /// - Danh sách lướt ngang "Điểm Đến Thịnh Hành" với ảnh tràn viền nghệ thuật & huy hiệu ⭐
 /// - Khu vực "Ẩm Thực Đặc Sản Địa Phương" dạng thẻ ảnh ngang bắt mắt
-/// - Thẻ gọi nhanh "Lập Lịch Trình Dọc Tuyến (Corridor Search)"
+/// - Thẻ gọi nhanh "Lập Cung Đường Phượt Dọc Tuyến" phong cách Xanh Biển Tươi Mát
 class HomeScreen extends StatelessWidget {
   final TripFlowAppState appState;
 
@@ -36,7 +37,7 @@ class HomeScreen extends StatelessWidget {
         final foods = appState.localFoodsForSelectedProvince;
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
+          backgroundColor: const Color(0xFFFAF8F5),
           body: SafeArea(
             bottom: false,
             child: ListView(
@@ -68,15 +69,15 @@ class HomeScreen extends StatelessWidget {
 
                 const SizedBox(height: 12),
 
-                // 2. BRAND IDENTITY HERO HEADER (Chuẩn Anti-AI-Slop Super App)
+                // 2. BRAND IDENTITY HERO HEADER (Terracotta Brick lượn sóng)
                 BrandIdentityHeader(appState: appState),
 
-                // 3. SUPER APP SERVICE GRID (5 Dịch vụ: Khách Sạn, Vé Tàu Xe, Tour, Lập Lịch Phượt, Ẩm Thực)
+                // 3. SUPER APP SERVICE GRID (Khách Sạn, Vé Tàu Xe, Tour, Lập Lịch Phượt, Ẩm Thực)
                 SuperAppServiceGrid(appState: appState),
 
                 const SizedBox(height: 12),
 
-                // 3. THANH TÌM KIẾM NHANH TINH TẾ
+                // 4. THANH TÌM KIẾM NHANH TINH TẾ
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: InkWell(
@@ -98,7 +99,7 @@ class HomeScreen extends StatelessWidget {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: const Color(0xFFE2E8F0),
+                          color: const Color(0xFFEAE3D9),
                           width: 1,
                         ),
                         boxShadow: [
@@ -113,7 +114,7 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.search_rounded,
-                            color: Color(0xFF64748B),
+                            color: Color(0xFF0284C7), // Fresh Ocean Blue
                             size: 22,
                           ),
                           const SizedBox(width: 12),
@@ -130,14 +131,14 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.all(5),
+                            padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
+                              color: const Color(0xFFFFF1F2), // Soft Pink
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(
                               Icons.tune_rounded,
-                              color: Color(0xFF475569),
+                              color: Color(0xFFE11D48), // Deep Rose
                               size: 16,
                             ),
                           ),
@@ -149,7 +150,7 @@ class HomeScreen extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // 4. DANH MỤC NHANH TRƯỢT NGANG
+                // 5. DANH MỤC NHANH TRƯỢT NGANG
                 SizedBox(
                   height: 38,
                   child: ListView.separated(
@@ -163,7 +164,7 @@ class HomeScreen extends StatelessWidget {
                         elevation: 0,
                         backgroundColor: Colors.white,
                         side: const BorderSide(
-                          color: Color(0xFFE2E8F0),
+                          color: Color(0xFFEAE3D9),
                           width: 1,
                         ),
                         shape: RoundedRectangleBorder(
@@ -194,12 +195,12 @@ class HomeScreen extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // 5. HERO 3D CARD DECK CAROUSEL (Chuẩn theo Ảnh 1 Dribbble)
+                // 6. HERO 3D CARD DECK CAROUSEL
                 HeroTripCarousel(appState: appState),
 
                 const SizedBox(height: 26),
 
-                // 6. PHẦN "ĐIỂM ĐẾN THỊNH HÀNH" (POPULAR DESTINATION)
+                // 7. PHẦN "ĐIỂM ĐẾN THỊNH HÀNH" (POPULAR DESTINATION)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -213,7 +214,7 @@ class HomeScreen extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF0F172A),
+                            color: Color(0xFF1E293B),
                             letterSpacing: -0.4,
                           ),
                           maxLines: 1,
@@ -230,7 +231,7 @@ class HomeScreen extends StatelessWidget {
                           );
                         },
                         style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFFFF4B55),
+                          foregroundColor: const Color(0xFFE05638), // Terracotta Brick
                           padding: EdgeInsets.zero,
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -268,7 +269,7 @@ class HomeScreen extends StatelessWidget {
 
                 const SizedBox(height: 26),
 
-                // 7. PHẦN "ẨM THỰC ĐẶC SẢN NỔI TIẾNG"
+                // 8. PHẦN "ẨM THỰC ĐẶC SẢN NỔI TIẾNG"
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -282,7 +283,7 @@ class HomeScreen extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF0F172A),
+                            color: Color(0xFF1E293B),
                             letterSpacing: -0.4,
                           ),
                           maxLines: 1,
@@ -291,10 +292,10 @@ class HomeScreen extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          appState.setTabIndex(3); // Chuyển sang Tab Ẩm thực
+                          appState.setTabIndex(4); // Chuyển sang Tab Ẩm thực
                         },
                         style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFFFF4B55),
+                          foregroundColor: const Color(0xFFE05638), // Terracotta Brick
                           padding: EdgeInsets.zero,
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -341,7 +342,7 @@ class HomeScreen extends StatelessWidget {
                               ),
                             );
                           } else {
-                            appState.setTabIndex(3);
+                            appState.setTabIndex(4);
                           }
                         },
                         child: Container(
@@ -349,9 +350,13 @@ class HomeScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: const Color(0xFFEAE3D9),
+                              width: 1,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
+                                color: Colors.black.withValues(alpha: 0.04),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -362,7 +367,7 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               ClipRRect(
                                 borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(18),
+                                  top: Radius.circular(17),
                                 ),
                                 child: Image.network(
                                   food.imageUrl,
@@ -386,7 +391,7 @@ class HomeScreen extends StatelessWidget {
                                       style: const TextStyle(
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.w800,
-                                        color: Color(0xFF0F172A),
+                                        color: Color(0xFF1E293B),
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -397,7 +402,7 @@ class HomeScreen extends StatelessWidget {
                                       style: const TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w700,
-                                        color: Color(0xFFFF4B55),
+                                        color: Color(0xFFE05638), // Terracotta Brick
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -415,21 +420,24 @@ class HomeScreen extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // 8. CARD TÍNH NĂNG "TÌM NHÀ HÀNG DỌC TUYẾN (CORRIDOR SEARCH)"
+                // 9. CARD TÍNH NĂNG "LẬP CUNG ĐƯỜNG PHƯỢT DỌC TUYẾN (CORRIDOR SEARCH)"
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                        colors: [
+                          Color(0xFF0284C7), // Ocean Blue
+                          Color(0xFF0EA5E9), // Sky Blue
+                        ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(22),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0F172A).withValues(alpha: 0.25),
+                          color: const Color(0xFF0284C7).withValues(alpha: 0.28),
                           blurRadius: 16,
                           offset: const Offset(0, 8),
                         ),
@@ -447,8 +455,12 @@ class HomeScreen extends StatelessWidget {
                                   vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFF4B55),
+                                  color: Colors.white.withValues(alpha: 0.22),
                                   borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.4),
+                                    width: 0.8,
+                                  ),
                                 ),
                                 child: const Text(
                                   'Tính năng Độc quyền',
@@ -469,10 +481,10 @@ class HomeScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
+                              Text(
                                 'Quét trạm xăng, quán sửa xe, quán cà phê săn mây & trạm dừng ven đường',
                                 style: TextStyle(
-                                  color: Color(0xFF94A3B8),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   fontSize: 11.5,
                                   height: 1.3,
                                 ),
@@ -482,7 +494,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 14),
                         Material(
-                          color: const Color(0xFFFF4B55),
+                          color: Colors.white,
                           shape: const CircleBorder(),
                           child: InkWell(
                             customBorder: const CircleBorder(),
@@ -499,7 +511,7 @@ class HomeScreen extends StatelessWidget {
                               padding: EdgeInsets.all(14),
                               child: Icon(
                                 Icons.near_me_rounded,
-                                color: Colors.white,
+                                color: Color(0xFF0284C7),
                                 size: 22,
                               ),
                             ),

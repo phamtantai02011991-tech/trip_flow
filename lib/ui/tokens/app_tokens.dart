@@ -6,25 +6,47 @@ import 'package:flutter/material.dart';
 /// các hằng số ở đây. Bảng token lấy từ 8 ảnh tham chiếu người dùng cung cấp
 /// (xem `docs/02-DESIGN-SYSTEM.md`).
 abstract final class AppColors {
-  // Thương hiệu
-  static const coral = Color(0xFFFF4B55);
-  static const coralDark = Color(0xFFE03A44);
-  static const coralSoft = Color(0xFFFFEDEE);
-  static const terracotta = Color(0xFFC2703F);
-  static const cream = Color(0xFFFAF7F2);
-  static const ink = Color(0xFF14161A);
+  // Thương hiệu & Màu chủ đạo (Phong cách Tươi Sáng & Editorial Terracotta)
+  static const terracottaBrick = Color(0xFFE05638);
+  static const terracottaBrickDark = Color(0xFFC74328);
+  static const terracottaBrickSoft = Color(0xFFFFECE6);
 
-  // Bề mặt
-  static const bg = cream;
+  // Hồng đậm & nhạt
+  static const roseDeep = Color(0xFFE11D48);
+  static const pinkRose = Color(0xFFF43F5E);
+  static const pinkSoft = Color(0xFFFDF2F8);
+  static const pinkBorder = Color(0xFFFCE7F3);
+
+  // Các màu xanh tươi mát (Xanh biển & Mint)
+  static const oceanBlue = Color(0xFF0284C7);
+  static const skyBlue = Color(0xFF0EA5E9);
+  static const skyBlueSoft = Color(0xFFF0F9FF);
+  static const skyBlueBorder = Color(0xFFBAE6FD);
+  static const mintGreen = Color(0xFF10B981);
+  static const mintGreenDark = Color(0xFF059669);
+  static const mintGreenSoft = Color(0xFFECFDF5);
+  static const mintGreenBorder = Color(0xFFA7F3D0);
+
+  // Tương thích token gốc
+  static const coral = terracottaBrick;
+  static const coralDark = terracottaBrickDark;
+  static const coralSoft = terracottaBrickSoft;
+  static const terracotta = Color(0xFFC2703F);
+  static const cream = Color(0xFFFAF8F5);
+  static const ink = Color(0xFF1C1917);
+
+  // Bề mặt & Màu nền tươi sáng
+  static const bgCream = Color(0xFFFAF8F5);
+  static const bg = bgCream;
   static const surface = Color(0xFFFFFFFF);
-  static const surfaceAlt = Color(0xFFF3EFE8);
-  static const line = Color(0xFFE8E2D9);
+  static const surfaceAlt = Color(0xFFF5EFEB);
+  static const line = Color(0xFFEAE3D9);
 
   // Chữ
   static const textPrimary = ink;
-  static const textSecondary = Color(0xFF6B7078);
-  static const textTertiary = Color(0xFF9AA0A6);
-  static const textOnDark = Color(0xFFF5F5F7);
+  static const textSecondary = Color(0xFF6B7280);
+  static const textTertiary = Color(0xFF9CA3AF);
+  static const textOnDark = Color(0xFFFDFCFB);
 
   // Bản đồ tối
   static const mapDarkBg = Color(0xFF1C1C1E);
@@ -32,19 +54,19 @@ abstract final class AppColors {
   static const mapDarkLine = Color(0xFF3A3A3C);
 
   // Ngữ nghĩa
-  static const success = Color(0xFF12B76A);
-  static const warning = Color(0xFFF79009);
-  static const danger = Color(0xFFE5484D);
-  static const info = Color(0xFF2E6BFF);
+  static const success = mintGreen;
+  static const warning = Color(0xFFF59E0B);
+  static const danger = roseDeep;
+  static const info = oceanBlue;
 
   // Phân loại điểm dừng
   static const kindFood = Color(0xFFF97316);
   static const kindCafe = Color(0xFF8B5E34);
   static const kindHotel = Color(0xFF7C3AED);
-  static const kindGas = Color(0xFF2563EB);
-  static const kindEv = Color(0xFF12B76A);
+  static const kindGas = Color(0xFF0284C7);
+  static const kindEv = Color(0xFF10B981);
   static const kindRest = Color(0xFF0EA5E9);
-  static const kindSight = Color(0xFFE11D48);
+  static const kindSight = roseDeep;
 
   /// Gradient phủ đáy ảnh để chữ trắng đọc được (ảnh 1, 3).
   static const photoScrim = LinearGradient(

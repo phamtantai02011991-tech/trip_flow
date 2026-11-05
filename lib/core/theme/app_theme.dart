@@ -9,19 +9,20 @@ import '../../ui/tokens/app_tokens.dart';
 class AppTheme {
   // --- Tương thích ngược: code cũ còn gọi AppTheme.primaryTeal/... ---
   // Giá trị trỏ về token mới để cả app dùng một bảng màu duy nhất.
-  static const Color primaryTeal = AppColors.coral;
-  static const Color primaryDark = AppColors.coralDark;
+  static const Color primaryTeal = AppColors.terracottaBrick;
+  static const Color primaryDark = AppColors.terracottaBrickDark;
   static const Color accentAmber = AppColors.warning;
   static const Color accentOrange = AppColors.terracotta;
-  static const Color surfaceBg = AppColors.bg;
+  static const Color surfaceBg = AppColors.bgCream;
   static const Color cardColor = AppColors.surface;
-  static const Color sponsoredIndigo = Color(0xFF4F46E5);
+  static const Color sponsoredIndigo = AppColors.oceanBlue;
 
   static ThemeData light() {
     final scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.coral,
-      primary: AppColors.coral,
-      secondary: AppColors.terracotta,
+      seedColor: AppColors.terracottaBrick,
+      primary: AppColors.terracottaBrick,
+      secondary: AppColors.oceanBlue,
+      tertiary: AppColors.pinkRose,
       surface: AppColors.surface,
       brightness: Brightness.light,
     ).copyWith(
@@ -32,7 +33,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: AppColors.bg,
+      scaffoldBackgroundColor: AppColors.bgCream,
       textTheme: const TextTheme(
         displaySmall: AppText.display,
         headlineMedium: AppText.h1,
