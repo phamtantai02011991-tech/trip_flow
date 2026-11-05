@@ -3,7 +3,6 @@ import '../../../core/utils/app_state.dart';
 import '../../../core/utils/external_launcher.dart';
 import '../../favorites/favorites_screen.dart';
 import '../../provinces/provinces_screen.dart';
-import '../../sos/biker_sos_screen.dart';
 
 /// Component Brand Identity Hero Header thay thế hoàn toàn header cũ ("Xin chào, Du khách / Đi Đâu Tiếp Theo?").
 /// Thiết kế chuẩn Anti-AI-Slop phong cách Editorial cao cấp:
@@ -102,64 +101,14 @@ class BrandIdentityHeader extends StatelessWidget {
 
                   const Spacer(),
 
-                  // Nút Cứu Hộ Biker SOS 24/7 (Phase 1 Killer Feature)
-                  InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const BikerSosScreen(),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFDC2626),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFDC2626).withValues(alpha: 0.4),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.emergency_rounded,
-                            size: 12,
-                            color: Colors.white,
-                          ),
-                          SizedBox(width: 2),
-                          Text(
-                            'SOS',
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-
                   // Hotline 24/7 Button - 1 Chạm Gọi Ngay
                   InkWell(
                     borderRadius: BorderRadius.circular(20),
                     onTap: () => ExternalLauncher.makePhoneCall(context, '19006868'),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 4,
+                        horizontal: 10,
+                        vertical: 5,
                       ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E293B),
@@ -174,14 +123,14 @@ class BrandIdentityHeader extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.phone_in_talk_rounded,
-                            size: 12,
+                            size: 13,
                             color: Color(0xFF10B981),
                           ),
-                          SizedBox(width: 3),
+                          SizedBox(width: 4),
                           Text(
                             '1900 6868',
                             style: TextStyle(
-                              fontSize: 10.5,
+                              fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFFF1F5F9),
                             ),
@@ -190,7 +139,7 @@ class BrandIdentityHeader extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 5),
+                  const SizedBox(width: 8),
 
                   // Nút Yêu thích
                   InkWell(

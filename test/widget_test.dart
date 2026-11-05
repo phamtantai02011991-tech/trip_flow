@@ -10,7 +10,6 @@ import 'package:trip_flow/core/utils/mock_data.dart';
 import 'package:trip_flow/main.dart';
 import 'package:trip_flow/core/services/biker_safety_repository.dart';
 import 'package:trip_flow/features/services/ota_partner_hub_screen.dart';
-import 'package:trip_flow/features/sos/biker_sos_screen.dart';
 
 void main() {
   setUpAll(() {
@@ -509,30 +508,7 @@ void main() {
     },
   );
 
-  testWidgets(
-    'Phase 1: BikerSosScreen hiển thị tọa độ GPS khẩn cấp, nút gọi 1900 6868 và trạm cứu hộ',
-    (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: BikerSosScreen(),
-        ),
-      );
-      await tester.pumpAndSettle();
-      tester.takeException();
-
-      expect(find.text('CỨU HỘ BIKER 24/7'), findsOneWidget);
-      expect(find.textContaining('TỌA ĐỘ GPS CỨU HỘ HIỆN TẠI'), findsOneWidget);
-      expect(find.textContaining('1900 6868'), findsWidgets);
-      expect(find.textContaining('GỬI SMS SOS'), findsOneWidget);
-      expect(find.text('Trạm Cứu Hộ Dọc Tuyến'), findsOneWidget);
-      expect(find.textContaining('Đèo Hải Vân'), findsWidgets);
-      expect(find.textContaining('Quy Tắc An Toàn'), findsOneWidget);
-    },
-  );
 
   testWidgets(
     'Phase 1: OtaPartnerHubScreen hiển thị đối tác Vexere, Agoda, Booking, Traveloka, Klook',
@@ -561,16 +537,14 @@ void main() {
   );
 
   test(
-    'Phase 1: BikerSafetyRepository kiểm tra tính toàn vẹn của danh bạ cứu hộ và thời tiết',
+    'Phase 1: BikerSafetyRepository kiểm tra tính toàn vẹn của đối tác OTA và dữ liệu thời tiết',
     () {
-      final rescues = BikerSafetyRepository.emergencyRescues;
-      expect(rescues.length, greaterThanOrEqualTo(5));
-      for (final r in rescues) {
-        expect(r.hotline.isNotEmpty, isTrue);
-        expect(r.latitude, greaterThan(8.0));
-        expect(r.latitude, lessThan(24.0));
-        expect(r.longitude, greaterThan(102.0));
-        expect(r.longitude, lessThan(110.0));
+      final partners = BikerSafetyRepository.otaPartners;
+      expect(partners.length, equals(5));
+      for (final p in partners) {
+        expect(p.partnerName.isNotEmpty, isTrue);
+        expect(p.promoCode.isNotEmpty, isTrue);
+        expect(p.affiliateUrl.startsWith('https://'), isTrue);
       }
 
       final weathers = BikerSafetyRepository.passWeathers;
