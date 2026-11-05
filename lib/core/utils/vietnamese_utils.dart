@@ -59,13 +59,12 @@ class VietnameseUtils {
     final unaccentQuery = removeDiacritics(cleanQuery);
     if (unaccentSource.contains(unaccentQuery)) return true;
 
-    // 3. So khớp từng từ theo âm tiết (syllable token matching)
-    final queryWords = unaccentQuery.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    // 3. So khớp từng từ (nếu người dùng gõ đảo từ, ví dụ "thanh ben")
+    final queryWords = unaccentQuery.split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
     if (queryWords.length > 1) {
-      final sourceTokens = unaccentSource.split(RegExp(r'[^a-z0-9]+')).where((t) => t.isNotEmpty).toSet();
       bool allWordsFound = true;
       for (final w in queryWords) {
-        if (!sourceTokens.contains(w)) {
+        if (!unaccentSource.contains(w)) {
           allWordsFound = false;
           break;
         }
@@ -82,3 +81,4 @@ class VietnameseUtils {
     return false;
   }
 }
+
