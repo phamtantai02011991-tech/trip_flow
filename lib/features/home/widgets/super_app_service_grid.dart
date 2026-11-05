@@ -5,6 +5,8 @@ import '../../restaurants/restaurants_screen.dart';
 import '../../services/hotels_screen.dart';
 import '../../services/tours_screen.dart';
 import '../../services/transport_screen.dart';
+import '../../services/ota_partner_hub_screen.dart';
+import '../../sos/biker_sos_screen.dart';
 
 /// Hub 5 Dịch vụ cốt lõi của TripFlow Super App (Anti-AI-Slop Standard)
 /// Gồm:
@@ -268,6 +270,133 @@ class SuperAppServiceGrid extends StatelessWidget {
                                   color: Color(0xFFC2410C),
                                   fontWeight: FontWeight.w600,
                                 ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          // Hàng 3: Tiện ích an toàn Biker SOS & Đối tác Đặt dịch vụ OTA (Phase 1 Killer Features)
+          Row(
+            children: [
+              // Biker SOS Khẩn Cấp
+              Expanded(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const BikerSosScreen(),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFFECACA)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFDC2626),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.emergency, color: Colors.white, size: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Biker SOS 24/7',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF991B1B),
+                                ),
+                              ),
+                              Text(
+                                'Cứu hộ đèo • Vá lốp',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Color(0xFFB91C1C),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 10),
+
+              // Đối Tác OTA (Vexere, Agoda, Booking)
+              Expanded(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const OtaPartnerHubScreen(),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0FDF4),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFBBF7D0)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.handshake_outlined, color: Colors.white, size: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Đối Tác OTA',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF166534),
+                                ),
+                              ),
+                              Text(
+                                'Vexere • Agoda • Klook',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Color(0xFF15803D),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),

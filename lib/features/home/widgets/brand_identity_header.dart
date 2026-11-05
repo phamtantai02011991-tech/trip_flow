@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../core/utils/app_state.dart';
+import '../../../core/utils/external_launcher.dart';
 import '../../favorites/favorites_screen.dart';
 import '../../provinces/provinces_screen.dart';
+import '../../sos/biker_sos_screen.dart';
 
 /// Component Brand Identity Hero Header thay thế hoàn toàn header cũ ("Xin chào, Du khách / Đi Đâu Tiếp Theo?").
 /// Thiết kế chuẩn Anti-AI-Slop phong cách Editorial cao cấp:
@@ -54,8 +56,8 @@ class BrandIdentityHeader extends StatelessWidget {
                   // Logo TRIPFLOW
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
+                      horizontal: 8,
+                      vertical: 4,
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF4B55),
@@ -64,20 +66,20 @@ class BrandIdentityHeader extends StatelessWidget {
                     child: const Text(
                       'TRIPFLOW',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: FontWeight.w900,
-                        letterSpacing: 1.2,
+                        letterSpacing: 1.0,
                         color: Colors.white,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
 
                   // Tag SUPER APP
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 6,
+                      vertical: 3,
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF1E293B),
@@ -90,9 +92,9 @@ class BrandIdentityHeader extends StatelessWidget {
                     child: const Text(
                       'SUPER APP',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 9.5,
                         fontWeight: FontWeight.w800,
-                        letterSpacing: 0.8,
+                        letterSpacing: 0.6,
                         color: Color(0xFF38BDF8),
                       ),
                     ),
@@ -100,24 +102,64 @@ class BrandIdentityHeader extends StatelessWidget {
 
                   const Spacer(),
 
-                  // Hotline 24/7 Button
+                  // Nút Cứu Hộ Biker SOS 24/7 (Phase 1 Killer Feature)
                   InkWell(
                     borderRadius: BorderRadius.circular(20),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            '📞 Hotline TripFlow 24/7: 1900 6868 (Miễn phí hỗ trợ du khách toàn quốc)',
-                          ),
-                          duration: Duration(seconds: 3),
-                          backgroundColor: Color(0xFF0F172A),
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const BikerSosScreen(),
                         ),
                       );
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDC2626),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFDC2626).withValues(alpha: 0.4),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.emergency_rounded,
+                            size: 12,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 2),
+                          Text(
+                            'SOS',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+
+                  // Hotline 24/7 Button - 1 Chạm Gọi Ngay
+                  InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () => ExternalLauncher.makePhoneCall(context, '19006868'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E293B),
@@ -132,14 +174,14 @@ class BrandIdentityHeader extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.phone_in_talk_rounded,
-                            size: 13,
+                            size: 12,
                             color: Color(0xFF10B981),
                           ),
-                          SizedBox(width: 4),
+                          SizedBox(width: 3),
                           Text(
                             '1900 6868',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 10.5,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFFF1F5F9),
                             ),
@@ -148,7 +190,7 @@ class BrandIdentityHeader extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 5),
 
                   // Nút Yêu thích
                   InkWell(
@@ -164,8 +206,8 @@ class BrandIdentityHeader extends StatelessWidget {
                       clipBehavior: Clip.none,
                       children: [
                         Container(
-                          width: 36,
-                          height: 36,
+                          width: 32,
+                          height: 32,
                           decoration: BoxDecoration(
                             color: const Color(0xFF1E293B),
                             shape: BoxShape.circle,

@@ -3,6 +3,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/app_state.dart';
 import '../../core/widgets/common_widgets.dart';
 import 'restaurant_detail_screen.dart';
+import '../../core/utils/external_launcher.dart';
 
 /// Màn hình Danh sách Nhà hàng & Quán ăn chất lượng cao, đánh giá cao và nhiều bình luận thực tế từ Google Maps.
 class RestaurantsScreen extends StatefulWidget {
@@ -272,6 +273,63 @@ class _RestaurantsScreenState extends State<RestaurantsScreen> {
                                             style: TextStyle(
                                               fontSize: 12,
                                               color: Colors.grey.shade600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    // Quick actions: Gọi quán & Chỉ đường Google Maps
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: InkWell(
+                                            borderRadius: BorderRadius.circular(8),
+                                            onTap: () => ExternalLauncher.makePhoneCall(context, rest.phone),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(vertical: 6),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFF1F5F9),
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: Border.all(color: const Color(0xFFCBD5E1)),
+                                              ),
+                                              child: const Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(Icons.phone, size: 13, color: Color(0xFF10B981)),
+                                                  SizedBox(width: 4),
+                                                  Text('Gọi đặt bàn', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: InkWell(
+                                            borderRadius: BorderRadius.circular(8),
+                                            onTap: () => ExternalLauncher.openMapNavigation(
+                                              context: context,
+                                              latitude: rest.latitude,
+                                              longitude: rest.longitude,
+                                              destinationName: rest.name,
+                                            ),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(vertical: 6),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFF1F5F9),
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: Border.all(color: const Color(0xFFCBD5E1)),
+                                              ),
+                                              child: const Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(Icons.navigation_outlined, size: 13, color: Color(0xFF2563EB)),
+                                                  SizedBox(width: 4),
+                                                  Text('Chỉ đường', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),

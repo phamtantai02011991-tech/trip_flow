@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../core/config/app_config.dart';
 import '../../core/utils/app_state.dart';
 import '../../core/utils/data_models.dart';
+import '../../core/utils/external_launcher.dart';
+import 'ota_partner_hub_screen.dart';
 
 /// Màn hình Đặt vé Giao Thông: Xe khách Limousine, Tàu hỏa Bắc-Nam, Vé máy bay (Super App Service 2)
 class TransportScreen extends StatefulWidget {
@@ -58,6 +60,15 @@ class _TransportScreenState extends State<TransportScreen>
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.handshake_outlined, color: Color(0xFF10B981)),
+            tooltip: 'Đối tác Vexere & Traveloka',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const OtaPartnerHubScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.confirmation_number_outlined),
             tooltip: 'Vé điện tử của tôi',
@@ -860,7 +871,38 @@ class _TransportCard extends StatelessWidget {
                   color: Color(0xFFFF4B55),
                 ),
               ),
-              ElevatedButton(
+              Row(
+                children: [
+                  if (ticket.type == 'bus')
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => ExternalLauncher.openOtaPartner(
+                          context: context,
+                          partnerName: 'Vexere',
+                          affiliateUrl: 'https://vexere.com',
+                          promoCode: 'VEXERE_TF15',
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFBFDBFE)),
+                          ),
+                          child: const Text(
+                            'Qua Vexere',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF1D4ED8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0F172A),
                   foregroundColor: Colors.white,
@@ -875,6 +917,8 @@ class _TransportCard extends StatelessWidget {
                   'Chọn vé',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
                 ),
+              ),
+                ],
               ),
             ],
           ),

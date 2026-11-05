@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../core/config/app_config.dart';
 import '../../core/utils/app_state.dart';
 import '../../core/utils/data_models.dart';
+import '../../core/utils/external_launcher.dart';
+import 'ota_partner_hub_screen.dart';
 
 /// Màn hình Danh sách Khách sạn, Homestay & Resort (Super App Service 1)
 class HotelsScreen extends StatefulWidget {
@@ -74,6 +76,15 @@ class _HotelsScreenState extends State<HotelsScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.handshake_outlined, color: Color(0xFF10B981)),
+            tooltip: 'Đối tác Agoda & Booking',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const OtaPartnerHubScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.bookmark_outline_rounded),
             tooltip: 'Phòng đã đặt',
@@ -598,6 +609,72 @@ class _HotelCard extends StatelessWidget {
                     }).toList(),
                   ),
                   const SizedBox(height: 14),
+
+                  // Quick Actions: Gọi lễ tân, Chỉ đường, So giá Agoda
+                  Row(
+                    children: [
+                      // Nút Gọi Lễ Tân
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            foregroundColor: const Color(0xFF0F172A),
+                          ),
+                          icon: const Icon(Icons.phone_outlined, size: 14, color: Color(0xFF10B981)),
+                          label: const Text('Gọi lễ tân', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                          onPressed: () => ExternalLauncher.makePhoneCall(context, hotel.phone),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      // Nút Chỉ đường
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          foregroundColor: const Color(0xFF0F172A),
+                        ),
+                        icon: const Icon(Icons.navigation_outlined, size: 14, color: Color(0xFF2563EB)),
+                        label: const Text('Đường đi', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                        onPressed: () => ExternalLauncher.openMapNavigation(
+                          context: context,
+                          latitude: hotel.latitude,
+                          longitude: hotel.longitude,
+                          destinationName: hotel.name,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      // Nút So giá Agoda
+                      InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => ExternalLauncher.openOtaPartner(
+                          context: context,
+                          partnerName: 'Agoda',
+                          affiliateUrl: 'https://www.agoda.com?cid=1928472&tag=tripflow',
+                          promoCode: 'AGODA_TRIPFLOW',
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFBFDBFE)),
+                          ),
+                          child: const Text(
+                            'So giá Agoda',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF1D4ED8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
 
                   // Giá và nút xem chi tiết
                   Row(

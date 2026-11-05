@@ -8,6 +8,9 @@ import 'package:trip_flow/core/utils/data_models.dart';
 import 'package:trip_flow/core/utils/geo_utils.dart';
 import 'package:trip_flow/core/utils/mock_data.dart';
 import 'package:trip_flow/main.dart';
+import 'package:trip_flow/core/services/biker_safety_repository.dart';
+import 'package:trip_flow/features/services/ota_partner_hub_screen.dart';
+import 'package:trip_flow/features/sos/biker_sos_screen.dart';
 
 void main() {
   setUpAll(() {
@@ -503,6 +506,79 @@ void main() {
       appState.bookTour(tourBooking);
       expect(appState.tourBookings.length, equals(1));
       expect(appState.tourBookings.first.voucherCode, equals('TF-TOUR-TEST003'));
+    },
+  );
+
+  testWidgets(
+    'Phase 1: BikerSosScreen hiển thị tọa độ GPS khẩn cấp, nút gọi 1900 6868 và trạm cứu hộ',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: BikerSosScreen(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      tester.takeException();
+
+      expect(find.text('CỨU HỘ BIKER 24/7'), findsOneWidget);
+      expect(find.textContaining('TỌA ĐỘ GPS CỨU HỘ HIỆN TẠI'), findsOneWidget);
+      expect(find.textContaining('1900 6868'), findsWidgets);
+      expect(find.textContaining('GỬI SMS SOS'), findsOneWidget);
+      expect(find.text('Trạm Cứu Hộ Dọc Tuyến'), findsOneWidget);
+      expect(find.textContaining('Đèo Hải Vân'), findsWidgets);
+      expect(find.textContaining('Quy Tắc An Toàn'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Phase 1: OtaPartnerHubScreen hiển thị đối tác Vexere, Agoda, Booking, Traveloka, Klook',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: OtaPartnerHubScreen(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      tester.takeException();
+
+      expect(find.text('Liên Kết Đối Tác Đặt Chỗ'), findsOneWidget);
+      expect(find.text('Vexere'), findsOneWidget);
+      expect(find.text('Agoda'), findsOneWidget);
+      expect(find.text('Booking.com'), findsOneWidget);
+      expect(find.text('Traveloka'), findsOneWidget);
+      expect(find.text('Klook'), findsOneWidget);
+      expect(find.textContaining('VEXERE_TF15'), findsOneWidget);
+      expect(find.textContaining('AGODA_TRIPFLOW'), findsOneWidget);
+    },
+  );
+
+  test(
+    'Phase 1: BikerSafetyRepository kiểm tra tính toàn vẹn của danh bạ cứu hộ và thời tiết',
+    () {
+      final rescues = BikerSafetyRepository.emergencyRescues;
+      expect(rescues.length, greaterThanOrEqualTo(5));
+      for (final r in rescues) {
+        expect(r.hotline.isNotEmpty, isTrue);
+        expect(r.latitude, greaterThan(8.0));
+        expect(r.latitude, lessThan(24.0));
+        expect(r.longitude, greaterThan(102.0));
+        expect(r.longitude, lessThan(110.0));
+      }
+
+      final weathers = BikerSafetyRepository.passWeathers;
+      expect(weathers.length, greaterThanOrEqualTo(4));
+      for (final w in weathers) {
+        expect(w.passName.isNotEmpty, isTrue);
+        expect(['safe', 'caution', 'hazard'].contains(w.safetyLevel), isTrue);
+      }
     },
   );
 }

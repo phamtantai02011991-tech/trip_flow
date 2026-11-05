@@ -460,6 +460,7 @@ class RestaurantModel {
 
   String get resolvedThumbnailUrl =>
       thumbnailUrl ?? AppConfig.buildThumbnailUrl(imageUrl);
+  String get phone => contactPhone.isNotEmpty ? contactPhone : '1900 6868';
 
   factory RestaurantModel.fromJson(Map<String, dynamic> json) {
     final rawUrl = (json['image_url'] ?? '').toString();
@@ -915,6 +916,7 @@ class HotelModel {
 
   String get heroImage => imageUrls.isNotEmpty ? imageUrls.first : '';
   String get priceDisplay => '${AppConfig.formatVnd(pricePerNightVnd)}/đêm';
+  String get phone => hotline.isNotEmpty ? hotline : '1900 6868';
 
   factory HotelModel.fromJson(Map<String, dynamic> json) {
     final rawImgs = (json['image_urls'] as List<dynamic>?) ?? [];
@@ -1323,3 +1325,121 @@ class TourBookingRecord {
     required this.createdAt,
   });
 }
+
+/// Model Trạm Cứu Hộ Biker Khẩn Cấp (24/7 Biker Emergency Rescue)
+class BikerEmergencyRescueModel {
+  final int id;
+  final String name;
+  final String passName;
+  final String serviceType; // 'vá lốp lưu động' | 'cứu hộ kéo xe' | 'tiếp xăng khẩn cấp' | 'đội SOS phượt'
+  final String hotline;
+  final String altHotline;
+  final String address;
+  final double latitude;
+  final double longitude;
+  final bool is24_7;
+  final double coverageRadiusKm;
+  final String description;
+
+  const BikerEmergencyRescueModel({
+    required this.id,
+    required this.name,
+    required this.passName,
+    required this.serviceType,
+    required this.hotline,
+    this.altHotline = '1900 6868',
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+    this.is24_7 = true,
+    this.coverageRadiusKm = 25.0,
+    required this.description,
+  });
+
+  factory BikerEmergencyRescueModel.fromJson(Map<String, dynamic> json) {
+    return BikerEmergencyRescueModel(
+      id: (json['id'] as num).toInt(),
+      name: (json['name'] ?? '').toString(),
+      passName: (json['pass_name'] ?? 'Toàn quốc').toString(),
+      serviceType: (json['service_type'] ?? 'cứu hộ lưu động').toString(),
+      hotline: (json['hotline'] ?? '1900 6868').toString(),
+      altHotline: (json['alt_hotline'] ?? '1900 6868').toString(),
+      address: (json['address'] ?? '').toString(),
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 16.1234,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 108.1234,
+      is24_7: json['is_24_7'] as bool? ?? true,
+      coverageRadiusKm: (json['coverage_radius_km'] as num?)?.toDouble() ?? 25.0,
+      description: (json['description'] ?? '').toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'pass_name': passName,
+        'service_type': serviceType,
+        'hotline': hotline,
+        'alt_hotline': altHotline,
+        'address': address,
+        'latitude': latitude,
+        'longitude': longitude,
+        'is_24_7': is24_7,
+        'coverage_radius_km': coverageRadiusKm,
+        'description': description,
+      };
+}
+
+/// Model Cảnh Báo Thời Tiết & Độ An Toàn Cung Đường Đèo
+class WeatherSafetyModel {
+  final String passName;
+  final String provinceName;
+  final int tempCelsius;
+  final String conditionText; // Nắng ráo, Mưa rào, Sương mù dày, Gió mạnh
+  final int humidityPercent;
+  final int windSpeedKmH;
+  final double visibilityKm;
+  final String safetyLevel; // 'safe' (xanh) | 'caution' (vàng) | 'hazard' (đỏ)
+  final String safetyAdvice;
+  final String lastUpdated;
+
+  const WeatherSafetyModel({
+    required this.passName,
+    required this.provinceName,
+    required this.tempCelsius,
+    required this.conditionText,
+    required this.humidityPercent,
+    required this.windSpeedKmH,
+    required this.visibilityKm,
+    required this.safetyLevel,
+    required this.safetyAdvice,
+    required this.lastUpdated,
+  });
+
+  bool get isSafe => safetyLevel == 'safe';
+  bool get isCaution => safetyLevel == 'caution';
+  bool get isHazard => safetyLevel == 'hazard';
+}
+
+/// Model Đối Tác OTA Quốc Tế & Trong Nước (Agoda, Booking.com, Vexere, Traveloka, Klook)
+class OtaPartnerModel {
+  final String id;
+  final String partnerName;
+  final String category; // 'hotel' | 'transport' | 'flight' | 'tour'
+  final String discountTag;
+  final String promoCode;
+  final String affiliateUrl;
+  final String iconEmoji;
+  final String description;
+
+  const OtaPartnerModel({
+    required this.id,
+    required this.partnerName,
+    required this.category,
+    required this.discountTag,
+    required this.promoCode,
+    required this.affiliateUrl,
+    required this.iconEmoji,
+    required this.description,
+  });
+}
+
