@@ -5,6 +5,7 @@ import '../network/dio_client.dart';
 import '../storage/offline_cache_service.dart';
 import 'data_models.dart';
 import 'mock_data.dart';
+import 'vietnamese_utils.dart';
 
 /// Trạng thái quyền truy cập vị trí của người dùng (Mục 5.3 & Mục 15).
 enum LocationPermissionState {
@@ -293,18 +294,20 @@ class TripFlowAppState extends ChangeNotifier {
     double? minRating,
     int? minReviews,
   }) {
-    var list = List<RestaurantModel>.from(restaurantsForSelectedProvince);
-    final q = query.trim().toLowerCase();
+    var list = isNationalMode
+        ? List<RestaurantModel>.from(_allRestaurants)
+        : List<RestaurantModel>.from(restaurantsForSelectedProvince);
+    final q = query.trim();
 
     if (q.isNotEmpty) {
       list = list.where((r) {
-        final inName = r.name.toLowerCase().contains(q);
-        final inCuisine = r.cuisineType.toLowerCase().contains(q);
-        final inAddress = r.address.toLowerCase().contains(q);
-        final inSpecialties = r.specialties.toLowerCase().contains(q) ||
-            r.specialtyDishes.toLowerCase().contains(q);
+        final inName = VietnameseUtils.matches(r.name, q);
+        final inCuisine = VietnameseUtils.matches(r.cuisineType, q);
+        final inAddress = VietnameseUtils.matches(r.address, q);
+        final inSpecialties = VietnameseUtils.matches(r.specialties, q) ||
+            VietnameseUtils.matches(r.specialtyDishes, q);
         final inReviews =
-            r.sampleReviews.any((rev) => rev.text.toLowerCase().contains(q));
+            r.sampleReviews.any((rev) => VietnameseUtils.matches(rev.text, q));
         return inName || inCuisine || inAddress || inSpecialties || inReviews;
       }).toList();
     }
@@ -349,16 +352,16 @@ class TripFlowAppState extends ChangeNotifier {
     String region = 'Tất cả',
     String query = '',
   }) {
-    final cleanQuery = query.trim().toLowerCase();
+    final cleanQuery = query.trim();
     return _provinces.where((prov) {
       final matchesRegion =
           region == 'Tất cả' || region.isEmpty || prov.region == region;
       if (!matchesRegion) return false;
       if (cleanQuery.isEmpty) return true;
-      return prov.name.toLowerCase().contains(cleanQuery) ||
-          prov.code.toLowerCase().contains(cleanQuery) ||
-          prov.region.toLowerCase().contains(cleanQuery) ||
-          prov.description.toLowerCase().contains(cleanQuery);
+      return VietnameseUtils.matches(prov.name, cleanQuery) ||
+          VietnameseUtils.matches(prov.code, cleanQuery) ||
+          VietnameseUtils.matches(prov.region, cleanQuery) ||
+          VietnameseUtils.matches(prov.description, cleanQuery);
     }).toList();
   }
 

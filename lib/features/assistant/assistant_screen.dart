@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/services/smart_ai_assistant_service.dart';
 import '../../data/assistant_api.dart';
 import '../../state/trips_provider.dart';
 import '../../ui/tokens/app_tokens.dart';
@@ -39,6 +40,8 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
     'Đi Đà Lạt 3 ngày, ưu tiên cảnh đẹp và quán ăn địa phương',
     'Ngân sách 2 triệu cho 2 người đi Đà Lạt đủ không?',
     'Cần chuẩn bị hành lý gì khi đi Sa Pa tháng 11?',
+    'Gợi ý các món ăn đặc sản ngon nhất Sài Gòn & Hà Nội',
+    'Phượt xe máy Hà Giang Loop cần chuẩn bị những gì?',
   ];
 
   @override
@@ -75,12 +78,19 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
         ref.invalidate(tripsProvider);
       }
       _scrollToEnd();
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
+      final fallback = SmartAiAssistantService.processQuestion(message: text, tripId: widget.tripId);
       setState(() {
-        _messages.add(_Msg(text: 'Lỗi: $e', fromUser: false));
+        _messages.add(_Msg(
+          text: fallback.reply,
+          fromUser: false,
+          tips: fallback.tips,
+          applied: fallback.applied,
+        ));
         _sending = false;
       });
+      _scrollToEnd();
     }
   }
 

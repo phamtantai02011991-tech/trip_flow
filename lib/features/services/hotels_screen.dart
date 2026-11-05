@@ -3,6 +3,7 @@ import '../../core/config/app_config.dart';
 import '../../core/utils/app_state.dart';
 import '../../core/utils/data_models.dart';
 import '../../core/utils/external_launcher.dart';
+import '../../core/utils/vietnamese_utils.dart';
 import 'ota_partner_hub_screen.dart';
 
 /// Màn hình Danh sách Khách sạn, Homestay & Resort (Super App Service 1)
@@ -40,10 +41,10 @@ class _HotelsScreenState extends State<HotelsScreen> {
         return false;
       }
       if (_searchQuery.trim().isNotEmpty) {
-        final q = _searchQuery.toLowerCase();
-        final matchName = hotel.name.toLowerCase().contains(q);
-        final matchAddress = hotel.address.toLowerCase().contains(q);
-        final matchProvince = hotel.provinceName.toLowerCase().contains(q);
+        final q = _searchQuery.trim();
+        final matchName = VietnameseUtils.matches(hotel.name, q);
+        final matchAddress = VietnameseUtils.matches(hotel.address, q);
+        final matchProvince = VietnameseUtils.matches(hotel.provinceName, q);
         if (!matchName && !matchAddress && !matchProvince) return false;
       }
       return true;

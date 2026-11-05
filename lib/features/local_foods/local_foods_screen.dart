@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/app_state.dart';
+import '../../core/utils/vietnamese_utils.dart';
 import '../../core/widgets/common_widgets.dart';
 import '../restaurants/restaurant_detail_screen.dart';
 import '../restaurants/restaurants_screen.dart';
@@ -28,21 +29,28 @@ class _LocalFoodsScreenState extends State<LocalFoodsScreen> {
     return AnimatedBuilder(
       animation: widget.appState,
       builder: (context, _) {
-        final kw = _searchQuery.trim().toLowerCase();
-        final foods = widget.appState.localFoodsForSelectedProvince.where((f) {
+        final kw = _searchQuery.trim();
+        final isNational = widget.appState.isNationalMode;
+        final baseFoods = isNational
+            ? widget.appState.allLocalFoods
+            : widget.appState.localFoodsForSelectedProvince;
+        final baseRestaurants = isNational
+            ? widget.appState.allRestaurants
+            : widget.appState.restaurantsForSelectedProvince;
+
+        final foods = baseFoods.where((f) {
           if (kw.isEmpty) return true;
-          return f.name.toLowerCase().contains(kw) ||
-              f.description.toLowerCase().contains(kw) ||
-              f.storyOrigin.toLowerCase().contains(kw);
+          return VietnameseUtils.matches(f.name, kw) ||
+              VietnameseUtils.matches(f.description, kw) ||
+              VietnameseUtils.matches(f.storyOrigin, kw);
         }).toList();
 
-        final restaurants =
-            widget.appState.restaurantsForSelectedProvince.where((r) {
+        final restaurants = baseRestaurants.where((r) {
           if (kw.isEmpty) return true;
-          return r.name.toLowerCase().contains(kw) ||
-              r.cuisineType.toLowerCase().contains(kw) ||
-              r.specialtyDishes.toLowerCase().contains(kw) ||
-              r.address.toLowerCase().contains(kw);
+          return VietnameseUtils.matches(r.name, kw) ||
+              VietnameseUtils.matches(r.cuisineType, kw) ||
+              VietnameseUtils.matches(r.specialtyDishes, kw) ||
+              VietnameseUtils.matches(r.address, kw);
         }).toList();
 
         return Scaffold(

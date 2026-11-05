@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/app_state.dart';
 import '../../core/utils/mock_data.dart';
+import '../../core/utils/vietnamese_utils.dart';
 import '../../core/widgets/common_widgets.dart';
 import '../../core/widgets/travel_destination_card.dart';
 import 'destination_detail_screen.dart';
 
-/// Màn hình Tìm kiếm và Lọc Địa điểm Du lịch theo Tỉnh/Thành, Danh mục và Từ khóa (Mục 5.1.3).
+/// Màn hình Tìm kiếm và Lọc Địa điểm Du lịch thông minh Tiếng Việt (có dấu & không dấu)
 class DestinationsScreen extends StatefulWidget {
   final TripFlowAppState appState;
   final String initialQuery;
@@ -45,21 +46,30 @@ class _DestinationsScreenState extends State<DestinationsScreen> {
     return AnimatedBuilder(
       animation: widget.appState,
       builder: (context, _) {
-        final kw = _searchController.text.trim().toLowerCase();
-        final filtered = widget.appState.destinationsForSelectedProvince.where((d) {
+        final kw = _searchController.text.trim();
+        final isNational = widget.appState.isNationalMode;
+
+        // Nếu ở chế độ Toàn quốc: tìm kiếm trên toàn bộ điểm đến cả nước
+        final baseList = isNational
+            ? widget.appState.allDestinations
+            : widget.appState.destinationsForSelectedProvince;
+
+        final filtered = baseList.where((d) {
           final matchCat =
               _selectedCategory == 'all' || d.categoryCode == _selectedCategory;
           final matchKw = kw.isEmpty ||
-              d.name.toLowerCase().contains(kw) ||
-              d.address.toLowerCase().contains(kw) ||
-              d.description.toLowerCase().contains(kw);
+              VietnameseUtils.matches(d.name, kw) ||
+              VietnameseUtils.matches(d.address, kw) ||
+              VietnameseUtils.matches(d.description, kw);
           return matchCat && matchKw;
         }).toList();
 
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              'Địa điểm tại ${widget.appState.selectedProvince.name}',
+              isNational
+                  ? 'Tìm Kiếm Điểm Đến Toàn Quốc 🇻🇳'
+                  : 'Địa điểm tại ${widget.appState.selectedProvince.name}',
             ),
           ),
           body: Column(
@@ -74,7 +84,9 @@ class _DestinationsScreenState extends State<DestinationsScreen> {
                       controller: _searchController,
                       onChanged: (_) => setState(() {}),
                       decoration: InputDecoration(
-                        hintText: 'Tìm tên địa điểm, quận/huyện, từ khóa...',
+                        hintText: isNational
+                            ? 'Tìm tên địa danh, tỉnh thành (Đà Lạt, Hà Nội, Sài Gòn...)'
+                            : 'Tìm địa điểm tại ${widget.appState.selectedProvince.name}...',
                         prefixIcon: const Icon(Icons.search_rounded),
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(
@@ -120,13 +132,13 @@ class _DestinationsScreenState extends State<DestinationsScreen> {
                 ),
               ),
 
-              // Danh sách kết quả hoặc EmptyStateView (TC-09)
+              // Danh sách kết quả hoặc EmptyStateView
               Expanded(
                 child: filtered.isEmpty
                     ? EmptyStateView(
                         title: 'Không tìm thấy địa điểm phù hợp',
                         message:
-                            'Không có địa điểm nào khớp với từ khóa "${_searchController.text}". Hãy thử từ khóa khác hoặc xóa bộ lọc.',
+                            'Không có địa điểm nào khớp với từ khóa "${_searchController.text}". Bạn có thể gõ có dấu hoặc không dấu (ví dụ: "da lat", "sai gon", "ha noi").',
                         onReset: () {
                           setState(() {
                             _searchController.clear();
