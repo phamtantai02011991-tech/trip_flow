@@ -139,7 +139,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       if (!mounted) return;
 
       if (res['success'] == true) {
-        final newOtp = res['debug_otp']?.toString() ?? '888999';
+        final newOtp = res['debug_otp']?.toString();
         setState(() {
           _currentDebugOtp = newOtp;
           _showSmsBanner = true;

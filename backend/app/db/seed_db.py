@@ -1,8 +1,13 @@
 import json
-from datetime import datetime
+import logging
+import math
+import re
+from pathlib import Path
+from datetime import datetime, timezone
 from sqlalchemy import inspect, text
 from sqlmodel import Session, SQLModel
 
+from app.core.config import settings
 from app.core.security import DEFAULT_ROLE_PERMISSIONS, get_password_hash
 from app.db.session import SessionLocal, engine
 from app.integrations.cloudinary_service import cloudinary_service
@@ -26,6 +31,9 @@ from app.models.models import (
     SMSOTPVerification,
     User,
 )
+from app.models.rest_stop import RestStop
+
+logger = logging.getLogger("tripflow.seed")
 
 
 def _ensure_ingestion_columns() -> None:
@@ -80,6 +88,18 @@ def _ensure_ingestion_columns() -> None:
                 conn.execute(
                     text("UPDATE restaurants SET specialties = specialty_dishes WHERE specialties IS NULL")
                 )
+            if "image_credit" not in rest_cols:
+                conn.execute(
+                    text("ALTER TABLE restaurants ADD COLUMN image_credit VARCHAR(250) DEFAULT NULL")
+                )
+            if "image_license" not in rest_cols:
+                conn.execute(
+                    text("ALTER TABLE restaurants ADD COLUMN image_license VARCHAR(120) DEFAULT NULL")
+                )
+            if "image_source_url" not in rest_cols:
+                conn.execute(
+                    text("ALTER TABLE restaurants ADD COLUMN image_source_url VARCHAR(550) DEFAULT NULL")
+                )
 
         if "users" in existing_tables:
             user_cols = {col["name"] for col in inspector.get_columns("users")}
@@ -93,6 +113,81 @@ def _ensure_ingestion_columns() -> None:
             conn.execute(
                 text("UPDATE users SET phone = '0901234567' WHERE email = 'traveler@tripflow.vn' AND (phone IS NULL OR phone = '')")
             )
+
+
+def _create_bootstrap_admin(db: Session, now: datetime) -> None:
+    """Tạo tài khoản quản trị đầu tiên từ biến môi trường (không dùng mật khẩu demo)."""
+    email = (settings.BOOTSTRAP_ADMIN_EMAIL or "").strip().lower()
+    password = settings.BOOTSTRAP_ADMIN_PASSWORD or ""
+    if not email or not password:
+        logger.warning(
+            "SEED_DEMO=0 và chưa cấu hình BOOTSTRAP_ADMIN_EMAIL/BOOTSTRAP_ADMIN_PASSWORD — "
+            "cơ sở dữ liệu chưa có tài khoản quản trị nào."
+        )
+        return
+    if len(password) < 12:
+        raise RuntimeError("BOOTSTRAP_ADMIN_PASSWORD phải dài tối thiểu 12 ký tự.")
+    super_role = db.query(Role).filter(Role.code == "super_admin").first()
+    db.add(
+        User(
+            email=email,
+            full_name="Quản trị hệ thống",
+            hashed_password=get_password_hash(password),
+            role="super_admin",
+            role_id=super_role.id if super_role else 1,
+            assigned_province_id=None,
+            is_active=True,
+            created_at=now,
+        )
+    )
+    db.flush()
+    logger.warning("Đã tạo tài khoản quản trị đầu tiên từ BOOTSTRAP_ADMIN_EMAIL=%s", email)
+
+
+def _ensure_user_columns() -> None:
+    """Thêm cột chống brute-force cho DB cũ (users.failed_login_attempts/locked_until)."""
+    inspector = inspect(engine)
+    if "users" not in set(inspector.get_table_names()):
+        return
+    cols = {col["name"] for col in inspector.get_columns("users")}
+    timestamp_type = "TIMESTAMP" if engine.dialect.name == "postgresql" else "DATETIME"
+    with engine.begin() as conn:
+        if "failed_login_attempts" not in cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER DEFAULT 0"
+                )
+            )
+        if "locked_until" not in cols:
+            conn.execute(
+                text(
+                    f"ALTER TABLE users ADD COLUMN locked_until {timestamp_type} DEFAULT NULL"
+                )
+            )
+        if "totp_secret" not in cols:
+            conn.execute(
+                text("ALTER TABLE users ADD COLUMN totp_secret VARCHAR(64) DEFAULT NULL")
+            )
+        if "totp_enabled" not in cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE users ADD COLUMN totp_enabled BOOLEAN DEFAULT FALSE"
+                )
+            )
+
+
+def _ensure_trip_columns() -> None:
+    """Thêm cột `guest_token` cho DB cũ để chuyến của khách vãng lai không bị lộ."""
+    inspector = inspect(engine)
+    if "trips" not in set(inspector.get_table_names()):
+        return
+    cols = {col["name"] for col in inspector.get_columns("trips")}
+    with engine.begin() as conn:
+        if "guest_token" not in cols:
+            conn.execute(text("ALTER TABLE trips ADD COLUMN guest_token VARCHAR(64)"))
+        conn.execute(
+            text("CREATE INDEX IF NOT EXISTS ix_trips_guest_token ON trips (guest_token)")
+        )
 
 
 def _seed_rbac_users_and_categories(db: Session, now: datetime) -> None:
@@ -350,7 +445,7 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
     db.flush()
 
     # Khởi tạo Users nếu bảng User đang trống (phải chạy sau khi có Province id=1)
-    if db.query(User).count() == 0:
+    if db.query(User).count() == 0 and settings.SEED_DEMO:
         users = [
             User(
                 id=1,
@@ -412,6 +507,12 @@ def _ensure_all_10_provinces_and_content(db: Session, now: datetime) -> None:
         ]
         db.add_all(users)
         db.flush()
+        logger.warning(
+            "Đã seed 5 tài khoản DEMO với mật khẩu mặc định. "
+            "TUYỆT ĐỐI không bật SEED_DEMO ở production."
+        )
+    elif db.query(User).count() == 0:
+        _create_bootstrap_admin(db, now)
 
     # --------------------------------------------------------------------
     # 2. ĐẢM BẢO ĐỦ 28 ĐỊA ĐIỂM DU LỊCH CHẤT LƯỢNG CAO TRÊN 10 TỈNH/THÀNH
@@ -2061,6 +2162,301 @@ def _seed_initial_favorites_reports_and_audits(db: Session, now: datetime) -> No
         ])
 
 
+_EXTRA_CATALOG_PATH = Path(__file__).resolve().parents[1] / "data" / "catalog_extra.json"
+_REST_STOPS_PATH = Path(__file__).resolve().parents[1] / "data" / "rest_stops_extra.json"
+
+_DEST_CATEGORY_MAP = {
+    "heritage": "heritage",
+    "religious": "heritage",
+    "museum": "museum",
+    "market": "market",
+    "nature": "street_walk",
+    "viewpoint": "street_walk",
+    "craft": "market",
+    "architecture": "architecture",
+}
+
+
+def _distance_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Khoảng cách tương đối đủ dùng để phát hiện trùng điểm (sai số < 1%)."""
+    dx = (lng1 - lng2) * math.cos(math.radians((lat1 + lat2) / 2))
+    dy = lat1 - lat2
+    return math.hypot(dx, dy) * 111.32
+
+
+_WIKI_ORIGINAL_RE = re.compile(
+    r"^https://upload\.wikimedia\.org/wikipedia/commons/([0-9a-f])/([0-9a-f]{2})/([^/?]+)$"
+)
+
+
+def _wikimedia_thumb(url: str) -> str:
+    """Đổi URL ảnh gốc Wikimedia sang thumbnail 1280px (nhẹ hơn nhiều lần)."""
+    if not url:
+        return url
+    match = _WIKI_ORIGINAL_RE.match(url.split("?")[0])
+    if not match:
+        return url
+    a, ab, filename = match.groups()
+    return (
+        f"https://upload.wikimedia.org/wikipedia/commons/thumb/"
+        f"{a}/{ab}/{filename}/1280px-{filename}"
+    )
+
+
+def _optimize_media_urls(db: Session) -> None:
+    """Chuẩn hoá thumbnail cho toàn bộ ảnh Wikimedia đã có trong DB."""
+    for destination in db.query(Destination).all():
+        if destination.thumbnail_url:
+            destination.thumbnail_url = _wikimedia_thumb(destination.thumbnail_url)
+    for image in db.query(DestinationImage).all():
+        if image.thumbnail_url:
+            image.thumbnail_url = _wikimedia_thumb(image.thumbnail_url)
+    for restaurant in db.query(Restaurant).all():
+        if restaurant.thumbnail_url:
+            restaurant.thumbnail_url = _wikimedia_thumb(restaurant.thumbnail_url)
+    db.commit()
+
+
+def _seed_extra_catalog(db: Session, now: datetime) -> None:
+    """Nạp catalog mở (OSM/Wikipedia/Wikimedia) đã kiểm chứng vào DB.
+
+    Chỉ thêm bản ghi mới theo (province, tên); không ghi đè dữ liệu biên tập sẵn có.
+    Ảnh ngoài được giữ nguyên URL gốc + ghi rõ giấy phép/tác giả.
+    """
+    if not _EXTRA_CATALOG_PATH.is_file():
+        logger.warning("Không tìm thấy catalog mở: %s", _EXTRA_CATALOG_PATH)
+        return
+
+    try:
+        payload = json.loads(_EXTRA_CATALOG_PATH.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.error("Không đọc được catalog mở: %s", exc)
+        return
+
+    records = payload.get("records") or []
+    provinces = {p.code: p for p in db.query(Province).all()}
+    categories = {c.code: c for c in db.query(Category).all()}
+    default_category = db.query(Category).first()
+
+    inserted_destinations = 0
+    inserted_restaurants = 0
+    existing_destinations = db.query(Destination).all()
+
+    for record in records:
+        province = provinces.get(record.get("province_code"))
+        if province is None or record.get("lat") is None or record.get("lng") is None:
+            continue
+
+        image = record.get("image") or {}
+        name = (record.get("name") or "").strip()
+        if not name:
+            continue
+
+        common = {
+            "province_id": province.id,
+            "name": name,
+            "address": record.get("address") or province.name,
+            "latitude": float(record["lat"]),
+            "longitude": float(record["lng"]),
+            "status": "published",
+            "source": "wikimedia" if image.get("url") else "editorial",
+            "source_url": image.get("source_url") or record.get("wikipedia") or "",
+            "data_source": "wikimedia" if image.get("url") else "editorial",
+            "is_verified": False,
+        }
+
+        if record.get("type") == "destination":
+            exists = (
+                db.query(Destination)
+                .filter(Destination.province_id == province.id, Destination.name == name)
+                .first()
+            )
+            if exists:
+                continue
+            # Nếu đã có điểm rất gần (≤100 m) thì coi là trùng và chỉ bổ sung ảnh/mô tả,
+            # tránh ghim bản đồ bị nhân đôi (ví dụ "Hồ Hoàn Kiếm" và "Hồ Hoàn Kiếm & Đền Ngọc Sơn").
+            nearby = next(
+                (
+                    d
+                    for d in existing_destinations
+                    if d.province_id == province.id
+                    and _distance_km(d.latitude, d.longitude, float(record["lat"]), float(record["lng"]))
+                    <= 0.10
+                ),
+                None,
+            )
+            if nearby is not None:
+                if image.get("url"):
+                    nearby.thumbnail_url = nearby.thumbnail_url or image.get("thumb_url")
+                    nearby.detail_image_url = nearby.detail_image_url or image.get("url")
+                if record.get("description") and len(record["description"]) > len(nearby.description or ""):
+                    nearby.description = record["description"]
+                continue
+            category_code = _DEST_CATEGORY_MAP.get(record.get("category"), "heritage")
+            category = categories.get(category_code) or default_category
+            destination = Destination(
+                **common,
+                category_id=category.id if category else None,
+                slug=record.get("slug") or None,
+                description=record.get("description") or name,
+                opening_hours=record.get("opening_hours") or "07:30 - 17:30",
+                ticket_price_info=record.get("price_range") or "Miễn phí",
+                rating=0.0,
+                review_count=0,
+                recommended_duration_mins=90,
+                thumbnail_url=image.get("thumb_url"),
+                detail_image_url=image.get("url"),
+                is_featured=True,
+                is_sponsored=False,
+                source_attribution=(
+                    f"Ảnh: {image.get('author') or 'Wikimedia Commons'} "
+                    f"({image.get('license') or 'xem trang nguồn'})"
+                    if image.get("url")
+                    else "Ban biên tập TripFlow"
+                ),
+                last_verified_at=now,
+                updated_at=now,
+            )
+            db.add(destination)
+            db.flush()
+            existing_destinations.append(destination)
+            if image.get("url"):
+                db.add(
+                    DestinationImage(
+                        destination_id=destination.id,
+                        image_url=image["url"],
+                        thumbnail_url=image.get("thumb_url"),
+                        caption=name,
+                        sort_order=1,
+                        license_type=image.get("license") or "",
+                        credit_author=image.get("author") or "",
+                    )
+                )
+            inserted_destinations += 1
+
+        elif record.get("type") in ("restaurant", "cafe"):
+            exists = (
+                db.query(Restaurant)
+                .filter(Restaurant.province_id == province.id, Restaurant.name == name)
+                .first()
+            )
+            if exists:
+                continue
+            restaurant = Restaurant(
+                **common,
+                cuisine_type=record.get("cuisine") or record.get("category") or "Đặc sản địa phương",
+                specialty_dishes=record.get("specialties") or None,
+                price_range=record.get("price_range") or "",
+                opening_hours=record.get("opening_hours") or "",
+                contact_phone=record.get("phone") or None,
+                rating=0.0,
+                review_count=0,
+                reviews_count=0,
+                sample_reviews_json="[]",
+                is_high_rated=False,
+                image_url=image.get("url"),
+                thumbnail_url=image.get("thumb_url"),
+                image_credit=image.get("author") or None,
+                image_license=image.get("license") or None,
+                image_source_url=image.get("source_url") or None,
+                is_sponsored=False,
+                last_updated_at=now,
+            )
+            db.add(restaurant)
+            inserted_restaurants += 1
+
+    db.commit()
+    logger.warning(
+        "Catalog mở: thêm %s địa điểm, %s quán ăn (tổng %s bản ghi).",
+        inserted_destinations,
+        inserted_restaurants,
+        len(records),
+    )
+
+
+def _seed_rest_stops(db: Session, now: datetime) -> None:
+    """Nạp điểm nghỉ chân thật từ OpenStreetMap (cây xăng/sạc EV/trạm nghỉ)."""
+    if not _REST_STOPS_PATH.is_file():
+        logger.info("Chưa có rest_stops_extra.json — dùng quán cà phê/điểm ngắm cảnh làm điểm nghỉ.")
+        return
+    try:
+        records = json.loads(_REST_STOPS_PATH.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.error("Không đọc được rest_stops: %s", exc)
+        return
+
+    provinces = {p.code: p for p in db.query(Province).all()}
+    inserted = 0
+    for record in records:
+        province = provinces.get(record.get("province_code"))
+        if province is None:
+            continue
+        name = (record.get("name") or "").strip()
+        lat = record.get("latitude")
+        lng = record.get("longitude")
+        if not name or lat is None or lng is None:
+            continue
+        exists = (
+            db.query(RestStop)
+            .filter(
+                RestStop.province_id == province.id,
+                RestStop.name == name,
+                RestStop.category == (record.get("category") or "rest"),
+            )
+            .first()
+        )
+        if exists:
+            continue
+        db.add(
+            RestStop(
+                province_id=province.id,
+                category=record.get("category") or "rest",
+                name=name,
+                address=record.get("address") or province.name,
+                latitude=float(lat),
+                longitude=float(lng),
+                opening_hours=record.get("opening_hours") or "",
+                phone=record.get("phone") or None,
+                description=record.get("description") or None,
+                brand=record.get("brand") or None,
+                source="osm",
+                source_url=record.get("source_url") or "",
+                data_source="osm",
+                status="published",
+                is_verified=False,
+                updated_at=now,
+            )
+        )
+        inserted += 1
+    db.commit()
+    logger.warning("Điểm nghỉ chân: thêm %s POI (tổng %s).", inserted, len(records))
+
+
+def _reset_postgres_sequences() -> None:
+    """Đồng bộ sequence sau khi seed bằng ID tường minh (PostgreSQL).
+
+    SQLite tự cập nhật rowid khi INSERT id tường minh, còn PostgreSQL thì không.
+    Nếu bỏ qua bước này, lần insert tiếp theo sẽ đụng primary key đã tồn tại.
+    """
+    if engine.dialect.name != "postgresql":
+        return
+    with engine.begin() as conn:
+        for table in SQLModel.metadata.sorted_tables:
+            if "id" not in table.columns:
+                continue
+            try:
+                conn.execute(
+                    text(
+                        f"SELECT setval("
+                        f"pg_get_serial_sequence('{table.name}', 'id'), "
+                        f"COALESCE((SELECT MAX(id) FROM {table.name}), 1), true)"
+                    )
+                )
+            except Exception:
+                # Bảng không có sequence (khoá phức hợp/không serial) — bỏ qua.
+                continue
+
+
 def init_and_seed_db() -> None:
     """
     Script chuẩn nạp dữ liệu mẫu theo cơ chế Idempotent Incremental Seed (Upsert):
@@ -2072,13 +2468,24 @@ def init_and_seed_db() -> None:
     """
     SQLModel.metadata.create_all(engine)
     _ensure_ingestion_columns()
+    _ensure_trip_columns()
+    _ensure_user_columns()
     db: Session = SessionLocal()
     try:
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         _seed_rbac_users_and_categories(db, now)
         _ensure_all_10_provinces_and_content(db, now)
-        _seed_initial_favorites_reports_and_audits(db, now)
+        # Seed lõi dùng ID tường minh: đồng bộ sequence TRƯỚC khi thêm catalog mở,
+        # nếu không PostgreSQL sẽ cấp lại ID 1..N và đụng khoá chính.
         db.commit()
+        _reset_postgres_sequences()
+        _seed_extra_catalog(db, now)
+        _optimize_media_urls(db)
+        _seed_rest_stops(db, now)
+        if settings.SEED_DEMO:
+            _seed_initial_favorites_reports_and_audits(db, now)
+        db.commit()
+        _reset_postgres_sequences()
     finally:
         db.close()
 

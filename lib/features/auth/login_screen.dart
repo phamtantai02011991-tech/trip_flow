@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (res['success'] == true) {
-        final debugOtp = res['debug_otp']?.toString() ?? '888999';
+        final debugOtp = res['debug_otp']?.toString();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

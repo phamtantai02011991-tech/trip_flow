@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState } from "react";
-import { adminApi } from "../services/api/client";
+import { adminApi, DEMO_MODE } from "../services/api/client";
 
 const AuthContext = createContext(null);
 
 const SAVED_USER_KEY = "tripflow_admin_current_user";
 
-export const DEMO_ADMIN_ACCOUNTS = [
-  {
+export const DEMO_ADMIN_ACCOUNTS = DEMO_MODE
+  ? [
+      {
     label: "Super Admin (Toàn quyền)",
     email: "admin@tripflow.vn",
     password: "Admin@123",
@@ -42,7 +43,8 @@ export const DEMO_ADMIN_ACCOUNTS = [
     badgeColor: "bg-purple-600 text-white",
     desc: "Chuyên trách xử lý đánh giá & báo cáo sai thông tin từ du khách",
   },
-];
+]
+  : [];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -52,18 +54,12 @@ export function AuthProvider({ children }) {
     } catch {
       // ignore
     }
-    return {
-      id: 1,
-      email: "admin@tripflow.vn",
-      full_name: "Nguyễn Quản Trị (Super Admin)",
-      role: "super_admin",
-      assigned_province_id: null,
-      is_active: true,
-    };
+    // Không auto-login: bắt buộc đăng nhập thật bằng tài khoản quản trị.
+    return null;
   });
 
-  const login = async (email, password) => {
-    const res = await adminApi.login(email, password);
+  const login = async (email, password, otpCode = "") => {
+    const res = await adminApi.login(email, password, otpCode);
     setUser(res.user);
     localStorage.setItem(SAVED_USER_KEY, JSON.stringify(res.user));
     return res.user;

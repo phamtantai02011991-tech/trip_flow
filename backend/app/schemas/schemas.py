@@ -26,6 +26,20 @@ class RoleOut(SQLModel):
 class LoginRequest(SQLModel):
     email: str
     password: str
+    otp_code: Optional[str] = None
+
+
+class TwoFactorSetupResponse(SQLModel):
+    secret: str
+    otpauth_url: str
+
+
+class TwoFactorCodeRequest(SQLModel):
+    code: str
+
+
+class TwoFactorStatusResponse(SQLModel):
+    enabled: bool
 
 
 class RegisterRequest(SQLModel):
@@ -64,6 +78,7 @@ class UserOut(SQLModel):
     role_id: Optional[int] = None
     assigned_province_id: Optional[int] = None
     is_active: bool
+    totp_enabled: bool = False
     permissions: List[str] = []
     created_at: Optional[datetime] = None
 
@@ -306,6 +321,9 @@ class RestaurantBase(SQLModel):
     specialties: Optional[str] = None
     image_url: Optional[str] = None
     thumbnail_url: Optional[str] = None
+    image_credit: Optional[str] = None
+    image_license: Optional[str] = None
+    image_source_url: Optional[str] = None
     is_sponsored: bool = False
     sponsor_label: Optional[str] = None
     is_verified: bool = False
@@ -338,6 +356,9 @@ class RestaurantUpdate(SQLModel):
     sample_reviews_json: Optional[str] = None
     image_url: Optional[str] = None
     thumbnail_url: Optional[str] = None
+    image_credit: Optional[str] = None
+    image_license: Optional[str] = None
+    image_source_url: Optional[str] = None
     is_sponsored: Optional[bool] = None
     sponsor_label: Optional[str] = None
     is_verified: Optional[bool] = None
@@ -421,6 +442,41 @@ class RouteCorridorResponse(SQLModel):
     polyline: List[WaypointCoord]
     results_count: int
     restaurants: List[CorridorRestaurantOut]
+
+
+class AlongRouteRequest(SQLModel):
+    origin_lat: float
+    origin_lng: float
+    dest_lat: float
+    dest_lng: float
+    corridor_radius_km: float = 2.0
+    kinds: str = "rest,gas,ev,cafe"
+
+
+class AlongRouteStopOut(SQLModel):
+    id: str
+    name: str
+    kind: str
+    stop_category: str = ""
+    address: str = ""
+    latitude: float
+    longitude: float
+    thumbnail_url: str = ""
+    rating: float = 0.0
+    review_count: int = 0
+    distance_from_route_km: float
+    detour_distance_km: float
+    estimated_detour_mins: int
+    route_progress_pct: float
+    nearest_route_point_lat: float
+    nearest_route_point_lng: float
+
+
+class AlongRouteResponse(SQLModel):
+    count: int
+    route_distance_km: float
+    provider: str
+    stops: List[AlongRouteStopOut]
 
 
 # ============================================================================

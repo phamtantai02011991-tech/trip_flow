@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/utils/app_state.dart';
 import '../../../core/utils/external_launcher.dart';
 import '../../favorites/favorites_screen.dart';
@@ -105,7 +106,7 @@ class BrandIdentityHeader extends StatelessWidget {
                       ),
                     ),
                     child: const Text(
-                      'SUPER APP',
+                      'TRIP PLANNER',
                       style: TextStyle(
                         fontSize: 9.5,
                         fontWeight: FontWeight.w900,
@@ -117,45 +118,48 @@ class BrandIdentityHeader extends StatelessWidget {
 
                   const Spacer(),
 
-                  // Hotline 24/7 Button - 1 Chạm Gọi Ngay
-                  InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: () => ExternalLauncher.makePhoneCall(context, '19006868'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.22),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.45),
-                          width: 1,
+                  // Hotline chỉ hiển thị khi đã cấu hình số thật.
+                  if (AppConfig.supportHotline.isNotEmpty) ...[
+                    InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => ExternalLauncher.makePhoneCall(
+                          context, AppConfig.supportHotline),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.22),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.45),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.phone_in_talk_rounded,
+                              size: 13,
+                              color: Color(0xFFA7F3D0),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              AppConfig.supportHotline,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.phone_in_talk_rounded,
-                            size: 13,
-                            color: Color(0xFFA7F3D0), // Fresh Mint
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            '1900 6868',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
+                    const SizedBox(width: 8),
+                  ],
 
                   // Nút Yêu thích
                   InkWell(
@@ -225,7 +229,7 @@ class BrandIdentityHeader extends StatelessWidget {
                   ),
                   const SizedBox(width: 5),
                   const Text(
-                    'Nền Tảng Du Lịch & Phượt #1 Việt Nam',
+                    'Nền Tảng Khám Phá Du Lịch Việt Nam',
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
@@ -252,7 +256,7 @@ class BrandIdentityHeader extends StatelessWidget {
 
               // 4. Tagline mô tả
               Text(
-                'Khám phá 63 tỉnh thành, bản đồ phượt độc quyền & hệ sinh thái dịch vụ toàn diện.',
+                'Khám phá 10 tỉnh thành trọng điểm cùng bản đồ, ẩm thực & lộ trình thông minh.',
                 style: TextStyle(
                   fontSize: 12.5,
                   height: 1.35,
@@ -391,22 +395,23 @@ class BrandIdentityHeader extends StatelessWidget {
                     width: 0.8,
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _TrustBadgeItem(
                       icon: Icons.map_outlined,
-                      label: '63 Tỉnh/Thành',
+                      label:
+                          '${appState.provinces.where((p) => p.id != 0).length} Tỉnh/Thành',
                     ),
-                    _TrustBadgeDivider(),
+                    const _TrustBadgeDivider(),
                     _TrustBadgeItem(
                       icon: Icons.place_rounded,
-                      label: '1.200+ Điểm đến',
+                      label: '${appState.allDestinations.length} Điểm đến',
                     ),
-                    _TrustBadgeDivider(),
-                    _TrustBadgeItem(
+                    const _TrustBadgeDivider(),
+                    const _TrustBadgeItem(
                       icon: Icons.verified_user_rounded,
-                      label: '100% Xác minh',
+                      label: 'Dữ liệu biên tập',
                     ),
                   ],
                 ),

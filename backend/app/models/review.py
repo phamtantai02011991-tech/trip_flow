@@ -1,6 +1,6 @@
 """Module 4 mở rộng — đánh giá của người dùng TripFlow (không phải dữ liệu mẫu)."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
@@ -17,5 +17,5 @@ class PlaceReview(SQLModel, table=True):
     rating: int = Field(ge=1, le=5)
     comment: str = Field(default="", max_length=1000)
     visited_on: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     is_hidden: bool = Field(default=False)

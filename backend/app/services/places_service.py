@@ -12,14 +12,23 @@ Kết quả luôn kèm `source` để UI nói rõ dữ liệu đến từ đâu.
 
 import json
 import math
-from datetime import datetime, timedelta
+import unicodedata
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
+
+try:  # shapely là dependency chính, nhưng vẫn cho phép fallback
+    from shapely.geometry import LineString, Point
+
+    SHAPELY_AVAILABLE = True
+except Exception:  # pragma: no cover
+    SHAPELY_AVAILABLE = False
 
 from sqlmodel import Session, select
 
 from app.core.config import settings
 from app.models.models import Destination, Restaurant
 from app.models.place import PlaceCache
+from app.models.rest_stop import RestStop
 from app.services.ai.plan_service import haversine_km, travel_minutes
 
 KIND_TO_RESTAURANT_HINT = {
@@ -85,6 +94,11 @@ def _row_to_place(row: Any, kind: str, origin: tuple[float, float], vehicle: str
         "price_value": _price_value(price),
         "open_hours": getattr(row, "opening_hours", "") or "",
         "cuisine": cuisine,
+        "image_url": getattr(row, "image_url", None) or getattr(row, "detail_image_url", None) or "",
+        "thumbnail_url": getattr(row, "thumbnail_url", None)
+        or getattr(row, "image_url", None)
+        or getattr(row, "detail_image_url", None)
+        or "",
         "distance_km": round(distance, 2),
         "eta_min": travel_minutes(distance, vehicle),
         "quality_score": score,
@@ -116,6 +130,53 @@ def _catalog_nearby(
             if distance <= radius_km:
                 results.append(_row_to_place(row, "sight", (lat, lng), vehicle))
 
+    # Điểm nghỉ chân: ưu tiên POI OSM (nếu có), sau đó bổ sung quán cà phê & điểm ngắm cảnh.
+    rest_kinds = {
+        "gas": {"fuel"},
+        "ev": {"ev"},
+        "rest": {"rest", "viewpoint", "park", "toilet"},
+    }
+    wanted_rest = {kind for kind, cats in rest_kinds.items() if kind in kinds}
+    if wanted_rest:
+        for row in db.exec(select(RestStop)).all():
+            if (row.status or "published") != "published":
+                continue
+            distance = haversine_km(lat, lng, row.latitude, row.longitude)
+            if distance > radius_km:
+                continue
+            for kind, categories in rest_kinds.items():
+                if kind in wanted_rest and row.category in categories:
+                    item = _row_to_place(row, kind, (lat, lng), vehicle)
+                    item["stop_category"] = row.category
+                    item["brand"] = getattr(row, "brand", None) or ""
+                    results.append(item)
+                    break
+
+    if "rest" in kinds:
+        # Quán cà phê và không gian xanh/ngắm cảnh cũng là điểm nghỉ chân hợp lý.
+        for row in db.exec(select(Restaurant)).all():
+            cuisine = (row.cuisine_type or "").lower()
+            if not any(h in cuisine for h in KIND_TO_RESTAURANT_HINT["cafe"]):
+                continue
+            distance = haversine_km(lat, lng, row.latitude, row.longitude)
+            if distance > radius_km:
+                continue
+            item = _row_to_place(row, "cafe", (lat, lng), vehicle)
+            item["kind"] = "rest"
+            item["stop_category"] = "cafe"
+            results.append(item)
+        for row in db.exec(select(Destination)).all():
+            category = (row.category.code if row.category else "") or ""
+            if category not in ("street_walk", "nature"):
+                continue
+            distance = haversine_km(lat, lng, row.latitude, row.longitude)
+            if distance > radius_km:
+                continue
+            item = _row_to_place(row, "sight", (lat, lng), vehicle)
+            item["kind"] = "rest"
+            item["stop_category"] = "viewpoint"
+            results.append(item)
+
     return results
 
 
@@ -124,7 +185,7 @@ def _cache_get(db: Session, key: str) -> Optional[List[Dict[str, Any]]]:
         select(PlaceCache).where(
             PlaceCache.provider == "nearby",
             PlaceCache.cache_key == key,
-            PlaceCache.expires_at > datetime.utcnow(),
+            PlaceCache.expires_at > datetime.now(timezone.utc),
         )
     ).first()
     if row is None:
@@ -141,7 +202,7 @@ def _cache_set(db: Session, key: str, data: List[Dict[str, Any]]) -> None:
             provider="nearby",
             cache_key=key,
             payload_json=json.dumps(data, ensure_ascii=False),
-            expires_at=datetime.utcnow() + timedelta(hours=settings.PLACES_CACHE_TTL_HOURS),
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=settings.PLACES_CACHE_TTL_HOURS),
         )
     )
     db.commit()
@@ -189,7 +250,7 @@ def nearby(
     else:
         items.sort(key=lambda i: i.get("distance_km", 0))
 
-    unsupported = [k for k in kinds if k not in ("food", "cafe", "sight")]
+    unsupported = [k for k in kinds if k not in ("food", "cafe", "sight", "gas", "ev", "rest")]
     hidden_gems = sum(1 for i in items if i.get("quality_label") == "hidden_gem")
     return {
         "items": items[:limit],
@@ -219,14 +280,188 @@ def _looks_open(hours: str) -> bool:
         return True
 
 
+def _normalize_vi(value: str) -> str:
+    """Chuẩn hoá tiếng Việt để tìm không dấu, không phân biệt hoa thường."""
+    text = (value or "").replace("đ", "d").replace("Đ", "D")
+    decomposed = unicodedata.normalize("NFD", text)
+    without_marks = "".join(
+        ch for ch in decomposed if unicodedata.category(ch) != "Mn"
+    )
+    return " ".join(without_marks.casefold().split())
+
+
 def suggest(db: Session, query: str, limit: int = 8) -> List[Dict[str, Any]]:
-    """Gợi ý gộp địa điểm + quán ăn theo tên (ILIKE)."""
-    q = f"%{query.strip()}%"
-    out: List[Dict[str, Any]] = []
-    for row in db.exec(select(Destination).where(Destination.name.ilike(q)).limit(limit)).all():
-        out.append({"id": f"d_{row.id}", "name": row.name, "kind": "sight",
-                    "lat": row.latitude, "lng": row.longitude, "address": row.address or ""})
-    for row in db.exec(select(Restaurant).where(Restaurant.name.ilike(q)).limit(limit)).all():
-        out.append({"id": f"r_{row.id}", "name": row.name, "kind": "food",
-                    "lat": row.latitude, "lng": row.longitude, "address": row.address or ""})
-    return out[:limit]
+    """Gợi ý gộp địa điểm + quán ăn theo tên, hỗ trợ tìm không dấu."""
+    q = _normalize_vi(query)
+    if not q:
+        return []
+
+    matches: List[Dict[str, Any]] = []
+    for row in db.exec(select(Destination)).all():
+        if q in _normalize_vi(row.name) or q in _normalize_vi(row.address or ""):
+            matches.append(
+                {
+                    "id": f"d_{row.id}",
+                    "name": row.name,
+                    "kind": "sight",
+                    "lat": row.latitude,
+                    "lng": row.longitude,
+                    "address": row.address or "",
+                }
+            )
+    for row in db.exec(select(Restaurant)).all():
+        haystack = " ".join(
+            [
+                row.name or "",
+                row.address or "",
+                row.cuisine_type or "",
+                row.specialty_dishes or "",
+            ]
+        )
+        if q in _normalize_vi(haystack):
+            matches.append(
+                {
+                    "id": f"r_{row.id}",
+                    "name": row.name,
+                    "kind": "food",
+                    "lat": row.latitude,
+                    "lng": row.longitude,
+                    "address": row.address or "",
+                }
+            )
+    return matches[:limit]
+
+
+def _project_stops_along_route(
+    stops: List[Dict[str, Any]],
+    polyline: List[tuple],
+    corridor_radius_km: float,
+) -> List[Dict[str, Any]]:
+    """Chiếu từng điểm lên polyline và chỉ giữ điểm nằm trong hành lang."""
+    if not stops or len(polyline) < 2:
+        return []
+
+    ref_lat = sum(p[0] for p in polyline) / float(len(polyline))
+    ref_lng = sum(p[1] for p in polyline) / float(len(polyline))
+    cos_ref = max(0.2, math.cos(math.radians(ref_lat)))
+
+    def to_xy(lat: float, lng: float) -> tuple:
+        return ((lng - ref_lng) * 111.32 * cos_ref, (lat - ref_lat) * 111.32)
+
+    def to_lat_lng(x: float, y: float) -> tuple:
+        return (
+            round(ref_lat + (y / 111.32), 6),
+            round(ref_lng + (x / (111.32 * cos_ref)), 6),
+        )
+
+    if not SHAPELY_AVAILABLE:
+        # Fallback: so với các đỉnh polyline (đủ dùng khi Shapely không có).
+        results = []
+        for stop in stops:
+            best = None
+            for index, (plat, plng) in enumerate(polyline):
+                dist = haversine_km(stop["latitude"], stop["longitude"], plat, plng)
+                if best is None or dist < best[0]:
+                    best = (dist, index, plat, plng)
+            if best and best[0] <= corridor_radius_km:
+                distance = round(best[0], 2)
+                results.append(
+                    {
+                        **stop,
+                        "distance_from_route_km": distance,
+                        "detour_distance_km": round(distance * 2, 2),
+                        "estimated_detour_mins": max(2, int(round(distance * 2 / 0.4)) + 1),
+                        "route_progress_pct": round(best[1] / max(1, len(polyline) - 1) * 100, 1),
+                        "nearest_route_point_lat": best[2],
+                        "nearest_route_point_lng": best[3],
+                    }
+                )
+        return sorted(results, key=lambda i: (i["route_progress_pct"], i["distance_from_route_km"]))
+
+    route_line = LineString([to_xy(lat, lng) for lat, lng in polyline])
+    total_len = max(0.01, route_line.length)
+    results = []
+    for stop in stops:
+        point = Point(to_xy(stop["latitude"], stop["longitude"]))
+        distance = float(route_line.distance(point))
+        if distance > corridor_radius_km:
+            continue
+        progress = float(route_line.project(point))
+        nearest = route_line.interpolate(progress)
+        nearest_lat, nearest_lng = to_lat_lng(nearest.x, nearest.y)
+        results.append(
+            {
+                **stop,
+                "distance_from_route_km": round(distance, 2),
+                "detour_distance_km": round(distance * 2, 2),
+                "estimated_detour_mins": max(2, int(round(distance * 2 / 0.4)) + 1),
+                "route_progress_pct": round(progress / total_len * 100, 1),
+                "nearest_route_point_lat": nearest_lat,
+                "nearest_route_point_lng": nearest_lng,
+            }
+        )
+    results.sort(key=lambda i: (i["route_progress_pct"], i["distance_from_route_km"]))
+    return results
+
+
+def along_route(
+    db: Session,
+    polyline: List[tuple],
+    corridor_radius_km: float = 2.0,
+    kinds: Optional[List[str]] = None,
+    limit: int = 40,
+) -> List[Dict[str, Any]]:
+    """Điểm nghỉ chân & quán cà phê nằm dọc hành lang tuyến đường."""
+    wanted = set(kinds or ["rest", "gas", "ev", "cafe"])
+    stops: List[Dict[str, Any]] = []
+
+    category_to_kind = {
+        "fuel": "gas",
+        "ev": "ev",
+        "rest": "rest",
+        "viewpoint": "rest",
+        "park": "rest",
+        "toilet": "rest",
+    }
+    for row in db.exec(select(RestStop)).all():
+        if (row.status or "published") != "published":
+            continue
+        kind = category_to_kind.get(row.category, "rest")
+        if kind not in wanted:
+            continue
+        stops.append(
+            {
+                "id": f"rs_{row.id}",
+                "name": row.name,
+                "kind": kind,
+                "stop_category": row.category,
+                "address": row.address or "",
+                "latitude": row.latitude,
+                "longitude": row.longitude,
+                "thumbnail_url": row.thumbnail_url or "",
+                "rating": row.rating or 0,
+                "review_count": row.review_count or 0,
+            }
+        )
+
+    if "cafe" in wanted:
+        for row in db.exec(select(Restaurant)).all():
+            cuisine = (row.cuisine_type or "").lower()
+            if not any(hint in cuisine for hint in KIND_TO_RESTAURANT_HINT["cafe"]):
+                continue
+            stops.append(
+                {
+                    "id": f"r_{row.id}",
+                    "name": row.name,
+                    "kind": "cafe",
+                    "stop_category": "cafe",
+                    "address": row.address or "",
+                    "latitude": row.latitude,
+                    "longitude": row.longitude,
+                    "thumbnail_url": row.thumbnail_url or "",
+                    "rating": row.rating or 0,
+                    "review_count": row.review_count or 0,
+                }
+            )
+
+    return _project_stops_along_route(stops, polyline, corridor_radius_km)[:limit]

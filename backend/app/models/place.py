@@ -1,6 +1,6 @@
 """Bảng phụ trợ Module 5: cache POI và lịch sử tìm kiếm."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
@@ -15,7 +15,7 @@ class PlaceCache(SQLModel, table=True):
     provider: str = Field(max_length=16, index=True)  # goong | google | catalog
     cache_key: str = Field(max_length=200, index=True)
     payload_json: str
-    fetched_at: datetime = Field(default_factory=datetime.utcnow)
+    fetched_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     expires_at: datetime
 
 
@@ -29,4 +29,4 @@ class SearchHistory(SQLModel, table=True):
     place_id: Optional[str] = Field(default=None, max_length=200)
     lat: Optional[float] = None
     lng: Optional[float] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

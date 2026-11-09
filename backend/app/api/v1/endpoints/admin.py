@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
@@ -7,6 +7,7 @@ from sqlmodel import Session
 from app.core.security import (
     check_province_permission,
     get_role_permissions,
+    require_admin_2fa,
     require_permissions,
     require_roles,
 )
@@ -64,7 +65,7 @@ from app.services.itinerary_service import (
     update_itinerary_and_stops,
 )
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_admin_2fa)])
 
 ALL_ADMIN_STAFF_ROLES = ["super_admin", "content_admin", "province_editor", "moderator"]
 CONTENT_WRITE_ROLES = ["super_admin", "content_admin", "province_editor"]
@@ -217,7 +218,7 @@ def admin_create_province(
         center_lng=payload.center_lng,
         is_active=payload.is_active,
         data_source=payload.data_source,
-        updated_at=datetime.utcnow(),
+        updated_at=datetime.now(timezone.utc),
     )
     db.add(prov)
     db.commit()
@@ -249,7 +250,7 @@ def admin_update_province(
     update_data = payload.model_dump(exclude_unset=True)
     for k, v in update_data.items():
         setattr(prov, k, v)
-    prov.updated_at = datetime.utcnow()
+    prov.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(prov)
 
@@ -293,7 +294,7 @@ def admin_create_destination(
 ):
     check_province_permission(current_user, payload.province_id)
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     slug = payload.slug or payload.name.lower().replace(" ", "-")
     primary_raw_img = (
         payload.images[0].image_url
@@ -393,8 +394,8 @@ def admin_update_destination(
     update_data = payload.model_dump(exclude_unset=True, exclude={"images"})
     for k, v in update_data.items():
         setattr(dest, k, v)
-    dest.updated_at = datetime.utcnow()
-    dest.last_verified_at = datetime.utcnow()
+    dest.updated_at = datetime.now(timezone.utc)
+    dest.last_verified_at = datetime.now(timezone.utc)
 
     if payload.images is not None:
         db.query(DestinationImage).filter(DestinationImage.destination_id == dest.id).delete()
@@ -493,7 +494,7 @@ def admin_create_local_food(
         status=payload.status,
         data_source=payload.data_source,
         license_info=payload.license_info,
-        updated_at=datetime.utcnow(),
+        updated_at=datetime.now(timezone.utc),
     )
     db.add(food)
     db.commit()
@@ -534,7 +535,7 @@ def admin_update_local_food(
         food.thumbnail_url = cloudinary_service.build_thumbnail_url(payload.image_url)
     if payload.recommended_restaurant_ids is not None:
         food.recommended_restaurant_ids_json = json.dumps(payload.recommended_restaurant_ids)
-    food.updated_at = datetime.utcnow()
+    food.updated_at = datetime.now(timezone.utc)
 
     db.commit()
     db.refresh(food)
@@ -623,7 +624,7 @@ def admin_create_restaurant(
         source_url=payload.source_url,
         status=payload.status,
         data_source=payload.data_source,
-        last_updated_at=datetime.utcnow(),
+        last_updated_at=datetime.now(timezone.utc),
     )
     db.add(rest)
     db.commit()
@@ -662,7 +663,7 @@ def admin_update_restaurant(
     if payload.image_url:
         rest.image_url = cloudinary_service.build_detail_url(payload.image_url)
         rest.thumbnail_url = cloudinary_service.build_thumbnail_url(payload.image_url)
-    rest.last_updated_at = datetime.utcnow()
+    rest.last_updated_at = datetime.now(timezone.utc)
 
     db.commit()
     db.refresh(rest)
@@ -882,7 +883,7 @@ def admin_resolve_report(
 
     report.status = payload.status
     report.moderator_note = payload.moderator_note
-    report.resolved_at = datetime.utcnow()
+    report.resolved_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(report)
 

@@ -425,6 +425,9 @@ class RestaurantModel {
   final List<DishModel> dishes;
   final String imageUrl;
   final String? thumbnailUrl;
+  final String imageCredit;
+  final String imageLicense;
+  final String imageSourceUrl;
   final bool isSponsored;
   final String? sponsorLabel;
   final String dataSource;
@@ -452,6 +455,9 @@ class RestaurantModel {
     this.dishes = const [],
     required this.imageUrl,
     this.thumbnailUrl,
+    this.imageCredit = '',
+    this.imageLicense = '',
+    this.imageSourceUrl = '',
     this.isSponsored = false,
     this.sponsorLabel,
     this.dataSource = 'internal',
@@ -460,7 +466,7 @@ class RestaurantModel {
 
   String get resolvedThumbnailUrl =>
       thumbnailUrl ?? AppConfig.buildThumbnailUrl(imageUrl);
-  String get phone => contactPhone.isNotEmpty ? contactPhone : '1900 6868';
+  String get phone => contactPhone;
 
   factory RestaurantModel.fromJson(Map<String, dynamic> json) {
     final rawUrl = (json['image_url'] ?? '').toString();
@@ -503,6 +509,9 @@ class RestaurantModel {
       imageUrl: rawUrl,
       thumbnailUrl: json['thumbnail_url']?.toString() ??
           AppConfig.buildThumbnailUrl(rawUrl),
+      imageCredit: (json['image_credit'] ?? '').toString(),
+      imageLicense: (json['image_license'] ?? '').toString(),
+      imageSourceUrl: (json['image_source_url'] ?? '').toString(),
       isSponsored: json['is_sponsored'] as bool? ?? false,
       sponsorLabel: json['sponsor_label']?.toString(),
       dataSource: (json['data_source'] ?? 'internal').toString(),

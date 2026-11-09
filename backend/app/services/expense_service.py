@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 
 from sqlmodel import Session, select
 
+from app.core.time import as_utc
 from app.models.trip import Expense, ExpenseCategory, Trip, TripDay
 from app.schemas.expense import BudgetSummary, ExpenseCreate, ExpenseOut, ExpenseUpdate
 from app.services import trip_service
@@ -21,7 +22,7 @@ def add_expense(db: Session, trip: Trip, payload: ExpenseCreate) -> ExpenseOut:
         day = db.get(TripDay, payload.trip_day_id)
         if day is None or day.trip_id != trip.id:
             raise ValueError("Ngày không thuộc chuyến đi này")
-    row = Expense(trip_id=trip.id, **payload.model_dump())
+    row = Expense(trip_id=trip.id, **{**payload.model_dump(), "spent_at": as_utc(payload.spent_at)})
     db.add(row)
     db.commit()
     db.refresh(row)
@@ -34,6 +35,8 @@ def update_expense(db: Session, trip: Trip, expense_id: int, payload: ExpenseUpd
         return None
     for key, value in payload.model_dump(exclude_unset=True).items():
         if value is not None:
+            if key == "spent_at":
+                value = as_utc(value)
             setattr(row, key, value)
     db.add(row)
     db.commit()

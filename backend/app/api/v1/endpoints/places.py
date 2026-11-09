@@ -2,15 +2,18 @@
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import Field
 from sqlmodel import Session, select
 from sqlmodel import SQLModel
 
+from app.core.rate_limit import limiter
 from app.core.security import get_current_user, get_current_user_optional
 from app.db.session import get_db
+from app.integrations.maps_client import maps_proxy
 from app.models.models import User
 from app.models.place import SearchHistory
+from app.schemas.schemas import AlongRouteRequest, AlongRouteResponse
 from app.services import places_service
 
 router = APIRouter()
@@ -47,6 +50,36 @@ def nearby(
 @router.get("/suggest")
 def suggest(q: str = Query(..., min_length=2, max_length=100), db: Session = Depends(get_db)):
     return places_service.suggest(db, q)
+
+
+@router.post("/along-route", response_model=AlongRouteResponse)
+@limiter.limit("10/minute")
+def along_route(
+    request: Request,
+    payload: AlongRouteRequest,
+    db: Session = Depends(get_db),
+):
+    """Điểm nghỉ chân / quán cà phê nằm trong hành lang tuyến đường A → B."""
+    (
+        polyline,
+        route_distance_km,
+        _encoded_polyline,
+        provider,
+    ) = maps_proxy.get_route_with_encoded_polyline(
+        origin_lat=payload.origin_lat,
+        origin_lng=payload.origin_lng,
+        dest_lat=payload.dest_lat,
+        dest_lng=payload.dest_lng,
+    )
+    radius = min(max(0.2, payload.corridor_radius_km), 10.0)
+    kinds = [k.strip() for k in (payload.kinds or "").split(",") if k.strip()]
+    stops = places_service.along_route(db, polyline, radius, kinds)
+    return {
+        "count": len(stops),
+        "route_distance_km": round(route_distance_km, 2),
+        "provider": provider,
+        "stops": stops,
+    }
 
 
 @router.get("/history")

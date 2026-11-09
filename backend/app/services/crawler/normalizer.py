@@ -220,6 +220,15 @@ def clean_scraped_place(raw: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _dedup_key(value: Any) -> str:
+    """Khoá so trùng không phân biệt hoa/thường, có xử lý đúng tiếng Việt.
+
+    `ILIKE` của SQLite chỉ hạ chữ ASCII nên "CƠM" không khớp "Cơm"; vì vậy
+    ngoài truy vấn SQL còn một lớp so sánh bằng `str.casefold()`.
+    """
+    return _MULTI_SPACE_RE.sub(" ", _clean_text(value).casefold()).strip()
+
+
 def check_duplicate(
     db: Session,
     name: str,
@@ -255,4 +264,19 @@ def check_duplicate(
     # Kiểm tra trùng khớp chính xác tên địa điểm không phân biệt hoa thường bằng ILIKE
     stmt_name_only = select(model_cls).where(name_col.ilike(cleaned_name))
     existing_by_name = db.exec(stmt_name_only).first()
-    return existing_by_name is not None
+    if existing_by_name is not None:
+        return True
+
+    # Fallback chuẩn Unicode (SQLite không fold được chữ có dấu).
+    target_name = _dedup_key(cleaned_name)
+    target_addr = _dedup_key(cleaned_address)
+    short_target_addr = _dedup_key(cleaned_address.split(",")[0]) if cleaned_address else ""
+    for row in db.exec(select(model_cls).limit(2000)).all():
+        if _dedup_key(getattr(row, "name", "")) != target_name:
+            continue
+        if not target_addr:
+            return True
+        row_addr = _dedup_key(getattr(row, "address", ""))
+        if row_addr == target_addr or (short_target_addr and short_target_addr in row_addr):
+            return True
+    return False

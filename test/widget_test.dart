@@ -7,9 +7,53 @@ import 'package:trip_flow/core/utils/app_state.dart';
 import 'package:trip_flow/core/utils/data_models.dart';
 import 'package:trip_flow/core/utils/geo_utils.dart';
 import 'package:trip_flow/core/utils/mock_data.dart';
+import 'package:trip_flow/core/network/dio_client.dart';
 import 'package:trip_flow/main.dart';
 import 'package:trip_flow/core/services/biker_safety_repository.dart';
 import 'package:trip_flow/features/services/ota_partner_hub_screen.dart';
+
+/// Client API giả lập server OTP để kiểm thử luồng đăng nhập mà không cần backend.
+class _FakeOtpApiClient extends DioApiClient {
+  _FakeOtpApiClient() : super(cacheService: OfflineCacheService.instance);
+
+  static const String testOtp = '246810';
+
+  @override
+  Future<Map<String, dynamic>> sendSmsOtp({
+    required String phone,
+    String? fullName,
+  }) async {
+    return {
+      'success': true,
+      'phone': phone,
+      'message': 'Mã OTP đã gửi (giả lập test).',
+      'expires_in_seconds': 300,
+      'debug_otp': testOtp,
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> verifySmsOtp({
+    required String phone,
+    required String otpCode,
+    String? fullName,
+  }) async {
+    if (otpCode != testOtp) {
+      return {'success': false, 'message': 'Mã xác thực OTP không chính xác.'};
+    }
+    return {
+      'success': true,
+      'access_token': 'test_jwt_token',
+      'user': {
+        'id': 42,
+        'phone': phone,
+        'full_name': fullName ?? 'Du khách',
+        'role': 'user',
+        'is_active': true,
+      },
+    };
+  }
+}
 
 void main() {
   setUpAll(() {
@@ -43,8 +87,9 @@ void main() {
       // TC-01: Hiển thị mặc định Toàn quốc 🇻🇳 và Brand Identity Hero Header
       expect(find.textContaining('Toàn quốc 🇻🇳'), findsWidgets);
       expect(find.text('TRIPFLOW'), findsOneWidget);
-      expect(find.text('SUPER APP'), findsOneWidget);
-      expect(find.text('1900 6868'), findsOneWidget);
+      expect(find.text('TRIP PLANNER'), findsOneWidget);
+      // Hotline chỉ hiện khi cấu hình SUPPORT_HOTLINE; mặc định ẩn.
+      expect(find.text('1900 6868'), findsNothing);
       expect(find.text('Khám phá'), findsOneWidget);
       expect(find.byIcon(Icons.map_outlined), findsWidgets);
       expect(find.byIcon(Icons.event_note_outlined), findsOneWidget);
@@ -255,8 +300,10 @@ void main() {
       addTearDown(() => tester.view.resetPhysicalSize());
 
       await tester.pumpWidget(
-        const ProviderScope(
-          child: TripFlowApp(),
+        ProviderScope(
+          child: TripFlowApp(
+            appState: TripFlowAppState(dioClient: _FakeOtpApiClient()),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -325,7 +372,7 @@ void main() {
     'TC-24 Unit: TripFlowAppState lưu trữ và khôi phục số điện thoại cùng trạng thái OTP xác thực',
     () async {
       OfflineCacheService.instance.clearUserAuthSession();
-      final appState = TripFlowAppState();
+      final appState = TripFlowAppState(dioClient: _FakeOtpApiClient());
 
       // Kiểm tra trạng thái ban đầu là Guest
       expect(appState.isLoggedIn, isFalse);

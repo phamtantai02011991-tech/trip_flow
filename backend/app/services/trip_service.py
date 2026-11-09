@@ -6,12 +6,13 @@ Mọi hàm nhận `db: Session` và **đã được kiểm tra quyền sở hữ
 
 import json
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from sqlalchemy import func
 from sqlmodel import Session, select
 
+from app.core.time import as_utc
 from app.models.trip import Expense, Trip, TripDay, TripStop
 from app.schemas.trip import TripCreate, TripOut, TripStopIn, TripUpdate
 
@@ -23,12 +24,18 @@ def get_trip(db: Session, trip_id: int) -> Optional[Trip]:
     return db.get(Trip, trip_id)
 
 
-def list_trips(db: Session, user_id: Optional[int], status: Optional[str] = None) -> List[Trip]:
+def list_trips(
+    db: Session,
+    user_id: Optional[int],
+    status: Optional[str] = None,
+    guest_token: Optional[str] = None,
+) -> List[Trip]:
     stmt = select(Trip)
     if user_id is None:
-        # Khách chưa đăng nhập: trả các chuyến do khách tạo (user_id NULL).
-        # Đây là hành vi cho bản demo; production nên bắt buộc đăng nhập.
-        stmt = stmt.where(Trip.user_id.is_(None))
+        # Khách chưa đăng nhập: chỉ thấy chuyến do chính thiết bị này tạo.
+        if not guest_token:
+            return []
+        stmt = stmt.where(Trip.guest_token == guest_token)
     else:
         stmt = stmt.where(Trip.user_id == user_id)
     if status:
@@ -51,9 +58,15 @@ def get_stops(db: Session, day_id: int) -> List[TripStop]:
 # --------------------------------------------------------------------------
 # Tạo / cập nhật
 # --------------------------------------------------------------------------
-def create_trip(db: Session, payload: TripCreate, user_id: Optional[int]) -> Trip:
+def create_trip(
+    db: Session,
+    payload: TripCreate,
+    user_id: Optional[int],
+    guest_token: Optional[str] = None,
+) -> Trip:
     trip = Trip(
         user_id=user_id,
+        guest_token=None if user_id is not None else guest_token,
         title=payload.title,
         province_id=payload.province_id,
         origin_name=payload.origin_name,
@@ -95,7 +108,7 @@ def update_trip(db: Session, trip: Trip, payload: TripUpdate) -> Trip:
     for key, value in data.items():
         if value is not None:
             setattr(trip, key, value)
-    trip.updated_at = datetime.utcnow()
+    trip.updated_at = datetime.now(timezone.utc)
     db.add(trip)
     db.commit()
     db.refresh(trip)
@@ -103,12 +116,16 @@ def update_trip(db: Session, trip: Trip, payload: TripUpdate) -> Trip:
 
 
 def delete_trip(db: Session, trip: Trip) -> None:
-    for day in get_days(db, trip.id):
+    days = get_days(db, trip.id)
+    for day in days:
         for stop in get_stops(db, day.id):
             db.delete(stop)
-        db.delete(day)
     for expense in db.exec(select(Expense).where(Expense.trip_id == trip.id)).all():
         db.delete(expense)
+    for day in days:
+        db.delete(day)
+    # PostgreSQL kiểm tra FK ngay; phải xoá & flush hết con trước khi xoá trip.
+    db.flush()
     db.delete(trip)
     db.commit()
 
@@ -116,7 +133,7 @@ def delete_trip(db: Session, trip: Trip) -> None:
 def share_trip(db: Session, trip: Trip) -> str:
     if not trip.share_token:
         trip.share_token = secrets.token_urlsafe(12)
-        trip.updated_at = datetime.utcnow()
+        trip.updated_at = datetime.now(timezone.utc)
         db.add(trip)
         db.commit()
         db.refresh(trip)
@@ -204,7 +221,7 @@ def add_stop(db: Session, trip: Trip, day_number: int, payload: TripStopIn, sour
         address=payload.address or "",
         lat=payload.lat,
         lng=payload.lng,
-        arrive_at=payload.arrive_at,
+        arrive_at=as_utc(payload.arrive_at),
         stay_mins=payload.stay_mins,
         est_cost=payload.est_cost,
         note=payload.note,

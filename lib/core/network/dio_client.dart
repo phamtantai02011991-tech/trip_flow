@@ -77,14 +77,28 @@ class DioApiClient {
   Future<List<DestinationModel>> fetchDestinations({int? provinceId}) async {
     final cacheKey = 'destinations_${provinceId ?? "all"}';
     try {
-      final resp = await _dio.get(
-        '/destinations',
-        queryParameters: provinceId != null ? {'province_id': provinceId} : null,
-      );
-      final data = resp.data as Map<String, dynamic>;
-      final items = (data['items'] as List<dynamic>?) ?? [];
-      await cacheService.cacheJson(cacheKey, items);
-      return items
+      // API phân trang mặc định 20; phải tải hết để không bỏ sót địa điểm.
+      final all = <dynamic>[];
+      var page = 1;
+      while (true) {
+        final resp = await _dio.get(
+          '/destinations',
+          queryParameters: {
+            if (provinceId != null) 'province_id': provinceId,
+            'page': page,
+            'page_size': 100,
+          },
+        );
+        final data = resp.data as Map<String, dynamic>;
+        final items = (data['items'] as List<dynamic>?) ?? [];
+        final total = (data['total'] as num?)?.toInt() ?? items.length;
+        all.addAll(items);
+        if (items.isEmpty || all.length >= total || items.length < 100) break;
+        page += 1;
+        if (page > 20) break; // chặn vòng lặp bất thường
+      }
+      await cacheService.cacheJson(cacheKey, all);
+      return all
           .map((e) => DestinationModel.fromJson(e as Map<String, dynamic>))
           .toList();
     } catch (_) {
@@ -325,21 +339,17 @@ class DioApiClient {
           'message': data['detail']?.toString() ?? 'Lỗi gửi mã OTP',
         };
       }
-      // Offline fallback: Mô phỏng mã OTP ngẫu nhiên 6 số giúp trải nghiệm không bị gián đoạn
+      // Không giả lập gửi OTP thành công khi mất mạng.
       return {
-        'success': true,
-        'phone': phone,
-        'message': 'Đã gửi mã xác thực OTP 6 số (Mô phỏng Chế độ Ngoại tuyến).',
-        'expires_in_seconds': 300,
-        'debug_otp': '888999',
+        'success': false,
+        'message':
+            'Không kết nối được máy chủ để gửi mã OTP. Vui lòng kiểm tra mạng và thử lại.',
       };
     } catch (_) {
       return {
-        'success': true,
-        'phone': phone,
-        'message': 'Đã gửi mã xác thực OTP 6 số (Mô phỏng Offline).',
-        'expires_in_seconds': 300,
-        'debug_otp': '888999',
+        'success': false,
+        'message':
+            'Không kết nối được máy chủ để gửi mã OTP. Vui lòng kiểm tra mạng và thử lại.',
       };
     }
   }
@@ -377,37 +387,36 @@ class DioApiClient {
           'message': data['detail']?.toString() ?? 'Mã OTP không hợp lệ',
         };
       }
-      // Offline Fallback cho OTP: nếu nhập 888999 hoặc bất kỳ 6 số hợp lệ
-      if (otpCode == '888999' || otpCode.length == 6) {
-        authToken = 'mock_jwt_token_offline_$phone';
-        return {
-          'success': true,
-          'access_token': authToken,
-          'user': {
-            'id': 999,
-            'phone': phone,
-            'full_name': fullName ?? 'Du khách $phone',
-            'role': 'user',
-            'is_active': true,
-          },
-        };
-      }
+      // Không có fallback "mọi mã 6 số đều đúng": xác thực OTP chỉ do server quyết định.
       return {
         'success': false,
-        'message': 'Không thể kết nối đến máy chủ xác thực.',
+        'message':
+            'Không kết nối được máy chủ xác thực. Vui lòng kiểm tra mạng và thử lại.',
       };
     } catch (_) {
       return {
-        'success': true,
-        'access_token': 'mock_jwt_token_offline_$phone',
-        'user': {
-          'id': 999,
-          'phone': phone,
-          'full_name': fullName ?? 'Du khách $phone',
-          'role': 'user',
-          'is_active': true,
-        },
+        'success': false,
+        'message':
+            'Không kết nối được máy chủ xác thực. Vui lòng kiểm tra mạng và thử lại.',
       };
     }
+  }
+
+  /// Xuất toàn bộ dữ liệu cá nhân (quyền riêng tư).
+  Future<Map<String, dynamic>> exportMyData() async {
+    final resp = await _dio.get(
+      '/auth/me/export',
+      options: Options(receiveTimeout: const Duration(seconds: 15)),
+    );
+    return resp.data as Map<String, dynamic>;
+  }
+
+  /// Xoá vĩnh viễn tài khoản và dữ liệu cá nhân.
+  Future<bool> deleteMyAccount() async {
+    final resp = await _dio.delete(
+      '/auth/account',
+      queryParameters: {'confirm': 'DELETE'},
+    );
+    return resp.statusCode == 200;
   }
 }

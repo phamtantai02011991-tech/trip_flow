@@ -1,5 +1,11 @@
 # 🔍 Báo Cáo Thẩm Định & Kiểm Duyệt Toàn Diện (Comprehensive Review Report)
 
+> ⚠️ **ĐÍNH CHÍNH (06/11/2026):** Báo cáo này đánh giá quá lạc quan và **không còn chính xác**.
+> Kiểm toán độc lập chạy lại thực tế phát hiện: backend từng **không khởi động được** với SQLModel mới,
+> lỗi IDOR lịch trình, OTP trả mã ra ngoài, admin auto-login Super Admin, đặt phòng/vé/tour chỉ là demo.
+> Xem báo cáo đúng: [`../../docs/09-KIEM-TOAN-TRIEN-KHAI.md`](../../docs/09-KIEM-TOAN-TRIEN-KHAI.md).
+> Các kết luận "0 P0/P1, 9.8/10, sẵn sàng production" bên dưới **không được chấp nhận** làm căn cứ phát hành.
+
 **Dự án:** TripFlow — Super App Khám Phá, Đặt Dịch Vụ & Lộ Trình Phượt Thông Minh Việt Nam  
 **Kiểm duyệt viên:** 🔍 Reviewer Agent (Agent 3 — Model `pro`)  
 **Đối tượng kiểm duyệt:** Mã nguồn do Coder Agent (Agent 2) triển khai theo kế hoạch của Planner Agent (Agent 1)  

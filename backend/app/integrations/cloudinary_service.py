@@ -65,7 +65,12 @@ class CloudinaryService:
                         rest = subparts[1] if len(subparts) > 1 else rest
                     return f"{parts[0]}{marker}{transformation}/{rest}"
 
-        # Đối với ảnh ngoài (VD: Unsplash/Partner), bọc qua Cloudinary Fetch CDN kèm transformation chuẩn
+        # Ảnh ngoài (Wikimedia/Unsplash/đối tác):
+        # - Nếu CHƯA cấu hình Cloudinary thật (cloud_name=demo hoặc thiếu API key),
+        #   trả nguyên URL gốc. Trước đây mọi ảnh bị bọc qua cloud "demo" nên luôn lỗi.
+        # - Nếu đã cấu hình, mới bọc qua Cloudinary Fetch để nén/cắt.
+        if self.cloud_name in ("", "demo") or not self.api_key:
+            return url
         return f"https://res.cloudinary.com/{self.cloud_name}/image/fetch/{transformation}/{url}"
 
     def build_thumbnail_url(self, original_url: Optional[str]) -> str:

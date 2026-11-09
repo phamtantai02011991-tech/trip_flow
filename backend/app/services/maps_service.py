@@ -11,7 +11,7 @@ Kết quả được cache trong `place_cache` (TTL 24h) để không gọi lạ
 
 import hashlib
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import httpx
@@ -42,7 +42,7 @@ def _read_cache(db: Session, key: str) -> Optional[Dict[str, Any]]:
         select(PlaceCache).where(
             PlaceCache.provider == "routes",
             PlaceCache.cache_key == key,
-            PlaceCache.expires_at > datetime.utcnow(),
+            PlaceCache.expires_at > datetime.now(timezone.utc),
         )
     ).first()
     if row is None:
@@ -59,7 +59,7 @@ def _write_cache(db: Session, key: str, payload: Dict[str, Any]) -> None:
             provider="routes",
             cache_key=key,
             payload_json=json.dumps(payload, ensure_ascii=False),
-            expires_at=datetime.utcnow() + timedelta(hours=settings.PLACES_CACHE_TTL_HOURS),
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=settings.PLACES_CACHE_TTL_HOURS),
         )
     )
     db.commit()

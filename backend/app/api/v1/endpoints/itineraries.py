@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_
 from sqlmodel import Session
 
-from app.core.security import get_current_user_optional
+from app.core.security import get_current_user, get_current_user_optional
 from app.db.session import get_db
 from app.models.models import Itinerary, User
 from app.repositories.repositories import serialize_itinerary
@@ -27,6 +27,25 @@ from app.services.itinerary_service import (
 router = APIRouter()
 
 
+def _get_itinerary_or_404(db: Session, itinerary_id: int) -> Itinerary:
+    itin = db.get(Itinerary, itinerary_id)
+    if not itin:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy lịch trình yêu cầu.",
+        )
+    return itin
+
+
+def _require_itinerary_owner(itin: Itinerary, current_user: User) -> None:
+    """Chỉ chủ sở hữu mới được sửa/xoá; trả 404 để không lộ sự tồn tại (chống IDOR)."""
+    if itin.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy lịch trình yêu cầu.",
+        )
+
+
 @router.get("", response_model=List[ItineraryOut])
 def list_itineraries(
     province_id: Optional[int] = Query(default=None, description="Lọc theo tỉnh/thành"),
@@ -47,9 +66,11 @@ def list_itineraries(
             or_(
                 Itinerary.is_template == True,
                 Itinerary.user_id == current_user.id,
-                Itinerary.user_id == None,
             )
         )
+    else:
+        # Khách chưa đăng nhập: chỉ được xem lịch trình mẫu công khai.
+        query = query.filter(Itinerary.is_template == True)
 
     items = query.order_by(Itinerary.is_template.desc(), Itinerary.updated_at.desc()).all()
     return [serialize_itinerary(i) for i in items]
@@ -59,9 +80,9 @@ def list_itineraries(
 def create_itinerary(
     payload: ItineraryCreate,
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(get_current_user),
 ):
-    """Tạo lịch trình tham quan mới (hỗ trợ cả người dùng đã đăng nhập và chế độ Khách)."""
+    """Tạo lịch trình tham quan mới cho tài khoản đang đăng nhập."""
     itin = create_itinerary_with_stops(db=db, payload=payload, current_user=current_user)
     return serialize_itinerary(itin)
 
@@ -70,7 +91,7 @@ def create_itinerary(
 def sync_offline_itinerary(
     payload: ItinerarySyncRequest,
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Đồng bộ lịch trình đã lưu local trong Hive từ ứng dụng Flutter lên Server khi có mạng trở lại (Pitfall #5).
@@ -80,10 +101,14 @@ def sync_offline_itinerary(
 
 
 @router.get("/{itinerary_id}", response_model=ItineraryOut)
-def get_itinerary_detail(itinerary_id: int, db: Session = Depends(get_db)):
-    """Xem chi tiết một lịch trình tham quan kèm danh sách các điểm dừng theo thứ tự."""
-    itin = db.query(Itinerary).filter(Itinerary.id == itinerary_id).first()
-    if not itin:
+def get_itinerary_detail(
+    itinerary_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    """Xem chi tiết lịch trình: lịch trình mẫu công khai, lịch trình cá nhân chỉ chủ sở hữu."""
+    itin = _get_itinerary_or_404(db, itinerary_id)
+    if not itin.is_template and (current_user is None or itin.user_id != current_user.id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Không tìm thấy lịch trình yêu cầu.",
@@ -96,15 +121,11 @@ def update_itinerary(
     itinerary_id: int,
     payload: ItineraryUpdate,
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(get_current_user),
 ):
-    """Cập nhật thông tin lịch trình, thêm/xóa hoặc sắp xếp lại thứ tự điểm dừng."""
-    itin = db.query(Itinerary).filter(Itinerary.id == itinerary_id).first()
-    if not itin:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Không tìm thấy lịch trình cần cập nhật.",
-        )
+    """Cập nhật lịch trình của chính mình (chặn IDOR)."""
+    itin = _get_itinerary_or_404(db, itinerary_id)
+    _require_itinerary_owner(itin, current_user)
 
     updated = update_itinerary_and_stops(db=db, itinerary=itin, payload=payload)
     return serialize_itinerary(updated)
@@ -115,28 +136,25 @@ def add_stop_endpoint(
     itinerary_id: int,
     payload: ItineraryStopIn,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    """Thêm nhanh một điểm dừng (địa điểm, nhà hàng hoặc điểm trên lộ trình) vào lịch trình."""
-    itin = db.query(Itinerary).filter(Itinerary.id == itinerary_id).first()
-    if not itin:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Không tìm thấy lịch trình.",
-        )
+    """Thêm điểm dừng vào lịch trình của chính mình."""
+    itin = _get_itinerary_or_404(db, itinerary_id)
+    _require_itinerary_owner(itin, current_user)
 
     updated = add_stop_to_itinerary(db=db, itinerary=itin, stop_in=payload)
     return serialize_itinerary(updated)
 
 
 @router.delete("/{itinerary_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_itinerary(itinerary_id: int, db: Session = Depends(get_db)):
-    """Xóa một lịch trình."""
-    itin = db.query(Itinerary).filter(Itinerary.id == itinerary_id).first()
-    if not itin:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Không tìm thấy lịch trình cần xóa.",
-        )
+def delete_itinerary(
+    itinerary_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Xóa lịch trình của chính mình (chặn IDOR)."""
+    itin = _get_itinerary_or_404(db, itinerary_id)
+    _require_itinerary_owner(itin, current_user)
     db.delete(itin)
     db.commit()
     return None
@@ -147,6 +165,7 @@ def insert_smart_meal_stop_endpoint(
     itinerary_id: int,
     payload: SmartMealStopRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Tự động phân tích khoảng cách di chuyển giữa các điểm tham quan trong ngày,

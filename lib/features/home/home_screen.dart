@@ -5,6 +5,7 @@ import '../../core/widgets/common_widgets.dart';
 import '../destinations/destinations_screen.dart';
 import '../maps/map_corridor_screen.dart';
 import '../restaurants/restaurant_detail_screen.dart';
+import '../search/global_search_screen.dart';
 import 'widgets/brand_identity_header.dart';
 import 'widgets/hero_trip_carousel.dart';
 import 'widgets/popular_destination_card.dart';
@@ -86,7 +87,7 @@ class HomeScreen extends StatelessWidget {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) =>
-                              DestinationsScreen(appState: appState),
+                              GlobalSearchScreen(appState: appState),
                         ),
                       );
                     },

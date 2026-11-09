@@ -37,6 +37,36 @@ class Settings(BaseModel):
     VERSION: str = "2.0.0"
     API_V1_STR: str = os.getenv("API_V1_STR", "/api/v1")
 
+    # Môi trường chạy: development | staging | production
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development").strip().lower()
+
+    # CORS: danh sách origin được phép, phân tách bằng dấu phẩy.
+    # Ví dụ production: https://admin.tripflow.vn,https://tripflow.vn
+    CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "")
+
+    # Chỉ bật cờ này ở môi trường phát triển để trả OTP trong response.
+    DEV_OTP_ENABLED: bool = os.getenv("DEV_OTP_ENABLED", "0") == "1"
+    DEV_OTP: str = os.getenv("DEV_OTP", "")
+
+    # Bật/tắt dữ liệu demo (5 tài khoản mẫu, báo cáo, audit mẫu).
+    SEED_DEMO: bool = os.getenv("SEED_DEMO", "1" if ENVIRONMENT == "development" else "0") == "1"
+
+    # Bắt buộc admin bật 2FA trước khi gọi API quản trị (khuyến nghị bật ở production).
+    REQUIRE_ADMIN_2FA: bool = os.getenv("REQUIRE_ADMIN_2FA", "0") == "1"
+
+    # Tài khoản quản trị đầu tiên khi triển khai thật (không dùng mật khẩu demo).
+    BOOTSTRAP_ADMIN_EMAIL: str = os.getenv("BOOTSTRAP_ADMIN_EMAIL", "")
+    BOOTSTRAP_ADMIN_PASSWORD: str = os.getenv("BOOTSTRAP_ADMIN_PASSWORD", "")
+
+    # SMS gateway: simulator (dev) | esms | speedsms
+    SMS_PROVIDER: str = os.getenv("SMS_PROVIDER", "simulator")
+    ESMS_API_KEY: str = os.getenv("ESMS_API_KEY", "")
+    ESMS_SECRET_KEY: str = os.getenv("ESMS_SECRET_KEY", "")
+    ESMS_BRANDNAME: str = os.getenv("ESMS_BRANDNAME", "TripFlow")
+
+    # Crawler Google Maps: mặc định TẮT ở production vì vi phạm điều khoản Google.
+    ENABLE_GOOGLE_CRAWLER: bool = os.getenv("ENABLE_GOOGLE_CRAWLER", "0") == "1"
+
     # Bảo mật JWT & RBAC (Role & Permission)
     SECRET_KEY: str = os.getenv(
         "SECRET_KEY",
@@ -44,6 +74,27 @@ class Settings(BaseModel):
     )
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
+
+    @property
+    def is_production(self) -> bool:
+        return self.ENVIRONMENT in ("production", "prod")
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        raw = self.CORS_ORIGINS.strip()
+        if not raw:
+            # Dev: cho phép localhost của Flutter Web/Admin; production bắt buộc khai báo.
+            return (
+                [
+                    "http://localhost:5173",
+                    "http://127.0.0.1:5173",
+                    "http://localhost:8080",
+                    "http://127.0.0.1:8080",
+                ]
+                if not self.is_production
+                else []
+            )
+        return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
     # Kết nối Database: PostgreSQL 15 thuần (B-Tree Index lat,lng) hoặc SQLite Fallback
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./tripflow.db")

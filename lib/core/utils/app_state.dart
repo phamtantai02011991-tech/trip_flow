@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../config/app_config.dart';
 import '../network/api_client.dart';
 import '../network/dio_client.dart';
 import '../storage/offline_cache_service.dart';
@@ -22,15 +23,16 @@ enum LocationPermissionState {
 /// - Gọi Backend FastAPI cho Corridor Search (`POST /api/v1/restaurants/corridor-search` - Goong Maps + Bounding Box + Shapely).
 class TripFlowAppState extends ChangeNotifier {
   final OfflineCacheService cacheService;
-  final ApiClient apiClient;
+  final DioApiClient apiClient;
 
   TripFlowAppState({
     OfflineCacheService? cacheService,
     DioApiClient? dioClient,
   })  : cacheService = cacheService ?? OfflineCacheService.instance,
-        apiClient = ApiClient(
-          cacheService: cacheService ?? OfflineCacheService.instance,
-        ) {
+        apiClient = dioClient ??
+            ApiClient(
+              cacheService: cacheService ?? OfflineCacheService.instance,
+            ) {
     _restoreFromHiveCache();
   }
 
@@ -194,6 +196,7 @@ class TripFlowAppState extends ChangeNotifier {
         _userEmail = '$_userPhone@tripflow.vn';
       }
       _isLoggedIn = _userPhone.isNotEmpty || _authToken.isNotEmpty;
+      AppConfig.authToken = _authToken.isEmpty ? null : _authToken;
       if (_authToken.isNotEmpty) {
         apiClient.authToken = _authToken;
       }
@@ -360,8 +363,7 @@ class TripFlowAppState extends ChangeNotifier {
       if (cleanQuery.isEmpty) return true;
       return VietnameseUtils.matches(prov.name, cleanQuery) ||
           VietnameseUtils.matches(prov.code, cleanQuery) ||
-          VietnameseUtils.matches(prov.region, cleanQuery) ||
-          VietnameseUtils.matches(prov.description, cleanQuery);
+          VietnameseUtils.matches(prov.region, cleanQuery);
     }).toList();
   }
 
@@ -429,7 +431,9 @@ class TripFlowAppState extends ChangeNotifier {
     for (int i = 0; i < _userItineraries.length; i++) {
       final item = _userItineraries[i];
       if (!item.isSyncedWithServer) {
-        await apiClient.syncItineraryToBackend(item);
+        final ok = await apiClient.syncItineraryToBackend(item);
+        // Chỉ đánh dấu đã đồng bộ khi server thực sự nhận (trước đây bỏ qua kết quả).
+        if (!ok) continue;
         _userItineraries[i] = item.copyWith(isSyncedWithServer: true);
         syncedCount++;
       }
@@ -505,7 +509,7 @@ class TripFlowAppState extends ChangeNotifier {
       description: description,
       totalDays: totalDays,
       isTemplate: false,
-      isSyncedWithServer: !_isOfflineSimulated,
+      isSyncedWithServer: !_isOfflineSimulated && _isLoggedIn,
       stops: const [],
     );
     _userItineraries.insert(0, newItin);
@@ -537,7 +541,7 @@ class TripFlowAppState extends ChangeNotifier {
       description: template.description,
       totalDays: template.totalDays,
       isTemplate: false,
-      isSyncedWithServer: !_isOfflineSimulated,
+      isSyncedWithServer: !_isOfflineSimulated && _isLoggedIn,
       stops: clonedStops,
     );
     _userItineraries.insert(0, created);
@@ -584,7 +588,7 @@ class TripFlowAppState extends ChangeNotifier {
     final updatedStops = [...current.stops, newStop];
     final updatedItin = current.copyWith(
       stops: updatedStops,
-      isSyncedWithServer: !_isOfflineSimulated,
+      isSyncedWithServer: !_isOfflineSimulated && _isLoggedIn,
     );
     _userItineraries[_activeItineraryIndex] = updatedItin;
     _persistItinerariesToHive();
@@ -618,7 +622,7 @@ class TripFlowAppState extends ChangeNotifier {
     final updatedStops = [...current.stops, newStop];
     final updatedItin = current.copyWith(
       stops: updatedStops,
-      isSyncedWithServer: !_isOfflineSimulated,
+      isSyncedWithServer: !_isOfflineSimulated && _isLoggedIn,
     );
     _userItineraries[_activeItineraryIndex] = updatedItin;
     _persistItinerariesToHive();
@@ -673,7 +677,7 @@ class TripFlowAppState extends ChangeNotifier {
 
     final updatedItin = current.copyWith(
       stops: newStops,
-      isSyncedWithServer: !_isOfflineSimulated,
+      isSyncedWithServer: !_isOfflineSimulated && _isLoggedIn,
     );
     _userItineraries[_activeItineraryIndex] = updatedItin;
     _persistItinerariesToHive();
@@ -689,6 +693,8 @@ class TripFlowAppState extends ChangeNotifier {
     required String plannedTime,
     required String stopType,
     String notes = '',
+    double? latitude,
+    double? longitude,
   }) {
     final current = activeItinerary;
     final nextOrder = current.stops.length + 1;
@@ -699,8 +705,8 @@ class TripFlowAppState extends ChangeNotifier {
       stopType: stopType,
       title: title,
       address: address,
-      latitude: _selectedProvince.centerLat,
-      longitude: _selectedProvince.centerLng,
+      latitude: latitude ?? _selectedProvince.centerLat,
+      longitude: longitude ?? _selectedProvince.centerLng,
       plannedTime: plannedTime,
       durationMins: 60,
       notes: notes,
@@ -708,7 +714,7 @@ class TripFlowAppState extends ChangeNotifier {
     final updatedStops = [...current.stops, newStop];
     final updatedItin = current.copyWith(
       stops: updatedStops,
-      isSyncedWithServer: !_isOfflineSimulated,
+      isSyncedWithServer: !_isOfflineSimulated && _isLoggedIn,
     );
     _userItineraries[_activeItineraryIndex] = updatedItin;
     _persistItinerariesToHive();
@@ -730,7 +736,7 @@ class TripFlowAppState extends ChangeNotifier {
         .toList();
     final updatedItin = current.copyWith(
       stops: normalized,
-      isSyncedWithServer: !_isOfflineSimulated,
+      isSyncedWithServer: !_isOfflineSimulated && _isLoggedIn,
     );
     _userItineraries[_activeItineraryIndex] = updatedItin;
     _persistItinerariesToHive();
@@ -755,7 +761,7 @@ class TripFlowAppState extends ChangeNotifier {
         .toList();
     final updatedItin = current.copyWith(
       stops: normalized,
-      isSyncedWithServer: !_isOfflineSimulated,
+      isSyncedWithServer: !_isOfflineSimulated && _isLoggedIn,
     );
     _userItineraries[_activeItineraryIndex] = updatedItin;
     _persistItinerariesToHive();
@@ -777,7 +783,7 @@ class TripFlowAppState extends ChangeNotifier {
         .toList();
     final updatedItin = current.copyWith(
       stops: normalized,
-      isSyncedWithServer: !_isOfflineSimulated,
+      isSyncedWithServer: !_isOfflineSimulated && _isLoggedIn,
     );
     _userItineraries[_activeItineraryIndex] = updatedItin;
     _persistItinerariesToHive();
@@ -865,6 +871,8 @@ class TripFlowAppState extends ChangeNotifier {
               'Du khách ${phone.length >= 4 ? phone.substring(phone.length - 4) : phone}';
         }
         _authToken = res['access_token']?.toString() ?? '';
+        AppConfig.authToken = _authToken.isEmpty ? null : _authToken;
+        apiClient.authToken = _authToken.isEmpty ? null : _authToken;
         await cacheService.saveUserAuthSession(
           phone: _userPhone,
           fullName: _userName,
@@ -907,6 +915,7 @@ class TripFlowAppState extends ChangeNotifier {
     _isOtpVerified = false;
     _authToken = '';
     _userName = 'Khách du lịch (Guest Mode)';
+    AppConfig.authToken = null;
     apiClient.authToken = null;
     cacheService.clearUserAuthSession();
     notifyListeners();

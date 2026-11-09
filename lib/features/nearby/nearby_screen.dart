@@ -8,24 +8,68 @@ import '../reviews/reviews_sheet.dart';
 
 /// Module 5 — tìm địa điểm quanh đây (bản đồ tối + danh sách + lọc).
 class NearbyScreen extends StatefulWidget {
-  const NearbyScreen({super.key});
+  /// Toạ độ trung tâm (mặc định TP.HCM nếu không truyền).
+  final double centerLat;
+  final double centerLng;
+
+  /// Tên tỉnh/thành đang chọn, hiển thị trên thanh tìm kiếm.
+  final String provinceName;
+
+  const NearbyScreen({
+    super.key,
+    this.centerLat = 10.7769,
+    this.centerLng = 106.7009,
+    this.provinceName = 'TP. Hồ Chí Minh',
+  });
 
   @override
   State<NearbyScreen> createState() => _NearbyScreenState();
 }
 
 class _NearbyScreenState extends State<NearbyScreen> {
-  // TODO(P2): thay bằng GPS khi có geolocator. Hiện mặc định trung tâm TP.HCM.
-  static const _center = LatLng(10.7769, 106.7009);
+  // Toạ độ lấy theo tỉnh/thành đang chọn; cập nhật khi người dùng đổi tỉnh.
+  late double _centerLat = widget.centerLat;
+  late double _centerLng = widget.centerLng;
+
+  @override
+  void didUpdateWidget(covariant NearbyScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.centerLat != widget.centerLat ||
+        oldWidget.centerLng != widget.centerLng) {
+      _centerLat = widget.centerLat;
+      _centerLng = widget.centerLng;
+      _load();
+    }
+  }
 
   static const _kinds = <(String, String, IconData)>[
     ('food', 'Quán ăn', Icons.restaurant_rounded),
     ('cafe', 'Cà phê', Icons.local_cafe_rounded),
     ('sight', 'Tham quan', Icons.photo_camera_rounded),
-    ('hotel', 'Khách sạn', Icons.hotel_rounded),
-    ('gas', 'Xăng', Icons.local_gas_station_rounded),
-    ('ev', 'Sạc điện', Icons.ev_station_rounded),
+    ('rest', 'Nghỉ chân', Icons.chair_alt_rounded),
+    ('gas', 'Cây xăng', Icons.local_gas_station_rounded),
+    ('ev', 'Sạc EV', Icons.ev_station_rounded),
   ];
+
+  IconData _kindIcon(String kind) => switch (kind) {
+        'food' => Icons.restaurant_rounded,
+        'cafe' => Icons.local_cafe_rounded,
+        'sight' => Icons.photo_camera_rounded,
+        'rest' => Icons.chair_alt_rounded,
+        'gas' => Icons.local_gas_station_rounded,
+        'ev' => Icons.ev_station_rounded,
+        _ => Icons.place_rounded,
+      };
+
+  Color _kindColor(String kind) => switch (kind) {
+        'food' => AppColors.kindFood,
+        'cafe' => AppColors.kindCafe,
+        'sight' => AppColors.kindSight,
+        'rest' => AppColors.kindRest,
+        'gas' => AppColors.kindGas,
+        'ev' => AppColors.kindEv,
+        _ => AppColors.kindFood,
+      };
 
   String _kind = 'food';
   double _radius = 3;
@@ -46,8 +90,8 @@ class _NearbyScreenState extends State<NearbyScreen> {
     });
     try {
       final data = await PlacesApi().nearby(
-        lat: _center.latitude,
-        lng: _center.longitude,
+        lat: _centerLat,
+        lng: _centerLng,
         radiusKm: _radius,
         kinds: [_kind],
       );
@@ -75,7 +119,7 @@ class _NearbyScreenState extends State<NearbyScreen> {
         children: [
           Positioned.fill(
             child: TripFlowMap(
-              initialCenter: _center,
+              initialCenter: LatLng(_centerLat, _centerLng),
               initialZoom: 13,
               dark: true,
               stops: [
@@ -84,7 +128,7 @@ class _NearbyScreenState extends State<NearbyScreen> {
                     point: LatLng(places[i].lat, places[i].lng),
                     label: places[i].name,
                     index: i + 1,
-                    kindColor: AppColors.kindFood,
+                    kindColor: _kindColor(_kind),
                   ),
               ],
               onStopTap: (i) => _openPlace(places[i]),
@@ -189,7 +233,7 @@ class _NearbyScreenState extends State<NearbyScreen> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Tìm quanh đây · TP. Hồ Chí Minh',
+                'Tìm quanh đây · ${widget.provinceName}',
                 style: AppText.bodySm.copyWith(color: AppColors.textOnDark),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -280,14 +324,29 @@ class _NearbyScreenState extends State<NearbyScreen> {
           ),
           child: Row(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.kindFood.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.restaurant_rounded, color: AppColors.kindFood),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: place.thumbnailUrl.isNotEmpty
+                    ? Image.network(
+                        place.thumbnailUrl,
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          width: 48,
+                          height: 48,
+                          color: _kindColor(place.kind).withValues(alpha: 0.16),
+                          child: Icon(_kindIcon(place.kind),
+                              color: _kindColor(place.kind)),
+                        ),
+                      )
+                    : Container(
+                        width: 48,
+                        height: 48,
+                        color: _kindColor(place.kind).withValues(alpha: 0.16),
+                        child: Icon(_kindIcon(place.kind),
+                            color: _kindColor(place.kind)),
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -309,7 +368,9 @@ class _NearbyScreenState extends State<NearbyScreen> {
                         const Icon(Icons.star_rounded, size: 13, color: Color(0xFFF5B301)),
                         const SizedBox(width: 3),
                         Text(
-                          '${place.rating.toStringAsFixed(1)} (${place.reviewCount})'
+                          place.reviewCount == 0
+                              ? 'Chưa có đánh giá'
+                              : '${place.rating.toStringAsFixed(1)} (${place.reviewCount})'
                           '${place.isHiddenGem ? ' · Quán ruột' : place.isTopRated ? ' · Nổi tiếng' : ''}',
                           style: AppText.caption.copyWith(
                             color: place.isHiddenGem ? AppColors.coral : Colors.white,
@@ -388,8 +449,11 @@ class _NearbyScreenState extends State<NearbyScreen> {
               Row(
                 children: [
                   const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF5B301)),
-                  Text(' ${place.rating.toStringAsFixed(1)} '
-                      '(${place.reviewCount})', style: AppText.bodySm),
+                  Text(
+                      place.reviewCount == 0
+                          ? ' Chưa có đánh giá'
+                          : ' ${place.rating.toStringAsFixed(1)} (${place.reviewCount})',
+                      style: AppText.bodySm),
                   const SizedBox(width: 12),
                   Text('${place.distanceKm.toStringAsFixed(1)} km', style: AppText.bodySm),
                   if (place.priceHint.isNotEmpty) ...[

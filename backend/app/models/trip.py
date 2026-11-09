@@ -5,7 +5,7 @@ khoá ngoại thật và index theo `trip_id` để truy vấn theo chuyến.
 """
 
 import datetime as dt
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 
@@ -78,12 +78,15 @@ class Trip(SQLModel, table=True):
     preferences_json: str = Field(default="[]")
     status: TripStatus = TripStatus.draft
     share_token: Optional[str] = Field(default=None, unique=True, index=True)
+    # Định danh ẩn danh của thiết bị tạo chuyến khi chưa đăng nhập.
+    # Dùng để không ai khác đọc/sửa được chuyến của khách vãng lai.
+    guest_token: Optional[str] = Field(default=None, index=True, max_length=64)
 
     ai_generated: bool = False
     generation_meta_json: str = Field(default="{}")
 
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class TripDay(SQLModel, table=True):
@@ -142,4 +145,4 @@ class Expense(SQLModel, table=True):
     spent_at: Optional[datetime] = None
     paid_by: Optional[str] = Field(default=None, max_length=80)
     note: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

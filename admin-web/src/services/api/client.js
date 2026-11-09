@@ -5,6 +5,13 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000
 const LOCAL_STORE_KEY = "tripflow_admin_fallback_store_v2";
 const TOKEN_KEY = "tripflow_admin_jwt_token";
 
+/**
+ * Chỉ khi bật VITE_DEMO_MODE=true (môi trường dev/demo) trang quản trị mới dùng
+ * dữ liệu localStorage và cho phép đăng nhập demo khi backend không chạy.
+ * Production mặc định TẮT: mọi thao tác phải đi qua API thật.
+ */
+export const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === "true";
+
 const http = axios.create({
   baseURL: API_BASE_URL,
   timeout: 4500,
@@ -19,6 +26,11 @@ http.interceptors.request.use((config) => {
 });
 
 function getLocalStore() {
+  if (!DEMO_MODE) {
+    throw new Error(
+      "Không kết nối được backend. Chế độ dữ liệu demo đã tắt — vui lòng kiểm tra API."
+    );
+  }
   try {
     const raw = localStorage.getItem(LOCAL_STORE_KEY);
     if (raw) {
@@ -89,9 +101,13 @@ export const adminApi = {
     }
   },
 
-  async login(email, password) {
+  async login(email, password, otpCode = "") {
     try {
-      const res = await http.post("/auth/login", { email, password });
+      const res = await http.post("/auth/login", {
+        email,
+        password,
+        ...(otpCode ? { otp_code: otpCode } : {}),
+      });
       this.isBackendConnected = true;
       if (res.data?.access_token) {
         localStorage.setItem(TOKEN_KEY, res.data.access_token);
@@ -101,7 +117,12 @@ export const adminApi = {
       if (err.response) {
         throw new Error(err.response.data?.detail || "Đăng nhập thất bại.");
       }
-      // Fallback sang dữ liệu cục bộ nếu chưa bật Backend FastAPI
+      // Chỉ cho phép đăng nhập demo khi bật VITE_DEMO_MODE.
+      if (!DEMO_MODE) {
+        throw new Error(
+          "Không kết nối được máy chủ xác thực. Vui lòng kiểm tra backend."
+        );
+      }
       this.isBackendConnected = false;
       const store = getLocalStore();
       const found = store.users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase());
@@ -125,6 +146,21 @@ export const adminApi = {
         user: found,
       };
     }
+  },
+
+  async setup2fa() {
+    const res = await http.post("/auth/2fa/setup");
+    return res.data;
+  },
+
+  async enable2fa(code) {
+    const res = await http.post("/auth/2fa/enable", { code });
+    return res.data;
+  },
+
+  async disable2fa(code) {
+    const res = await http.post("/auth/2fa/disable", { code });
+    return res.data;
   },
 
   async fetchAllSnapshot() {

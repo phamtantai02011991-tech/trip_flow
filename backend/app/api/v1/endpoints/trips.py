@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlmodel import Session
 
 from app.core.security import get_current_user, get_current_user_optional
@@ -30,13 +30,17 @@ def get_owned_trip(
     trip_id: int,
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional),
+    x_guest_token: Optional[str] = Header(default=None, alias="X-Guest-Token"),
 ) -> Trip:
     """Trả 404 (không phải 403) khi không phải chủ, để không lộ sự tồn tại."""
     trip = trip_service.get_trip(db, trip_id)
     if trip is None:
         raise HTTPException(status_code=404, detail="Không tìm thấy chuyến đi")
     if trip.user_id is None:
-        return trip  # chuyến công khai / do khách tạo
+        # Chuyến của khách vãng lai chỉ mở cho đúng thiết bị đã tạo ra nó.
+        if x_guest_token and trip.guest_token == x_guest_token:
+            return trip
+        raise HTTPException(status_code=404, detail="Không tìm thấy chuyến đi")
     if current_user is None or trip.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Không tìm thấy chuyến đi")
     return trip
@@ -50,8 +54,14 @@ def list_trips(
     status_filter: Optional[str] = Query(default=None, alias="status"),
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional),
+    x_guest_token: Optional[str] = Header(default=None, alias="X-Guest-Token"),
 ):
-    trips = trip_service.list_trips(db, current_user.id if current_user else None, status_filter)
+    trips = trip_service.list_trips(
+        db,
+        current_user.id if current_user else None,
+        status_filter,
+        guest_token=x_guest_token,
+    )
     return [trip_service.serialize_trip(db, t) for t in trips]
 
 
@@ -60,8 +70,14 @@ def create_trip(
     payload: TripCreate,
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional),
+    x_guest_token: Optional[str] = Header(default=None, alias="X-Guest-Token"),
 ):
-    trip = trip_service.create_trip(db, payload, current_user.id if current_user else None)
+    trip = trip_service.create_trip(
+        db,
+        payload,
+        current_user.id if current_user else None,
+        guest_token=x_guest_token,
+    )
     return trip_service.serialize_trip(db, trip)
 
 

@@ -97,8 +97,9 @@ class _TripFlowMapState extends State<TripFlowMap> {
       ),
       children: [
         TileLayer(
-          urlTemplate: AppConfig.goongMapTileUrlTemplate,
-          userAgentPackageName: 'com.example.trip_flow',
+          urlTemplate: AppConfig.mapTileUrlTemplateFor(dark: widget.dark),
+          subdomains: const ['a', 'b', 'c', 'd'],
+          userAgentPackageName: 'vn.tripflow.app',
           maxNativeZoom: 19,
           tileProvider: NetworkTileProvider(),
         ),

@@ -3,27 +3,33 @@ import { AuthProvider, useAuth } from "../hooks/useAuth";
 import AdminLayout from "../layouts/AdminLayout";
 import LoginPage from "../pages/auth/LoginPage";
 import AppRoutes from "../routes/AppRoutes";
-import { adminApi } from "../services/api/client";
+import TwoFactorSetupModal from "../components/TwoFactorSetupModal";
+import { adminApi, DEMO_MODE } from "../services/api/client";
 import { INITIAL_ADMIN_DATA } from "../services/api/mockAdminData";
+
+const EMPTY_SNAPSHOT = {
+  mode: DEMO_MODE ? "local" : "loading",
+  dashboard: {},
+  provinces: [],
+  destinations: [],
+  localFoods: [],
+  restaurants: [],
+  itineraries: [],
+  users: [],
+  reports: [],
+  auditLogs: [],
+  roles: [],
+  categories: [],
+};
 
 function AdminShell() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [snapshot, setSnapshot] = useState({
-    mode: "local",
-    dashboard: {},
-    provinces: INITIAL_ADMIN_DATA.provinces,
-    destinations: INITIAL_ADMIN_DATA.destinations,
-    localFoods: INITIAL_ADMIN_DATA.localFoods,
-    restaurants: INITIAL_ADMIN_DATA.restaurants,
-    itineraries: INITIAL_ADMIN_DATA.itineraries,
-    users: INITIAL_ADMIN_DATA.users,
-    reports: INITIAL_ADMIN_DATA.reports,
-    auditLogs: INITIAL_ADMIN_DATA.auditLogs,
-    roles: INITIAL_ADMIN_DATA.roles,
-    categories: INITIAL_ADMIN_DATA.categories,
-  });
+  const [snapshot, setSnapshot] = useState(
+    DEMO_MODE ? { ...EMPTY_SNAPSHOT, ...INITIAL_ADMIN_DATA } : EMPTY_SNAPSHOT
+  );
   const [toast, setToast] = useState(null);
+  const [show2faSetup, setShow2faSetup] = useState(false);
 
   const showToast = useCallback((message, type = "success") => {
     setToast({ message, type });
@@ -33,9 +39,17 @@ function AdminShell() {
   }, []);
 
   const loadSnapshot = useCallback(async () => {
-    const data = await adminApi.fetchAllSnapshot();
-    setSnapshot(data);
-  }, []);
+    try {
+      const data = await adminApi.fetchAllSnapshot();
+      setSnapshot(data);
+    } catch (err) {
+      setSnapshot((prev) => ({ ...prev, mode: "error" }));
+      showToast(
+        err?.message || "Không tải được dữ liệu từ backend. Vui lòng thử lại.",
+        "error"
+      );
+    }
+  }, [showToast]);
 
   useEffect(() => {
     if (user) {
@@ -71,6 +85,25 @@ function AdminShell() {
           {toast.message}
         </div>
       )}
+
+      {user && user.totp_enabled === false && (
+        <div className="flex flex-wrap items-center justify-between gap-2 bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-900">
+          <span className="font-semibold">
+            Tài khoản chưa bật 2FA. Nên bật trước khi vận hành production.
+          </span>
+          <button
+            onClick={() => setShow2faSetup(true)}
+            className="rounded-lg bg-amber-500 px-3 py-1.5 font-bold text-white hover:bg-amber-600"
+          >
+            Thiết lập 2FA
+          </button>
+        </div>
+      )}
+
+      <TwoFactorSetupModal
+        open={show2faSetup}
+        onClose={() => setShow2faSetup(false)}
+      />
 
       <AdminLayout
         activeTab={activeTab}

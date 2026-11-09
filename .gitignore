@@ -51,6 +51,15 @@ unlinked_spec.ds
 Thumbs.db
 desktop.ini
 
+# .NET / C# Backend
+bin/
+obj/
+*.user
+*.suo
+.vs/
+backend-dotnet/bin/
+backend-dotnet/obj/
+
 # Tooling & local agent state (sinh tự động, không commit)
 devtools_options.yaml
 .vscode/
@@ -62,5 +71,6 @@ admin-web/.vite/
 *.tsbuildinfo
 .eslintcache
 .research/
+.tmp/
 backend/swagger.json
 

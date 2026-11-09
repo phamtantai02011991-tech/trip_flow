@@ -21,7 +21,8 @@ class TripFlowHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
-      ..userAgent = 'TripFlow/1.0 (Android; Mobile)';
+      // Wikimedia yêu cầu User-Agent mô tả rõ ứng dụng + đầu mối liên hệ.
+      ..userAgent = 'TripFlow/1.0 (https://tripflow.vn; dev@tripflow.vn)';
   }
 }
 
@@ -32,6 +33,8 @@ Future<void> main() async {
     HttpOverrides.global = TripFlowHttpOverrides();
   }
   await OfflineCacheService.instance.init();
+  AppConfig.guestToken =
+      await OfflineCacheService.instance.getOrCreateGuestToken();
   runApp(
     const ProviderScope(
       child: TripFlowApp(),
@@ -225,23 +228,45 @@ class _ResponsivePhoneFrameWrapperState
 
 /// Khung điều hướng 5 Tab dưới cùng theo đúng thiết kế Mục 5.2:
 /// 1. Khám phá  |  2. Bản đồ  |  3. Lịch trình  |  4. Ẩm thực  |  5. Cá nhân
-class MainNavigationShell extends StatelessWidget {
+class MainNavigationShell extends StatefulWidget {
   final TripFlowAppState appState;
 
   const MainNavigationShell({super.key, required this.appState});
 
   @override
+  State<MainNavigationShell> createState() => _MainNavigationShellState();
+}
+
+class _MainNavigationShellState extends State<MainNavigationShell> {
+  @override
+  void initState() {
+    super.initState();
+    // Đồng bộ catalog thật từ backend ngay khi mở app (mock chỉ là fallback offline).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.appState.syncFromBackend();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final appState = widget.appState;
     return AnimatedBuilder(
       animation: appState,
       builder: (context, _) {
         final screens = [
           HomeScreen(appState: appState),
-          const NearbyScreen(),
+          NearbyScreen(
+            centerLat: appState.selectedProvince.centerLat,
+            centerLng: appState.selectedProvince.centerLng,
+            provinceName: appState.isNationalMode
+                ? 'Toàn quốc'
+                : appState.selectedProvince.name,
+          ),
           const TripListScreen(),
           const AssistantScreen(),
           LocalFoodsScreen(appState: appState),
           ProfileScreen(appState: appState),
+
         ];
 
         return Scaffold(

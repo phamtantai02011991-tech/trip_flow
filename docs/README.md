@@ -1,6 +1,7 @@
 # TripFlow — Bộ tài liệu kế hoạch
 
-Cập nhật: 31/10/2026 · Trạng thái: **P0 hoàn thành**, P1 sẵn sàng bắt đầu.
+Cập nhật: 06/11/2026 · Trạng thái: **MVP kỹ thuật chạy được**, chưa đủ điều kiện go-live thương mại.
+Xem báo cáo kiểm toán mới nhất: [`09-KIEM-TOAN-TRIEN-KHAI.md`](09-KIEM-TOAN-TRIEN-KHAI.md).
 
 ## Đọc theo thứ tự này
 
@@ -14,6 +15,11 @@ Cập nhật: 31/10/2026 · Trạng thái: **P0 hoàn thành**, P1 sẵn sàng b
 | 5b | [`04a-KET-QUA-XAC-MINH.md`](04a-KET-QUA-XAC-MINH.md) | **Số liệu thật đã kiểm tra 31/10/2026:** giá Gemini, giá Goong, version package |
 | 6 | [`05-LO-TRINH-CODE.md`](05-LO-TRINH-CODE.md) | **Thực thi:** từng task, từng file, code mẫu, lệnh kiểm chứng |
 | 7 | [`06-DON-DEP.md`](06-DON-DEP.md) | Đã xoá gì, giải phóng bao nhiêu, cách khôi phục môi trường |
+| 8 | [`08-TRANG-THAI-7-MODULE.md`](08-TRANG-THAI-7-MODULE.md) | Trạng thái 7 module lập lộ trình (đã lỗi thời một phần) |
+| 9 | [`09-KIEM-TOAN-TRIEN-KHAI.md`](09-KIEM-TOAN-TRIEN-KHAI.md) | **Kiểm toán 06/11/2026:** đã sửa gì, còn thiếu gì, checklist deploy, lộ trình business |
+| 10 | [`10-CATALOG-DU-LIEU-THAT.md`](10-CATALOG-DU-LIEU-THAT.md) | Catalog thật 10 tỉnh: nguồn, giấy phép ảnh, quy trình thêm dữ liệu |
+| 11 | [`11-RUNBOOK-TRIEN-KHAI.md`](11-RUNBOOK-TRIEN-KHAI.md) | **Runbook production:** env, deploy Docker, backup, rollback, smoke test |
+| 12 | [`12-PHAT-HANH-TRIP-PLANNER.md`](12-PHAT-HANH-TRIP-PLANNER.md) | **Xác nhận phát hành:** bằng chứng test/build, hạn chế, điều kiện go-live |
 
 ## Bắt đầu code
 

@@ -171,7 +171,9 @@ class _RestaurantsScreenState extends State<RestaurantsScreen> {
                                               const Icon(Icons.star_rounded, size: 15, color: Color(0xFFD97706)),
                                               const SizedBox(width: 4),
                                               Text(
-                                                '${rest.rating} (${rest.reviewsCount > 999 ? "${(rest.reviewsCount / 1000).toStringAsFixed(1)}k" : rest.reviewsCount})',
+                                                rest.reviewsCount == 0
+                                                    ? 'Chưa có đánh giá'
+                                                    : '${rest.rating} (${rest.reviewsCount > 999 ? "${(rest.reviewsCount / 1000).toStringAsFixed(1)}k" : rest.reviewsCount})',
                                                 style: const TextStyle(
                                                   color: Color(0xFF92400E),
                                                   fontWeight: FontWeight.w800,
@@ -283,29 +285,31 @@ class _RestaurantsScreenState extends State<RestaurantsScreen> {
                                     const SizedBox(height: 8),
                                     Row(
                                       children: [
-                                        Expanded(
-                                          child: InkWell(
-                                            borderRadius: BorderRadius.circular(8),
-                                            onTap: () => ExternalLauncher.makePhoneCall(context, rest.phone),
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(vertical: 6),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFFF1F5F9),
-                                                borderRadius: BorderRadius.circular(8),
-                                                border: Border.all(color: const Color(0xFFCBD5E1)),
-                                              ),
-                                              child: const Row(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(Icons.phone, size: 13, color: Color(0xFF10B981)),
-                                                  SizedBox(width: 4),
-                                                  Text('Gọi đặt bàn', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
-                                                ],
+                                        if (rest.phone.isNotEmpty) ...[
+                                          Expanded(
+                                            child: InkWell(
+                                              borderRadius: BorderRadius.circular(8),
+                                              onTap: () => ExternalLauncher.makePhoneCall(context, rest.phone),
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(vertical: 6),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFF1F5F9),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                                                ),
+                                                child: const Row(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(Icons.phone, size: 13, color: Color(0xFF10B981)),
+                                                    SizedBox(width: 4),
+                                                    Text('Gọi đặt bàn', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 8),
+                                          const SizedBox(width: 8),
+                                        ],
                                         Expanded(
                                           child: InkWell(
                                             borderRadius: BorderRadius.circular(8),

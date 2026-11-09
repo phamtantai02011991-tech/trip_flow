@@ -93,7 +93,9 @@ class RestaurantDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '${restaurant.cuisineType} • ⭐ ${restaurant.rating} (${restaurant.reviewsCount > 999 ? "${(restaurant.reviewsCount / 1000).toStringAsFixed(1)}k" : restaurant.reviewsCount} đánh giá thực tế)',
+                      restaurant.reviewsCount == 0
+                          ? '${restaurant.cuisineType} • Chưa có đánh giá'
+                          : '${restaurant.cuisineType} • ⭐ ${restaurant.rating} (${restaurant.reviewsCount > 999 ? "${(restaurant.reviewsCount / 1000).toStringAsFixed(1)}k" : restaurant.reviewsCount} đánh giá thực tế)',
                       style: const TextStyle(
                         color: Color(0xFFFEF3C7),
                         fontSize: 13,
@@ -242,7 +244,11 @@ class RestaurantDetailScreen extends StatelessWidget {
                 dataSource: restaurant.dataSource,
                 attributionText: restaurant.isSponsored
                     ? (restaurant.sponsorLabel ?? 'Đối tác Ẩm thực TripFlow')
-                    : 'Tổng hợp từ Google Maps & Ban Biên Tập TripFlow',
+                    : restaurant.imageCredit.isNotEmpty
+                        ? 'Ảnh: ${restaurant.imageCredit}'
+                            '${restaurant.imageLicense.isNotEmpty ? ' (${restaurant.imageLicense})' : ''}'
+                            ' • Wikimedia Commons'
+                        : 'Dữ liệu: Ban Biên Tập TripFlow',
                 lastUpdatedText: restaurant.lastUpdatedAt,
                 onReportIssue: () {
                   showReportIssueBottomSheet(

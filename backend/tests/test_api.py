@@ -30,7 +30,8 @@ from app.db.session import SessionLocal  # noqa: E402
 from app.integrations.goong_client import decode_polyline, encode_polyline  # noqa: E402
 from app.main import _export_openapi_contract, app  # noqa: E402
 from app.models.crawl_job import CrawlJob  # noqa: E402
-from app.models.restaurant import Restaurant  # noqa: E402
+from app.models.restaurant import Restaurant
+from app.models.models import SMSOTPVerification  # noqa: E402
 from app.services.crawler.normalizer import (  # noqa: E402
     _clean_reviews_count,
     check_duplicate,
@@ -82,10 +83,12 @@ def test_destinations_cloudinary_urls_and_detail():
     assert len(items) >= 1
     dinh = items[0]
     assert "Dinh Độc Lập" in dinh["name"]
-    assert "c_fill,w_400,h_300,q_auto,f_auto" in dinh["thumbnail_url"]
-    assert "w_1200,q_auto,f_auto" in dinh["detail_image_url"]
-    assert dinh["is_verified"] is True
-    assert dinh["source"] == "admin"
+    assert dinh["thumbnail_url"].startswith("http")
+    assert dinh["detail_image_url"].startswith("http")
+    # Khi chưa cấu hình Cloudinary thật, ảnh Wikimedia phải giữ URL gốc (không bọc cloud demo).
+    if "res.cloudinary.com" in dinh["thumbnail_url"]:
+        assert "c_fill,w_400,h_300,q_auto,f_auto" in dinh["thumbnail_url"]
+    assert dinh["source"] in {"admin", "wikimedia", "editorial"}
 
     detail_res = client.get(f"/api/v1/destinations/{dinh['id']}")
     assert detail_res.status_code == 200
@@ -135,7 +138,8 @@ def test_goong_polyline_and_shapely_bounding_box_corridor_search():
     assert body["results_count"] >= 3
     for rest in body["restaurants"]:
         assert rest["distance_from_route_km"] <= 1.5
-        assert "c_fill,w_400,h_300" in rest["thumbnail_url"]
+        # Quán chưa có ảnh đúng thì trả chuỗi rỗng, không dùng ảnh giả.
+        assert rest["thumbnail_url"] == "" or rest["thumbnail_url"].startswith("http")
 
 
 def test_slowapi_rate_limiting_10_per_minute():
@@ -207,7 +211,11 @@ def test_itinerary_offline_sync_and_reorder():
             },
         ],
     }
-    sync_res = client.post("/api/v1/itineraries/sync", json=sync_payload)
+    sync_res = client.post(
+        "/api/v1/itineraries/sync",
+        json=sync_payload,
+        headers=_get_auth_headers("traveler@tripflow.vn", "User@123"),
+    )
     assert sync_res.status_code == 200
     synced = sync_res.json()
     assert synced["id"] >= 1
@@ -243,8 +251,11 @@ def test_rbac_role_permission_tables_and_cloudinary_upload():
     )
     assert upload_res.status_code == 200
     up_body = upload_res.json()
-    assert "c_fill,w_400,h_300,q_auto,f_auto" in up_body["thumbnail_url"]
-    assert "w_1200,q_auto,f_auto" in up_body["detail_url"]
+    assert up_body["thumbnail_url"].startswith("http")
+    assert up_body["detail_url"].startswith("http")
+    if "res.cloudinary.com" in up_body["thumbnail_url"]:
+        assert "c_fill,w_400,h_300,q_auto,f_auto" in up_body["thumbnail_url"]
+        assert "w_1200,q_auto,f_auto" in up_body["detail_url"]
 
     hcm_editor_headers = _get_auth_headers("hcm.editor@tripflow.vn", "Editor@123")
     wrong_prov_res = client.post(
@@ -699,7 +710,8 @@ def test_tc22_itinerary_smart_meal_stop_insertion():
             },
         ],
     }
-    create_res = client.post("/api/v1/itineraries", json=create_payload)
+    user_headers = _get_auth_headers("traveler@tripflow.vn", "User@123")
+    create_res = client.post("/api/v1/itineraries", json=create_payload, headers=user_headers)
     assert create_res.status_code == 201
     itin_id = create_res.json()["id"]
 
@@ -712,6 +724,7 @@ def test_tc22_itinerary_smart_meal_stop_insertion():
     meal_res = client.post(
         f"/api/v1/itineraries/{itin_id}/smart-meal-stops",
         json=meal_req,
+        headers=user_headers,
     )
     assert meal_res.status_code == 200, meal_res.text
     meal_data = meal_res.json()
@@ -724,7 +737,7 @@ def test_tc22_itinerary_smart_meal_stop_insertion():
     assert meal_data["inserted_stop"]["stop_order"] == 2
 
     # 3. Xem lại chi tiết lịch trình để đảm bảo thứ tự stop_order đã được điều chỉnh liên tiếp
-    detail_res = client.get(f"/api/v1/itineraries/{itin_id}")
+    detail_res = client.get(f"/api/v1/itineraries/{itin_id}", headers=user_headers)
     assert detail_res.status_code == 200
     updated_stops = detail_res.json()["stops"]
     assert len(updated_stops) == 3
@@ -768,8 +781,21 @@ def test_tc23_sms_otp_registration_and_login():
     send_data = send_resp.json()
     assert send_data["phone"] == test_phone
     assert send_data["expires_in_seconds"] == 300
-    assert "debug_otp" in send_data
-    otp_code = send_data["debug_otp"]
+    # Mặc định (không bật DEV_OTP_ENABLED) API không được trả mã OTP ra ngoài.
+    assert send_data.get("debug_otp") is None
+
+    db = SessionLocal()
+    try:
+        verification = (
+            db.query(SMSOTPVerification)
+            .filter(SMSOTPVerification.phone == test_phone)
+            .order_by(SMSOTPVerification.created_at.desc())
+            .first()
+        )
+        assert verification is not None
+        otp_code = verification.otp_code
+    finally:
+        db.close()
     assert len(otp_code) == 6
     assert otp_code.isdigit()
 
@@ -803,4 +829,152 @@ def test_tc23_sms_otp_registration_and_login():
     )
     assert replay_resp.status_code == 400
     assert "Mã xác thực OTP không tồn tại hoặc đã hết hiệu lực" in replay_resp.json()["detail"]
+
+
+def test_account_data_export_and_deletion():
+    """Quyền riêng tư: xuất dữ liệu cá nhân và xoá tài khoản vĩnh viễn."""
+    import time
+
+    email = f"delete-me-{int(time.time())}@tripflow.test"
+    password = "DeleteMe@123"
+    reg = client.post(
+        "/api/v1/auth/register",
+        json={"email": email, "full_name": "Delete Me", "password": password},
+    )
+    assert reg.status_code == 201, reg.text
+    token = reg.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    exported = client.get("/api/v1/auth/me/export", headers=headers)
+    assert exported.status_code == 200, exported.text
+    body = exported.json()
+    assert body["profile"]["email"] == email
+    assert "itineraries" in body and "trips" in body
+
+    deleted = client.delete("/api/v1/auth/account?confirm=DELETE", headers=headers)
+    assert deleted.status_code == 200, deleted.text
+    assert deleted.json()["deleted"] is True
+
+    relogin = client.post(
+        "/api/v1/auth/login", json={"email": email, "password": password}
+    )
+    assert relogin.status_code == 401
+
+
+def test_login_lockout_after_five_failures():
+    """Chống brute-force: sai 5 lần khoá tạm 15 phút, kể cả mật khẩu đúng."""
+    import time
+
+    email = f"lockout-{int(time.time())}@tripflow.test"
+    password = "Lockout@123"
+    reg = client.post(
+        "/api/v1/auth/register",
+        json={"email": email, "full_name": "Lockout Test", "password": password},
+    )
+    assert reg.status_code == 201, reg.text
+
+    for _ in range(4):
+        resp = client.post(
+            "/api/v1/auth/login",
+            json={"email": email, "password": "wrong-password"},
+        )
+        assert resp.status_code == 401, resp.text
+
+    fifth = client.post(
+        "/api/v1/auth/login",
+        json={"email": email, "password": "wrong-password"},
+    )
+    assert fifth.status_code == 423, fifth.text
+
+    correct_while_locked = client.post(
+        "/api/v1/auth/login", json={"email": email, "password": password}
+    )
+    assert correct_while_locked.status_code == 423, correct_while_locked.text
+
+
+def test_admin_2fa_required_for_admin_api(monkeypatch):
+    """Khi REQUIRE_ADMIN_2FA=1, admin chưa bật 2FA bị chặn khỏi API quản trị."""
+    import pyotp
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "REQUIRE_ADMIN_2FA", True)
+    headers = _get_auth_headers("admin@tripflow.vn", "Admin@123")
+
+    blocked = client.get("/api/v1/admin/dashboard", headers=headers)
+    assert blocked.status_code == 403
+    assert "2FA_SETUP_REQUIRED" in blocked.json()["detail"]
+
+    setup = client.post("/api/v1/auth/2fa/setup", headers=headers)
+    assert setup.status_code == 200, setup.text
+    secret = setup.json()["secret"]
+
+    try:
+        enabled = client.post(
+            "/api/v1/auth/2fa/enable",
+            json={"code": pyotp.TOTP(secret).now()},
+            headers=headers,
+        )
+        assert enabled.status_code == 200, enabled.text
+
+        allowed = client.get("/api/v1/admin/dashboard", headers=headers)
+        assert allowed.status_code == 200, allowed.text
+    finally:
+        client.post(
+            "/api/v1/auth/2fa/disable",
+            json={"code": pyotp.TOTP(secret).now()},
+            headers=headers,
+        )
+
+
+def test_admin_2fa_totp_flow():
+    """Bật 2FA: đăng nhập thiếu mã bị chặn, có mã đúng thành công, tắt lại được."""
+    import time
+
+    import pyotp
+
+    email = f"twofa-{int(time.time())}@tripflow.test"
+    password = "TwoFactor@123"
+    reg = client.post(
+        "/api/v1/auth/register",
+        json={"email": email, "full_name": "2FA Test", "password": password},
+    )
+    assert reg.status_code == 201, reg.text
+    headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+
+    setup = client.post("/api/v1/auth/2fa/setup", headers=headers)
+    assert setup.status_code == 200, setup.text
+    secret = setup.json()["secret"]
+    assert "otpauth://totp/" in setup.json()["otpauth_url"]
+
+    code = pyotp.TOTP(secret).now()
+    enabled = client.post(
+        "/api/v1/auth/2fa/enable", json={"code": code}, headers=headers
+    )
+    assert enabled.status_code == 200, enabled.text
+    assert enabled.json()["enabled"] is True
+
+    missing = client.post(
+        "/api/v1/auth/login", json={"email": email, "password": password}
+    )
+    assert missing.status_code == 401
+    assert "2FA_REQUIRED" in missing.json()["detail"]
+
+    good = client.post(
+        "/api/v1/auth/login",
+        json={"email": email, "password": password, "otp_code": pyotp.TOTP(secret).now()},
+    )
+    assert good.status_code == 200, good.text
+
+    disabled = client.post(
+        "/api/v1/auth/2fa/disable",
+        json={"code": pyotp.TOTP(secret).now()},
+        headers={"Authorization": f"Bearer {good.json()['access_token']}"},
+    )
+    assert disabled.status_code == 200, disabled.text
+    assert disabled.json()["enabled"] is False
+
+    no_code = client.post(
+        "/api/v1/auth/login", json={"email": email, "password": password}
+    )
+    assert no_code.status_code == 200, no_code.text
 

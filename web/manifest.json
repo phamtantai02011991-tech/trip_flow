@@ -1,11 +1,12 @@
 {
-    "name": "trip_flow",
-    "short_name": "trip_flow",
+    "name": "TripFlow — Lập lộ trình, tìm quán ăn, điểm nghỉ chân",
+    "short_name": "TripFlow",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FAF8F5",
+    "theme_color": "#E05638",
+    "description": "Lập lộ trình, tìm quán ăn thật và điểm nghỉ chân dọc đường tại 10 tỉnh thành Việt Nam.",
+    "lang": "vi",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -14,6 +14,12 @@ from app.core.rate_limit import (
 )
 from app.db.seed_db import init_and_seed_db
 
+_INSECURE_SECRET_KEYS = {
+    "tripflow_super_secret_jwt_key_change_in_production_2026",
+    "tripflow_production_super_secret_jwt_key_2026",
+    "change_me",
+}
+
 
 def _export_openapi_contract(fastapi_app: FastAPI) -> None:
     """Tự động xuất hợp đồng API ra file `backend/swagger.json` (Pitfall #4)."""
@@ -31,6 +37,11 @@ def _export_openapi_contract(fastapi_app: FastAPI) -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Khởi tạo cơ sở dữ liệu SQLModel, nạp dữ liệu mẫu và xuất swagger.json."""
+    if settings.is_production and settings.SECRET_KEY in _INSECURE_SECRET_KEYS:
+        raise RuntimeError(
+            "SECRET_KEY đang dùng giá trị mặc định. Bắt buộc đặt SECRET_KEY ngẫu nhiên "
+            "trong biến môi trường trước khi chạy production."
+        )
     init_and_seed_db()
     _export_openapi_contract(app)
     yield
@@ -52,12 +63,20 @@ app.state.limiter = limiter
 if SLOWAPI_AVAILABLE:
     app.add_exception_handler(RateLimitExceeded, custom_rate_limit_exceeded_handler)
 
+_origins = settings.cors_origin_list
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_origins,
+    # `allow_credentials=True` không được dùng chung với origin "*" (trình duyệt sẽ chặn).
+    allow_credentials=bool(_origins),
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "Accept",
+        "X-Requested-With",
+        "X-Guest-Token",
+    ],
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
@@ -89,7 +108,32 @@ def health_check():
         "status": "healthy",
         "service": settings.PROJECT_NAME,
         "version": settings.VERSION,
+        "environment": settings.ENVIRONMENT,
     }
+
+
+@app.get("/health/ready", tags=["Root & Health"])
+def readiness_check():
+    """Readiness probe: xác nhận API và kết nối cơ sở dữ liệu đều sẵn sàng."""
+    from sqlalchemy import text as sql_text
+
+    from app.db.session import engine
+
+    try:
+        with engine.connect() as conn:
+            conn.execute(sql_text("SELECT 1"))
+    except Exception as exc:  # pragma: no cover - phụ thuộc hạ tầng
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "not_ready",
+                "database": "unreachable",
+                "detail": type(exc).__name__,
+            },
+        )
+    return {"status": "ready", "database": "ok"}
 
 
 @app.get(f"{settings.API_V1_STR}/contract/swagger.json", tags=["API Contract"])

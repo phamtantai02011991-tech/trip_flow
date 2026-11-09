@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 from sqlalchemy import Column, Index, Text
 from sqlmodel import Field, Relationship, SQLModel
@@ -85,7 +85,7 @@ class Province(SQLModel, table=True):
     center_lng: float = Field(default=106.7009)
     is_active: bool = Field(default=True)
     data_source: str = Field(default="internal", max_length=100)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     destinations: List["Destination"] = Relationship(
         back_populates="province",
@@ -159,8 +159,8 @@ class Destination(SQLModel, table=True):
     source_attribution: str = Field(
         default="Ban Biên Tập TripFlow & Sở Du lịch TP.HCM", max_length=300
     )
-    last_verified_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    last_verified_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     province: Optional[Province] = Relationship(back_populates="destinations")
     category: Optional[Category] = Relationship(back_populates="destinations")
@@ -218,7 +218,7 @@ class LocalFood(SQLModel, table=True):
     license_info: str = Field(
         default="Bản quyền nội dung TripFlow Editorial", max_length=250
     )
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     province: Optional[Province] = Relationship(back_populates="local_foods")
 
@@ -254,6 +254,10 @@ class Restaurant(SQLModel, table=True):
     specialties: Optional[str] = Field(default=None, max_length=300)
     image_url: Optional[str] = Field(default=None, max_length=550)
     thumbnail_url: Optional[str] = Field(default=None, max_length=550)
+    # Ghi công ảnh (bắt buộc với ảnh CC BY / CC BY-SA)
+    image_credit: Optional[str] = Field(default=None, max_length=250)
+    image_license: Optional[str] = Field(default=None, max_length=120)
+    image_source_url: Optional[str] = Field(default=None, max_length=550)
     is_sponsored: bool = Field(default=False)
     sponsor_label: Optional[str] = Field(default=None, max_length=150)
     is_verified: bool = Field(default=False, index=True)
@@ -261,7 +265,7 @@ class Restaurant(SQLModel, table=True):
     source_url: Optional[str] = Field(default=None, max_length=550)
     status: str = Field(default="published", index=True, max_length=30)
     data_source: str = Field(default="internal", max_length=60)
-    last_updated_at: datetime = Field(default_factory=datetime.utcnow)
+    last_updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     province: Optional[Province] = Relationship(back_populates="restaurants")
 
@@ -286,7 +290,11 @@ class User(SQLModel, table=True):
         default=None, foreign_key="provinces.id"
     )
     is_active: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    failed_login_attempts: int = Field(default=0)
+    locked_until: Optional[datetime] = Field(default=None)
+    totp_secret: Optional[str] = Field(default=None, max_length=64)
+    totp_enabled: bool = Field(default=False)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     role_obj: Optional[Role] = Relationship(back_populates="users")
     favorites: List["Favorite"] = Relationship(
@@ -305,7 +313,7 @@ class Favorite(SQLModel, table=True):
     user_id: int = Field(foreign_key="users.id", index=True)
     target_type: str = Field(max_length=40)
     target_id: int
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     user: Optional[User] = Relationship(back_populates="favorites")
 
@@ -323,8 +331,8 @@ class Itinerary(SQLModel, table=True):
     total_days: int = Field(default=1)
     is_template: bool = Field(default=False, index=True)
     status: str = Field(default="active", max_length=30)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     user: Optional[User] = Relationship(back_populates="itineraries")
     province: Optional[Province] = Relationship(back_populates="itineraries")
@@ -374,7 +382,7 @@ class ContentReport(SQLModel, table=True):
     rating: Optional[int] = Field(default=None)
     status: str = Field(default="pending", index=True, max_length=30)
     moderator_note: Optional[str] = Field(default=None, sa_column=Column(Text))
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     resolved_at: Optional[datetime] = Field(default=None)
 
 
@@ -407,5 +415,5 @@ class SMSOTPVerification(SQLModel, table=True):
     is_used: bool = Field(default=False, index=True)
     attempts: int = Field(default=0)
     full_name: Optional[str] = Field(default=None, max_length=160)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

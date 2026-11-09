@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:math';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../utils/data_models.dart';
 
@@ -23,12 +25,18 @@ class OfflineCacheService {
   Box<String>? _itinerariesBox;
   Box<String>? _favoritesBox;
   Box<String>? _authBox;
+  FlutterSecureStorage? _secureStorage;
+  String? _secureToken;
+
+  /// Token JWT được lưu trong Keychain/Keystore, không nằm trong Hive plaintext.
+  static const String _secureTokenKey = 'tripflow_auth_token';
 
   // Bộ nhớ dự phòng trong RAM cho môi trường Unit/Widget Test không có ổ đĩa Native
   final Map<String, String> _memoryApiCache = {};
   final Map<String, String> _memoryItineraries = {};
   final Map<String, String> _memoryFavorites = {};
   final Map<String, String> _memoryAuth = {};
+  String? _memoryGuestToken;
 
   bool get isHiveReady => _hiveInitialized;
 
@@ -42,9 +50,32 @@ class OfflineCacheService {
       _favoritesBox = await Hive.openBox<String>(favoritesBoxName);
       _authBox = await Hive.openBox<String>(authBoxName);
       _hiveInitialized = true;
+      await _initSecureStorage();
     } catch (_) {
       // Trong môi trường flutter test không có path_provider native, tự động dùng bộ nhớ đệm trong RAM
       _hiveInitialized = false;
+    }
+  }
+
+  /// Khởi tạo secure storage và migrate token cũ khỏi Hive (nếu có).
+  Future<void> _initSecureStorage() async {
+    try {
+      _secureStorage = const FlutterSecureStorage();
+      _secureToken = await _secureStorage!.read(key: _secureTokenKey);
+      final raw = _authBox?.get('current_session');
+      if (raw == null || raw.isEmpty) return;
+      final payload = jsonDecode(raw) as Map<String, dynamic>;
+      final legacyToken = (payload['auth_token'] ?? '').toString();
+      if (legacyToken.isEmpty) return;
+      if (_secureToken == null || _secureToken!.isEmpty) {
+        await _secureStorage!.write(key: _secureTokenKey, value: legacyToken);
+        _secureToken = legacyToken;
+      }
+      // Xoá token khỏi bản Hive cũ, giữ lại thông tin hiển thị.
+      payload['auth_token'] = '';
+      await _authBox?.put('current_session', jsonEncode(payload));
+    } catch (_) {
+      _secureStorage = null;
     }
   }
 
@@ -146,6 +177,28 @@ class OfflineCacheService {
     }
   }
 
+  /// Lấy (hoặc tạo) định danh ẩn danh của thiết bị.
+  ///
+  /// Backend dùng mã này để chỉ cho đúng thiết bị đọc/sửa các chuyến đi tạo khi
+  /// chưa đăng nhập, tránh lộ dữ liệu giữa các khách vãng lai.
+  Future<String> getOrCreateGuestToken() async {
+    String? token;
+    if (_hiveInitialized && _authBox != null) {
+      token = _authBox!.get('guest_token');
+    }
+    token ??= _memoryGuestToken;
+    if (token == null || token.isEmpty) {
+      final random = Random.secure();
+      final bytes = List<int>.generate(16, (_) => random.nextInt(256));
+      token = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+      _memoryGuestToken = token;
+      if (_hiveInitialized && _authBox != null) {
+        await _authBox!.put('guest_token', token);
+      }
+    }
+    return token;
+  }
+
   /// Lưu thông tin phiên đăng nhập người dùng (SĐT, Họ tên, Trạng thái OTP, Token) vào Hive Box
   Future<void> saveUserAuthSession({
     required String phone,
@@ -153,11 +206,23 @@ class OfflineCacheService {
     required bool isOtpVerified,
     String? token,
   }) async {
+    final tokenValue = token ?? '';
+    var hiveToken = tokenValue;
+    if (tokenValue.isNotEmpty && _secureStorage != null) {
+      try {
+        await _secureStorage!.write(key: _secureTokenKey, value: tokenValue);
+        _secureToken = tokenValue;
+        hiveToken = '';
+      } catch (_) {
+        // Secure storage không khả dụng: fallback Hive để không mất phiên.
+        hiveToken = tokenValue;
+      }
+    }
     final payload = jsonEncode({
       'user_phone': phone,
       'user_name': fullName,
       'is_otp_verified': isOtpVerified,
-      'auth_token': token ?? '',
+      'auth_token': hiveToken,
       'updated_at': DateTime.now().toIso8601String(),
     });
     _memoryAuth['current_session'] = payload;
@@ -175,7 +240,11 @@ class OfflineCacheService {
     raw ??= _memoryAuth['current_session'];
     if (raw == null || raw.isEmpty) return null;
     try {
-      return jsonDecode(raw) as Map<String, dynamic>;
+      final payload = jsonDecode(raw) as Map<String, dynamic>;
+      if (_secureToken != null && _secureToken!.isNotEmpty) {
+        payload['auth_token'] = _secureToken;
+      }
+      return payload;
     } catch (_) {
       return null;
     }
@@ -184,6 +253,12 @@ class OfflineCacheService {
   /// Xóa phiên đăng nhập người dùng khi đăng xuất
   Future<void> clearUserAuthSession() async {
     _memoryAuth.remove('current_session');
+    _secureToken = null;
+    try {
+      await _secureStorage?.delete(key: _secureTokenKey);
+    } catch (_) {
+      // Bỏ qua nếu thiết bị không hỗ trợ secure storage.
+    }
     if (_hiveInitialized && _authBox != null) {
       await _authBox!.delete('current_session');
     }

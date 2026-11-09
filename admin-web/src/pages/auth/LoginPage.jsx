@@ -4,20 +4,33 @@ import { DEMO_ADMIN_ACCOUNTS, useAuth } from "../../hooks/useAuth";
 
 export default function LoginPage({ onLoginSuccess }) {
   const { login } = useAuth();
-  const [email, setEmail] = useState("admin@tripflow.vn");
-  const [password, setPassword] = useState("Admin@123");
+  const demoAccount = DEMO_ADMIN_ACCOUNTS[0];
+  const [email, setEmail] = useState(demoAccount?.email || "");
+  const [password, setPassword] = useState(demoAccount?.password || "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [needs2fa, setNeeds2fa] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+
+  const handleError = (err) => {
+    const message = err.message || "Đăng nhập không thành công.";
+    if (message.includes("2FA_REQUIRED")) {
+      setNeeds2fa(true);
+      setError("Tài khoản đã bật 2FA. Nhập mã 6 số từ ứng dụng xác thực.");
+    } else {
+      setError(message);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const loggedUser = await login(email, password);
+      const loggedUser = await login(email, password, otpCode);
       onLoginSuccess?.(loggedUser);
     } catch (err) {
-      setError(err.message || "Đăng nhập không thành công.");
+      handleError(err);
     } finally {
       setLoading(false);
     }
@@ -32,7 +45,7 @@ export default function LoginPage({ onLoginSuccess }) {
       const loggedUser = await login(acc.email, acc.password);
       onLoginSuccess?.(loggedUser);
     } catch (err) {
-      setError(err.message || "Đăng nhập không thành công.");
+      handleError(err);
     } finally {
       setLoading(false);
     }
@@ -115,6 +128,27 @@ export default function LoginPage({ onLoginSuccess }) {
               </div>
             </div>
 
+            {needs2fa && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Mã 2FA (6 số)
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                  className="w-full px-4 py-2.5 text-sm tracking-[0.4em] font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="123456"
+                  autoFocus
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Mở Google Authenticator / Authy để lấy mã.
+                </p>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
@@ -124,30 +158,32 @@ export default function LoginPage({ onLoginSuccess }) {
             </button>
           </form>
 
-          {/* Quick Demo Role Buttons */}
-          <div className="mt-6 pt-5 border-t border-slate-200">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-              Tài khoản mẫu theo vai trò RBAC (1-Click Login)
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {DEMO_ADMIN_ACCOUNTS.map((acc) => (
-                <button
-                  key={acc.email}
-                  type="button"
-                  onClick={() => handleQuickFill(acc)}
-                  className="text-left p-3 rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50/40 transition-all group"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800 group-hover:text-teal-700">
-                      {acc.label}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">{acc.email}</p>
-                  <p className="text-[11px] text-slate-400 mt-1 line-clamp-1">{acc.desc}</p>
-                </button>
-              ))}
+          {/* Quick Demo Role Buttons — chỉ hiển thị khi bật VITE_DEMO_MODE */}
+          {DEMO_ADMIN_ACCOUNTS.length > 0 && (
+            <div className="mt-6 pt-5 border-t border-slate-200">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                Tài khoản mẫu theo vai trò RBAC (1-Click Login)
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {DEMO_ADMIN_ACCOUNTS.map((acc) => (
+                  <button
+                    key={acc.email}
+                    type="button"
+                    onClick={() => handleQuickFill(acc)}
+                    className="text-left p-3 rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50/40 transition-all group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800 group-hover:text-teal-700">
+                        {acc.label}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-0.5 truncate">{acc.email}</p>
+                    <p className="text-[11px] text-slate-400 mt-1 line-clamp-1">{acc.desc}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,9 @@
 # 08 — Trạng thái 7 module (đối chiếu yêu cầu)
 
+> ⚠️ **Tài liệu này đã lỗi thời một phần (01/11/2026).** Danh sách "Chưa làm" bên dưới không còn đúng:
+> nhiều mục đã được triển khai, đồng thời phát sinh lỗi bảo mật/khởi động đã được sửa trong đợt kiểm toán 06/11/2026.
+> Xem trạng thái chuẩn tại [`09-KIEM-TOAN-TRIEN-KHAI.md`](09-KIEM-TOAN-TRIEN-KHAI.md).
+
 Cập nhật: 01/11/2026 · Ký hiệu: ✅ xong · 🟡 một phần · ⬜ chưa làm
 
 | # | Module | Backend | Flutter | Ghi chú |

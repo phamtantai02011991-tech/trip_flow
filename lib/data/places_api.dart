@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../core/config/app_config.dart';
+import '../core/network/auth_interceptor.dart';
 
 /// Một POI trả về từ `/places/nearby`.
 class Place {
@@ -20,6 +21,8 @@ class Place {
     this.reviewCount = 0,
     this.qualityLabel = 'normal',
     this.qualityScore = 0,
+    this.imageUrl = '',
+    this.thumbnailUrl = '',
   });
 
   final String id;
@@ -40,6 +43,8 @@ class Place {
   /// số lượt đánh giá, giá và loại quán (xem `places_service._quality`).
   final String qualityLabel;
   final double qualityScore;
+  final String imageUrl;
+  final String thumbnailUrl;
 
   bool get isHiddenGem => qualityLabel == 'hidden_gem';
   bool get isTopRated => qualityLabel == 'top_rated';
@@ -60,6 +65,8 @@ class Place {
         reviewCount: (json['review_count'] as num?)?.toInt() ?? 0,
         qualityLabel: (json['quality_label'] ?? 'normal').toString(),
         qualityScore: (json['quality_score'] as num?)?.toDouble() ?? 0,
+        imageUrl: (json['image_url'] ?? '').toString(),
+        thumbnailUrl: (json['thumbnail_url'] ?? '').toString(),
       );
 }
 
@@ -76,6 +83,58 @@ class NearbyResult {
   final int hiddenGemCount;
 }
 
+/// Điểm nghỉ chân nằm dọc tuyến đường (Module corridor).
+class AlongRouteStop {
+  const AlongRouteStop({
+    required this.id,
+    required this.name,
+    required this.kind,
+    required this.stopCategory,
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+    required this.thumbnailUrl,
+    required this.rating,
+    required this.reviewCount,
+    required this.distanceFromRouteKm,
+    required this.estimatedDetourMins,
+    required this.routeProgressPct,
+  });
+
+  final String id;
+  final String name;
+  final String kind;
+  final String stopCategory;
+  final String address;
+  final double latitude;
+  final double longitude;
+  final String thumbnailUrl;
+  final double rating;
+  final int reviewCount;
+  final double distanceFromRouteKm;
+  final int estimatedDetourMins;
+  final double routeProgressPct;
+
+  factory AlongRouteStop.fromJson(Map<String, dynamic> json) => AlongRouteStop(
+        id: (json['id'] ?? '').toString(),
+        name: (json['name'] ?? '').toString(),
+        kind: (json['kind'] ?? 'rest').toString(),
+        stopCategory: (json['stop_category'] ?? '').toString(),
+        address: (json['address'] ?? '').toString(),
+        latitude: (json['latitude'] as num).toDouble(),
+        longitude: (json['longitude'] as num).toDouble(),
+        thumbnailUrl: (json['thumbnail_url'] ?? '').toString(),
+        rating: (json['rating'] as num?)?.toDouble() ?? 0,
+        reviewCount: (json['review_count'] as num?)?.toInt() ?? 0,
+        distanceFromRouteKm:
+            (json['distance_from_route_km'] as num?)?.toDouble() ?? 0,
+        estimatedDetourMins:
+            (json['estimated_detour_mins'] as num?)?.toInt() ?? 0,
+        routeProgressPct:
+            (json['route_progress_pct'] as num?)?.toDouble() ?? 0,
+      );
+}
+
 class PlacesApi {
   PlacesApi({Dio? dio})
       : _dio = dio ??
@@ -83,7 +142,9 @@ class PlacesApi {
               baseUrl: AppConfig.apiBaseUrl,
               connectTimeout: const Duration(seconds: 8),
               receiveTimeout: const Duration(seconds: 20),
-            ));
+            )) {
+    _dio.interceptors.add(authInterceptor());
+  }
 
   final Dio _dio;
 
@@ -116,5 +177,28 @@ class PlacesApi {
       note: (data['note'] ?? '').toString(),
       hiddenGemCount: (data['hidden_gem_count'] as num?)?.toInt() ?? 0,
     );
+  }
+
+  /// Điểm nghỉ chân / quán cà phê dọc hành lang tuyến đường.
+  Future<List<AlongRouteStop>> alongRoute({
+    required double originLat,
+    required double originLng,
+    required double destLat,
+    required double destLng,
+    double corridorRadiusKm = 2,
+    String kinds = 'rest,gas,ev,cafe',
+  }) async {
+    final resp = await _dio.post('/places/along-route', data: {
+      'origin_lat': originLat,
+      'origin_lng': originLng,
+      'dest_lat': destLat,
+      'dest_lng': destLng,
+      'corridor_radius_km': corridorRadiusKm,
+      'kinds': kinds,
+    });
+    final data = resp.data as Map<String, dynamic>;
+    return ((data['stops'] as List?) ?? const [])
+        .map((e) => AlongRouteStop.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
   }
 }

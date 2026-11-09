@@ -10,7 +10,7 @@ Dịch vụ Tiếp nhận Dữ liệu Ngầm (AI Data Ingestion Service).
 """
 
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from sqlmodel import Session
 
@@ -98,7 +98,7 @@ async def process_crawl_job(
         inserted_count = 0
         duplicate_count = 0
         valid_scraped_count = 0
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         for raw_item in raw_results:
             cleaned = clean_scraped_place(raw_item)
@@ -151,7 +151,7 @@ async def process_crawl_job(
         job.inserted_count = inserted_count
         job.duplicate_count = duplicate_count
         job.error_message = None
-        job.completed_at = datetime.utcnow()
+        job.completed_at = datetime.now(timezone.utc)
         db.add(job)
         db.commit()
 
@@ -162,7 +162,7 @@ async def process_crawl_job(
             if failed_job:
                 failed_job.status = "FAILED"
                 failed_job.error_message = str(exc)
-                failed_job.completed_at = datetime.utcnow()
+                failed_job.completed_at = datetime.now(timezone.utc)
                 db.add(failed_job)
                 db.commit()
         except Exception:

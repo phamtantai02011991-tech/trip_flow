@@ -305,3 +305,22 @@ def get_current_active_superuser(
         )
     return current_user
 
+
+def require_admin_2fa(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Khi REQUIRE_ADMIN_2FA=1, admin chưa bật TOTP không được gọi API quản trị.
+
+    Vẫn cho phép gọi `/auth/2fa/*` vì các endpoint đó không nằm trong router admin.
+    """
+    if (
+        settings.REQUIRE_ADMIN_2FA
+        and current_user.role != "user"
+        and not current_user.totp_enabled
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="2FA_SETUP_REQUIRED: Bật 2FA trước khi sử dụng API quản trị.",
+        )
+    return current_user
+

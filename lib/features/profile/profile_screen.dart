@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../core/config/app_config.dart';
 import '../../core/utils/app_state.dart';
 import '../auth/login_screen.dart';
 import '../auth/register_screen.dart';
 import '../favorites/favorites_screen.dart';
+import '../legal/legal_screen.dart';
 import '../services/hotels_screen.dart';
-import '../services/transport_screen.dart';
 
 /// Tab 5: Màn hình Cá nhân, Tài khoản & Thiết lập Trải nghiệm (ProfileScreen)
 /// Thiết kế 100% chuẩn theo phong cách Editorial Terracotta Brick từ ảnh tham chiếu:
@@ -302,20 +306,22 @@ class ProfileScreen extends StatelessWidget {
                         },
                       ),
                       const Divider(height: 1, color: Color(0xFFF0EAE1)),
-                      _ProfileMenuItem(
-                        icon: Icons.confirmation_number_rounded,
-                        iconColor: const Color(0xFF0284C7), // Ocean Blue
-                        title: 'Lịch sử đặt vé & Đặt phòng',
-                        subtitle: 'E-Voucher khách sạn & E-Ticket vé xe tàu',
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => HotelsScreen(appState: appState),
-                            ),
-                          );
-                        },
-                      ),
-                      const Divider(height: 1, color: Color(0xFFF0EAE1)),
+                      if (AppConfig.showDemoBooking) ...[
+                        _ProfileMenuItem(
+                          icon: Icons.confirmation_number_rounded,
+                          iconColor: const Color(0xFF0284C7), // Ocean Blue
+                          title: 'Lịch sử đặt vé & Đặt phòng',
+                          subtitle: 'E-Voucher khách sạn & E-Ticket vé xe tàu',
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => HotelsScreen(appState: appState),
+                              ),
+                            );
+                          },
+                        ),
+                        const Divider(height: 1, color: Color(0xFFF0EAE1)),
+                      ],
                       _ProfileMenuItem(
                         icon: Icons.favorite_rounded,
                         iconColor: const Color(0xFFE11D48), // Rose Pink
@@ -356,6 +362,187 @@ class ProfileScreen extends StatelessWidget {
                               ),
                             );
                           }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              if (appState.isLoggedIn) ...[
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Material(
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: const BorderSide(color: Color(0xFFEAE3D9)),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                        _ProfileMenuItem(
+                          icon: Icons.download_rounded,
+                          iconColor: const Color(0xFF0284C7),
+                          title: 'Xuất dữ liệu của tôi',
+                          subtitle: 'Tải JSON hồ sơ, lịch trình, chuyến đi, đánh giá',
+                          onTap: () async {
+                            try {
+                              final data =
+                                  await appState.apiClient.exportMyData();
+                              final pretty = const JsonEncoder.withIndent('  ')
+                                  .convert(data);
+                              if (!context.mounted) return;
+                              await showDialog<void>(
+                                context: context,
+                                builder: (dialogContext) => AlertDialog(
+                                  title: const Text('Dữ liệu cá nhân của bạn'),
+                                  content: SizedBox(
+                                    width: 420,
+                                    height: 380,
+                                    child: SingleChildScrollView(
+                                      child: SelectableText(
+                                        pretty,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontFamily: 'monospace',
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton.icon(
+                                      onPressed: () async {
+                                        await Clipboard.setData(
+                                          ClipboardData(text: pretty),
+                                        );
+                                        if (dialogContext.mounted) {
+                                          Navigator.of(dialogContext).pop();
+                                        }
+                                      },
+                                      icon: const Icon(Icons.copy_rounded, size: 16),
+                                      label: const Text('Sao chép'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(dialogContext).pop(),
+                                      child: const Text('Đóng'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            } catch (_) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Không xuất được dữ liệu. Vui lòng đăng nhập lại và thử.',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        const Divider(height: 1, color: Color(0xFFF0EAE1)),
+                        _ProfileMenuItem(
+                          icon: Icons.delete_forever_rounded,
+                          iconColor: const Color(0xFFDC2626),
+                          title: 'Xoá tài khoản & dữ liệu',
+                          subtitle: 'Xoá vĩnh viễn, không thể khôi phục',
+                          onTap: () async {
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (dialogContext) => AlertDialog(
+                                title: const Text('Xoá tài khoản?'),
+                                content: const Text(
+                                  'Toàn bộ hồ sơ, lịch trình, chuyến đi, đánh giá và dữ liệu cá nhân '
+                                  'sẽ bị xoá vĩnh viễn. Bạn có chắc chắn?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(dialogContext).pop(false),
+                                    child: const Text('Huỷ'),
+                                  ),
+                                  FilledButton(
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: const Color(0xFFDC2626),
+                                    ),
+                                    onPressed: () =>
+                                        Navigator.of(dialogContext).pop(true),
+                                    child: const Text('Xoá vĩnh viễn'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirmed != true) return;
+                            try {
+                              await appState.apiClient.deleteMyAccount();
+                              appState.logoutUser();
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Tài khoản đã được xoá.'),
+                                  backgroundColor: Color(0xFF10B981),
+                                ),
+                              );
+                            } catch (_) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Không xoá được tài khoản. Vui lòng thử lại.',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 16),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Material(
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: const BorderSide(color: Color(0xFFEAE3D9)),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    children: [
+                      _ProfileMenuItem(
+                        icon: Icons.gavel_rounded,
+                        iconColor: const Color(0xFF475569),
+                        title: 'Điều khoản & Chính sách',
+                        subtitle: 'Điều khoản sử dụng và chính sách riêng tư',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const LegalScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      const Divider(height: 1, color: Color(0xFFF0EAE1)),
+                      _ProfileMenuItem(
+                        icon: Icons.image_rounded,
+                        iconColor: const Color(0xFF7C3AED),
+                        title: 'Giấy phép ảnh & bản đồ',
+                        subtitle: 'Nguồn ảnh Wikimedia, OpenStreetMap, Goong',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const LegalScreen(initialTab: 2),
+                            ),
+                          );
                         },
                       ),
                     ],

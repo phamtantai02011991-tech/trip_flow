@@ -34,7 +34,7 @@
 | Phân hệ | Công nghệ cốt lõi | Vai trò & Trách nhiệm |
 | :--- | :--- | :--- |
 | **Mobile Client** | **Flutter 3.x / Dart 3** | Ứng dụng di động đa nền tảng, thiết kế Editorial chuẩn Anti-AI-Slop, độ phân giải cao, tối ưu 60fps trên Android Pixel 8 Pro. |
-| **State Management** | **Flutter Riverpod + ChangeNotifier** | Quản trị trạng thái toàn cục reactive: Bộ lọc toàn quốc / 63 tỉnh thành, giỏ đặt phòng, vé xe, danh sách yêu thích và lịch trình. |
+| **State Management** | **Flutter Riverpod + ChangeNotifier** | Quản trị trạng thái toàn cục reactive: Bộ lọc toàn quốc / 10 tỉnh thành trọng điểm, giỏ đặt phòng (demo), vé xe, danh sách yêu thích và lịch trình. |
 | **Bản đồ & Định vị** | **Flutter Map + Goong Maps / OSM** | Bản đồ tương tác ngoại tuyến, vẽ polyline tuyến đường, tính toán hành lang (Corridor Bounding Box). |
 | **Lưu trữ cục bộ** | **Hive NoSQL + SharedPreferences** | Lưu trữ bộ đệm offline (Offline-First), khôi phục phiên đăng nhập và dữ liệu đã tải khi mất mạng. |
 | **Backend Server** | **Python FastAPI + SQLModel (PostgreSQL)** | Cung cấp RESTful API hiệu năng cao, thuật toán chuẩn hóa dữ liệu địa lý lãnh thổ Việt Nam. |
@@ -44,15 +44,15 @@
 
 ## 🚀 PHẦN 2: NHỮNG GÌ DỰ ÁN ĐÃ LÀM VÀ ĐANG CÓ (FEATURES IMPLEMENTED)
 
-### 1. Chế Độ Toàn Quốc 🇻🇳 & Bộ Lọc 63 Tỉnh Thành Linh Hoạt
+### 1. Chế Độ Toàn Quốc 🇻🇳 & Bộ Lọc 10 Tỉnh Thành Trọng Điểm
 - **Bỏ mặc định TP. Hồ Chí Minh**: Ứng dụng khởi động mặc định ở chế độ **`Toàn quốc 🇻🇳 — Khám Phá Việt Nam`**, tập hợp các điểm đến, món ngon và tour tiêu biểu trên khắp cả nước.
-- **Bộ chọn tỉnh thành thông minh**: Tích hợp Modal Bottom Sheet cho phép người dùng chuyển đổi ngay lập tức sang bất kỳ tỉnh thành nào (Hà Nội, Đà Nẵng, Lâm Đồng, Hà Giang, Phú Quốc...) với độ trễ 0ms.
+- **Bộ chọn tỉnh thành thông minh**: Tích hợp Modal Bottom Sheet cho phép người dùng chuyển đổi ngay lập tức giữa 10 tỉnh thành trọng điểm (Hà Nội, Đà Nẵng, Lâm Đồng, Phú Quốc, Hội An...) với độ trễ 0ms.
 
 ### 2. Bộ Nhận Diện Thương Hiệu Cao Cấp (Brand Identity Hero Header)
 - Thiết kế nền **Slate 900 (`#0F172A`)** sang trọng, độ tương phản cao, chống lóa khi dùng ngoài trời.
 - Huy hiệu **TRIPFLOW** (Coral `#FF4B55`) & tag **SUPER APP** (`#38BDF8`).
 - **Hotline CSKH 24/7 (`1900 6868`)**: Tích hợp trình quay số 1 chạm (`ExternalLauncher.makePhoneCall`).
-- **Dải Trust Badges xác minh**: `63 Tỉnh/Thành` • `1.200+ Điểm đến` • `100% Xác minh`.
+- **Dải Trust Badges xác minh**: `10 Tỉnh/Thành` • `28 Điểm đến mẫu` • `Dữ liệu biên tập`.
 
 ### 3. Hệ Sinh Thái 5 Trụ Cột Dịch Vụ Du Lịch & Phượt
 

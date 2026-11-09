@@ -13,7 +13,7 @@ AI không bao giờ sinh toạ độ / giờ mở cửa / giá.
 import json
 import math
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from sqlmodel import Session, select
@@ -300,9 +300,9 @@ async def generate_for_trip(
         db.add(day)
 
         clock = datetime.combine(
-            (trip.start_date + timedelta(days=day_number - 1)) if trip.start_date else datetime.utcnow().date(),
+            (trip.start_date + timedelta(days=day_number - 1)) if trip.start_date else datetime.now(timezone.utc).date(),
             datetime.min.time(),
-        ) + timedelta(hours=start_hour)
+        ).replace(tzinfo=timezone.utc) + timedelta(hours=start_hour)
 
         prev_lat, prev_lng = trip.origin_lat, trip.origin_lng
         for order, item in enumerate(day_data["stops"]):
@@ -349,7 +349,7 @@ async def generate_for_trip(
 
     trip.ai_generated = True
     trip.status = TripStatus.planned
-    trip.updated_at = datetime.utcnow()
+    trip.updated_at = datetime.now(timezone.utc)
     trip.generation_meta_json = json.dumps(
         {
             "model": meta.get("model"),

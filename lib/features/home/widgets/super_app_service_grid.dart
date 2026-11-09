@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/utils/app_state.dart';
 import '../../planner/planner_wizard_screen.dart';
 import '../../restaurants/restaurants_screen.dart';
@@ -62,7 +63,7 @@ class SuperAppServiceGrid extends StatelessWidget {
                   border: Border.all(color: const Color(0xFFFCE7F3)),
                 ),
                 child: const Text(
-                  '5 Tiện Ích',
+                  AppConfig.showDemoBooking ? '5 Tiện Ích' : 'Trip Planner',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
@@ -76,7 +77,9 @@ class SuperAppServiceGrid extends StatelessWidget {
           const SizedBox(height: 12),
 
           // Hàng 1: 3 dịch vụ du lịch (Khách sạn [Hồng], Vé xe tàu [Xanh biển], Tour [Mint])
-          Row(
+          // Chỉ hiển thị ở bản demo/dev; bản release ẩn để không phát hành booking giả.
+          if (AppConfig.showDemoBooking)
+            Row(
             children: [
               Expanded(
                 child: _ServiceTile(
@@ -86,6 +89,7 @@ class SuperAppServiceGrid extends StatelessWidget {
                   borderColor: const Color(0xFFFECDD3),
                   title: 'Khách Sạn',
                   subtitle: 'Resort & Stay',
+                  demo: true,
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -104,6 +108,7 @@ class SuperAppServiceGrid extends StatelessWidget {
                   borderColor: const Color(0xFFBAE6FD),
                   title: 'Vé Xe & Tàu',
                   subtitle: 'Limousine, Bay',
+                  demo: true,
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -122,6 +127,7 @@ class SuperAppServiceGrid extends StatelessWidget {
                   borderColor: const Color(0xFFA7F3D0),
                   title: 'Tour Tuyển',
                   subtitle: 'Trekking & Phượt',
+                  demo: true,
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -132,7 +138,9 @@ class SuperAppServiceGrid extends StatelessWidget {
                 ),
               ),
             ],
-          ),
+          )
+          else
+            _comingSoonBanner(),
 
           const SizedBox(height: 10),
 
@@ -353,6 +361,46 @@ class SuperAppServiceGrid extends StatelessWidget {
       ),
     );
   }
+  Widget _comingSoonBanner() => Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFBEB),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFFDE68A)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.construction_rounded,
+                color: Color(0xFFD97706), size: 22),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Đặt phòng / vé / tour đang hoàn thiện',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF92400E),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Bản phát hành này tập trung vào lập lộ trình, tìm quán ăn và điểm nghỉ chân. '
+                    'Bạn vẫn có thể đặt qua đối tác bên dưới.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      height: 1.35,
+                      color: const Color(0xFF92400E).withValues(alpha: 0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
 }
 
 class _ServiceTile extends StatelessWidget {
@@ -362,6 +410,7 @@ class _ServiceTile extends StatelessWidget {
   final Color borderColor;
   final String title;
   final String subtitle;
+  final bool demo;
   final VoidCallback onTap;
 
   const _ServiceTile({
@@ -371,6 +420,7 @@ class _ServiceTile extends StatelessWidget {
     required this.borderColor,
     required this.title,
     required this.subtitle,
+    this.demo = false,
     required this.onTap,
   });
 
@@ -425,6 +475,25 @@ class _ServiceTile extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
+            if (demo) ...[
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFE4E6),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'DEMO',
+                  style: TextStyle(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFFBE123C),
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

@@ -267,7 +267,9 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                '${destination.rating} (${destination.reviewCount} đánh giá)',
+                                destination.reviewCount == 0
+                                    ? 'Chưa có đánh giá'
+                                    : '${destination.rating} (${destination.reviewCount} đánh giá)',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w800,
@@ -654,7 +656,9 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
                               ),
                               const SizedBox(width: 3),
                               Text(
-                                '${rest.rating} (${rest.reviewsCount}+ đánh giá)',
+                                rest.reviewsCount == 0
+                                    ? 'Chưa có đánh giá'
+                                    : '${rest.rating} (${rest.reviewsCount}+ đánh giá)',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w700,

@@ -5,13 +5,15 @@
 ![TripFlow Banner](https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1400&q=80)
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.x%20%7C%20Dart-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.109%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![.NET](https://img.shields.io/badge/.NET%2010-ASP.NET%20Core%20Web%20API-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com)
+[![C#](https://img.shields.io/badge/Language-C%23-239120?logo=csharp&logoColor=white)](https://dotnet.microsoft.com)
 [![React](https://img.shields.io/badge/React%20Admin-18.x-61DAFB?logo=react&logoColor=black)](https://react.dev)
-[![SQLModel](https://img.shields.io/badge/ORM-SQLModel%20%2B%20Postgres-336791?logo=postgresql&logoColor=white)](https://sqlmodel.tiangolo.com)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%2015-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![FastAPI](https://img.shields.io/badge/Microservice-Python%20FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Goong Maps](https://img.shields.io/badge/Maps-Goong.io%20API-FF6F00)](https://goong.io)
 [![Cloudinary](https://img.shields.io/badge/CDN-Cloudinary%20Optimization-3448C5?logo=cloudinary&logoColor=white)](https://cloudinary.com)
-[![Crawler](https://img.shields.io/badge/AI%20Crawler-Playwright%20Async-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev)
-[![Tests](https://img.shields.io/badge/Verification-22%2F22%20PASSED%20(100%25)-brightgreen)](#-bảng-nghiệm-thu-22-tiêu-chí-tc-01---tc-22)
+[![Backend](https://img.shields.io/badge/Backend%20tests-40%2F40%20PASSED-brightgreen)](#-bảng-nghiệm-thu-22-tiêu-chí-tc-01---tc-22)
+[![Flutter](https://img.shields.io/badge/Flutter%20tests-14%2F14%20PASSED-brightgreen)](#-bảng-nghiệm-thu-22-tiêu-chí-tc-01---tc-22)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 <p align="center">
@@ -30,6 +32,37 @@
 
 Khác với các ứng dụng bản đồ thông thường chỉ tìm điểm theo bán kính tròn xung quanh vị trí đứng, **TripFlow giải quyết bài toán cốt lõi của du khách khi di chuyển**:
 > *"Khi đang đi trên tuyến đường từ điểm A đến điểm B, làm sao tìm được quán ăn ngon nhất, đánh giá cao nhất và có nhiều bình luận chân thực nhất nằm ngay trên hành lang đường đi mà không phải rẽ vòng quá xa?"*
+
+---
+
+## ⚠️ Trạng thái triển khai thực tế (kiểm toán 06/11/2026)
+
+> Báo cáo đầy đủ: **[docs/09-KIEM-TOAN-TRIEN-KHAI.md](docs/09-KIEM-TOAN-TRIEN-KHAI.md)**
+> Các số liệu marketing bên dưới (1.200+ điểm đến, 63 tỉnh, "22/22 PASSED" của báo cáo cũ) là mục tiêu ban đầu,
+> **không phải** trạng thái đã kiểm chứng. Số liệu thật:
+
+| Hạng mục | Trạng thái thật |
+|---|---|
+| Backend FastAPI khởi động + seed DB | ✅ Chạy được (đã sửa lỗi SQLModel 0.0.48 thời gian timezone) |
+| Bộ test backend | ✅ 40/40 pass trên SQLite; 36/36 trên PostgreSQL 16.2 (gồm Alembic + 2FA) |
+| Migration | ✅ Alembic baseline, tự chạy `upgrade head` khi container khởi động |
+| Smoke test deploy | ✅ `python tools/smoke_test.py --base-url ...` — 7/7 mục |
+| Ứng dụng Flutter | ✅ `dart analyze`: 0 error/warning; 14/14 test pass; build web release OK |
+| Admin Web React | ✅ `npm run build` OK; 0 test tự động |
+| Dữ liệu catalog | ✅ **10 tỉnh**: **168 địa điểm**, **77 quán ăn/cà phê**, **50 điểm nghỉ chân**; 164/220 bản ghi có ảnh thật + giấy phép |
+| Đăng nhập OTP SMS | 🟡 Có API + rate limit; mặc định dùng SMS simulator, cần cấu hình eSMS để chạy thật |
+| Bảo mật đăng nhập | ✅ Lockout 5 lần/15 phút + **2FA TOTP** + modal setup trong admin + cờ `REQUIRE_ADMIN_2FA` |
+| Pháp lý trong app | 🟡 Điều khoản, Chính sách riêng tư, Giấy phép ảnh/bản đồ; cần ĐKKD + luật sư rà soát |
+| Đặt khách sạn / tour / vé | 🔴 Demo phía client; **bản release tự ẩn** (`showDemoBooking=false`) |
+| Thanh toán, hoàn huỷ, thông báo | 🔴 Chưa có |
+| AI lập lộ trình | 🟡 Có code + chống bịa dữ liệu; cần `GEMINI_API_KEY` hợp lệ |
+| Bản đồ | 🟡 Routing OSRM; tile mặc định OpenStreetMap, tự dùng Goong khi có key thật |
+| Docker Compose | ✅ Đã chạy thật: Postgres 15 + backend healthy + admin web (port 8090 khi 8080 bị Windows chặn) |
+| CI/CD & runbook | 🟡 GitHub Actions đã có; backup/giám sát thật vẫn phải bật khi deploy — xem [runbook](docs/11-RUNBOOK-TRIEN-KHAI.md) |
+| Xác nhận phát hành | ✅ [docs/12-PHAT-HANH-TRIP-PLANNER.md](docs/12-PHAT-HANH-TRIP-PLANNER.md) — 40/40 test, 7/7 smoke, build OK |
+
+**Kết luận:** hệ thống đã chạy được end-to-end ở mức **MVP kỹ thuật**, nhưng **chưa đủ điều kiện
+go-live thương mại** cho tới khi hoàn thành các mục P0/P1 trong báo cáo kiểm toán.
 
 ---
 
@@ -53,13 +86,14 @@ Dự án được cấu trúc theo mô hình **Monorepo chuẩn hóa**, tách bi
 
 ```
 d:\trip_flow\
-├── lib/                          # [ROOT] Ứng dụng di động Flutter đa nền tảng
+├── lib/                          # [ROOT] Ứng dụng di động Flutter đa nền tảng (iOS / Android)
 │   ├── core/                     # Riverpod, Dio, Hive Cache, Data Models, Theme
 │   └── features/                 # Khám phá, Bản đồ, Lịch trình, Ẩm thực, Cá nhân
-├── backend/                      # Backend RESTful API FastAPI (Python 3.10+)
-│   ├── app/                      # SQLModel, Routers API v1, Dịch vụ Geo & Crawler
-│   ├── scripts/                  # CLI kiểm thử cào Google Maps độc lập
-│   └── tests/                    # Bộ kiểm thử tự động pytest (TC-01 -> TC-22)
+├── backend-dotnet/               # [CHÍNH THỨC] Backend ASP.NET Core Web API (.NET 10 / C#)
+│   ├── Controllers/              # RESTful API (Auth, Tỉnh thành, Điểm đến, Quán ăn, Lịch trình)
+│   ├── Models/                   # Data Models & DTOs
+│   └── Data/                     # Data Store & Seed Data 10 Tỉnh thành
+├── backend/                      # [BỔ TRỢ] Python FastAPI (Microservice AI NLP & GIS)
 ├── admin-web/                    # Website Quản trị React 18 + Vite + TailwindCSS
 └── docker-compose.yml            # PostgreSQL 15 thuần + cấu hình container hóa
 ```
@@ -202,12 +236,24 @@ Trong đó:
 ## 🚀 Hướng Dẫn Cài Đặt & Khởi Chạy
 
 ### 1. Yêu Cầu Môi Trường
-- **Python**: 3.10 trở lên
+- **.NET SDK**: 8.0, 9.0 hoặc 10.0
 - **Flutter SDK**: 3.19 trở lên
 - **Node.js**: 18.x trở lên (cho Admin Web)
+- **Python**: 3.10 trở lên (tùy chọn cho module cào dữ liệu AI)
 - **Git**
 
-### 2. Khởi Chạy Backend FastAPI
+### 2. Khởi Chạy Backend .NET (ASP.NET Core Web API - Chính thức eProject)
+```bash
+# Di chuyển vào thư mục backend .NET
+cd backend-dotnet
+
+# Khởi chạy server ASP.NET Core tại cổng 8000
+dotnet run
+```
+> 🌐 Truy cập tài liệu API tương tác Swagger UI tại: [http://localhost:8000/](http://localhost:8000/) hoặc [http://localhost:8000/swagger](http://localhost:8000/swagger)  
+> 💡 *Backend .NET cung cấp đầy đủ 8 cụm API (Auth, Tỉnh thành, Điểm đến, Quán ăn, Khách sạn, Món ngon, Lịch trình, Trợ lý AI) phục vụ đồng thời cả Mobile Flutter và React Admin.*
+
+### 3. Khởi Chạy Backend Python FastAPI (Tùy chọn / Bổ trợ)
 ```bash
 # Di chuyển vào thư mục backend
 cd backend
@@ -215,23 +261,11 @@ cd backend
 # Cài đặt thư viện phụ thuộc
 pip install -r requirements.txt
 
-# Khởi tạo database và nạp dữ liệu mẫu 10 tỉnh thành
-python -m app.db.seed_db
-
-# Xuất hợp đồng API OpenAPI 3.1
-python export_swagger.py
-
 # Khởi chạy server FastAPI tại cổng 8000
 uvicorn app.main:app --reload --port 8000
 ```
 > 🌐 Truy cập tài liệu API tương tác tại: [http://localhost:8000/docs](http://localhost:8000/docs)  
 > 🩺 Kiểm tra sức khỏe hệ thống: [http://localhost:8000/health](http://localhost:8000/health)
-
-### 3. Khởi Chạy Kiểm Thử Backend (Pytest)
-```bash
-cd backend
-pytest -v
-```
 
 ### 4. Khởi Chạy Ứng Dụng Di Động Flutter (Root)
 ```bash
@@ -252,12 +286,33 @@ npm install
 npm run dev
 ```
 > 💻 Truy cập trang quản trị Admin: [http://localhost:5173](http://localhost:5173)
+> Admin mặc định **bắt buộc đăng nhập**; chỉ khi `VITE_DEMO_MODE=true` mới có nút đăng nhập nhanh bằng tài khoản demo.
+
+### 6. Chạy full stack bằng Docker
+```powershell
+Copy-Item .env.deploy.example .env   # điền SECRET_KEY, mật khẩu Postgres, eSMS, Goong, Gemini...
+docker compose --env-file .env up -d --build
+
+# App Flutter (web):  http://localhost:8081
+# Admin CMS:         http://localhost:8090   (8080 thường bị Windows reserve)
+# API + Swagger:     http://localhost:8000/docs
+# Health:            http://localhost:8000/health/ready
+```
+> Trên Windows, nếu cổng 8080 bị chặn: đặt `ADMIN_PORT=8090` trong `.env` (file local hiện đã cấu hình).
+> `app-web` phục vụ `build/web` tĩnh; trước khi deploy thật hãy build lại với
+> `--dart-define=API_BASE_URL=https://api.domain.com/api/v1`.
+> Checklist đầy đủ: [docs/09-KIEM-TOAN-TRIEN-KHAI.md](docs/09-KIEM-TOAN-TRIEN-KHAI.md).
+> Ở production: `ENVIRONMENT=production`, `SEED_DEMO=0`, `SMS_PROVIDER=esms`, `CORS_ORIGINS` là domain thật.
 
 ---
 
 ## 🧪 Bảng Nghiệm Thu 22 Tiêu Chí (`TC-01` -> `TC-22`)
 
 Hệ thống đã trải qua quá trình thẩm định nghiêm ngặt từ **Reviewer Agent** và đạt kết quả **100% PASSED**:
+
+> ⚠️ **Lưu ý:** bảng dưới đây là **tiêu chí nghiệm thu ban đầu**, chưa được kiểm chứng lại đầy đủ.
+> Kết quả kiểm toán độc lập ngày 06/11/2026 (xem [docs/09-KIEM-TOAN-TRIEN-KHAI.md](docs/09-KIEM-TOAN-TRIEN-KHAI.md))
+> cho thấy nhiều tiêu chí chỉ đúng ở mức code/demo, chưa đạt mức vận hành thương mại.
 
 | Mã TC | Hạng mục kiểm duyệt | Trạng thái | Ghi chú nghiệm thu |
 |:---:|:---|:---:|:---|
@@ -286,12 +341,13 @@ Hệ thống đã trải qua quá trình thẩm định nghiêm ngặt từ **Re
 
 ---
 
-## 👥 Đội Ngũ Phát Triển (Multi-Agent System)
+## 🎓 Thông Tin Đồ Án (eProject)
 
-Dự án được xây dựng và tối ưu hóa thông qua quy trình phát triển đa tác nhân tự động:
-- 🧠 **Planner Agent**: Thiết kế kiến trúc giải pháp, lập kế hoạch chi tiết tại [`.agents/workspace/plan.md`](.agents/workspace/plan.md).
-- 💻 **Coder Agent**: Hiện thực hóa toàn bộ mã nguồn, ghi nhận tại [`.agents/workspace/code_report.md`](.agents/workspace/code_report.md).
-- 🔍 **Reviewer Agent**: Thẩm định độc lập, phát hiện lỗi và nghiệm thu tại [`.agents/workspace/review_report.md`](.agents/workspace/review_report.md).
+- **Đề tài**: Nền Tảng Khám Phá Du Lịch, Ẩm Thực & Lên Lộ Trình Thông Minh Toàn Quốc (TripFlow)
+- **Học kỳ**: **Semester 3**
+- **Chuyên ngành**: **eProject (.Net & Mobile App Development)**
+- **Sinh viên thực hiện**: **[Phạm Tấn Tài](https://github.com/phamtantai02011991-tech)**
+- **Kho lưu trữ mã nguồn**: [https://github.com/phamtantai02011991-tech/trip_flow](https://github.com/phamtantai02011991-tech/trip_flow)
 
 ---
 

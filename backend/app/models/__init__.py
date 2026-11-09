@@ -19,6 +19,7 @@ from app.models.models import (
     User,
 )
 from app.models.restaurant import Restaurant
+from app.models.rest_stop import RestStop
 
 __all__ = [
     "Province",
@@ -27,6 +28,7 @@ __all__ = [
     "DestinationImage",
     "LocalFood",
     "Restaurant",
+    "RestStop",
     "CrawlJob",
     "Role",
     "Permission",

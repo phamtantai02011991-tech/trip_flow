@@ -2,12 +2,16 @@
 > **Dành cho Chủ Dự Án (Creator), Quản Trị Viên & Khách Demo**  
 > *Chỉ mất 5 phút trải nghiệm toàn bộ 7 hành trình cốt lõi của siêu ứng dụng du lịch TripFlow.*
 
+> ⚠️ **Lưu ý quan trọng:** các màn **đặt khách sạn / vé xe / tour** hiện chỉ là **DEMO phía client**
+> (sinh mã E-Voucher/E-Ticket cục bộ, không gửi đơn, không thanh toán, không lưu server).
+> Không dùng để đặt dịch vụ thật. Xem mức độ sẵn sàng tại [docs/09-KIEM-TOAN-TRIEN-KHAI.md](docs/09-KIEM-TOAN-TRIEN-KHAI.md).
+
 ---
 
 ## 🧭 LỘ TRÌNH 7 BƯỚC TRẢI NGHIỆM ĐỈNH CAO (QUICK TOUR)
 
 ```
-[BƯỚC 1: Đổi Tỉnh Thành 63 Tỉnh] ──► [BƯỚC 2: Thử Đặt Khách Sạn & Vé Xe E-Voucher]
+[BƯỚC 1: Đổi Tỉnh Thành 10 Tỉnh] ──► [BƯỚC 2: Thử Đặt Khách Sạn & Vé Xe E-Voucher (DEMO)]
                 │
                 ▼
 [BƯỚC 3: Lập Cung Đường Phượt Biker] ──► [BƯỚC 4: Tìm Trạm Dừng Dọc Tuyến Trên Bản Đồ]
@@ -21,7 +25,7 @@
 
 ---
 
-### 📍 BƯỚC 1: Trải nghiệm Bộ lọc Toàn quốc 🇻🇳 & Đổi 63 Tỉnh Thành
+### 📍 BƯỚC 1: Trải nghiệm Bộ lọc Toàn quốc 🇻🇳 & Đổi 10 Tỉnh Thành
 1. **Ở Trang Chủ (Tab "Khám phá")**:
    - Nhìn vào khung màu gạch trên cùng (**BrandIdentityHeader**).
    - Mặc định ứng dụng hiển thị: `Toàn quốc 🇻🇳 — Khám Phá Việt Nam`.
@@ -106,7 +110,7 @@ Ngay dưới Header là cụm **5 Dịch Vụ Du Lịch**:
 
 | Tính Năng Độc Quyền | Nằm ở đâu trong App | Trải nghiệm mang lại |
 | :--- | :--- | :--- |
-| **National Mode 63 Tỉnh** | Header Trang Chủ (Nút Đổi tỉnh) | Chuyển đổi vùng miền tức thì chỉ với 1 chạm. |
+| **National Mode 10 Tỉnh** | Header Trang Chủ (Nút Đổi tỉnh) | Chuyển đổi vùng miền tức thì chỉ với 1 chạm. |
 | **Corridor POI Search** | Tab Bản Đồ / Banner Trang Chủ | Tìm quán sửa xe, trạm xăng dọc cung đường phượt. |
 | **E-Voucher & E-Ticket** | Tab Khách Sạn & Vé Xe | Đặt phòng/vé và sinh mã QR lưu ngoại tuyến. |
 | **Verified Crawled Data** | Tab Ẩm Thực & Điểm Đến | 100% địa chỉ, hotline và giá tiền có thật tại VN. |

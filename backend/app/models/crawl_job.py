@@ -1,6 +1,6 @@
 """Model SQLModel quản lý tiến trình cào dữ liệu tự động (CrawlJob)."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy import Column, Text
 from sqlmodel import Field, SQLModel
@@ -23,5 +23,5 @@ class CrawlJob(SQLModel, table=True):
     inserted_count: int = Field(default=0)
     duplicate_count: int = Field(default=0)
     error_message: Optional[str] = Field(default=None, sa_column=Column(Text))
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = Field(default=None)

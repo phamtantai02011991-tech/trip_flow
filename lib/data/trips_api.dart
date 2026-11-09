@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../core/config/app_config.dart';
 import '../core/models/trip.dart';
+import '../core/network/auth_interceptor.dart';
 
 /// Lỗi API gọn để UI hiển thị đúng thông điệp tiếng Việt.
 class TripsApiException implements Exception {
@@ -25,7 +26,9 @@ class TripsApi {
                 receiveTimeout: const Duration(seconds: 120),
                 headers: {'Content-Type': 'application/json'},
               ),
-            );
+            ) {
+    _dio.interceptors.add(authInterceptor());
+  }
 
   final Dio _dio;
 

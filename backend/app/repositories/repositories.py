@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from sqlmodel import Session
 
@@ -33,7 +33,7 @@ def log_admin_action(
         entity_id=entity_id,
         summary=summary,
         changes_json=json.dumps(changes or {}, ensure_ascii=False, default=str),
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     db.add(log_entry)
     db.commit()
@@ -170,10 +170,14 @@ def serialize_restaurant(rest: Restaurant) -> Dict[str, Any]:
     updated_str = (
         rest.last_updated_at.strftime("%d/%m/%Y")
         if rest.last_updated_at
-        else datetime.utcnow().strftime("%d/%m/%Y")
+        else datetime.now(timezone.utc).strftime("%d/%m/%Y")
     )
-    thumb_url = rest.thumbnail_url or cloudinary_service.build_thumbnail_url(rest.image_url)
-    detail_img = cloudinary_service.build_detail_url(rest.image_url)
+    thumb_url = rest.thumbnail_url or (
+        cloudinary_service.build_thumbnail_url(rest.image_url) if rest.image_url else ""
+    )
+    detail_img = (
+        cloudinary_service.build_detail_url(rest.image_url) if rest.image_url else ""
+    )
 
     sample_reviews = []
     raw_reviews_json = getattr(rest, "sample_reviews_json", None)
@@ -186,7 +190,9 @@ def serialize_restaurant(rest: Restaurant) -> Dict[str, Any]:
         except Exception:
             sample_reviews = []
 
-    rev_cnt = getattr(rest, "reviews_count", None) or rest.review_count or 120
+    rev_cnt = getattr(rest, "reviews_count", None)
+    if rev_cnt is None:
+        rev_cnt = rest.review_count or 0
     is_high = getattr(rest, "is_high_rated", None)
     if is_high is None:
         is_high = bool(rest.rating >= 4.2 and rev_cnt >= 50)
@@ -213,6 +219,9 @@ def serialize_restaurant(rest: Restaurant) -> Dict[str, Any]:
         "sample_reviews": sample_reviews,
         "image_url": detail_img,
         "thumbnail_url": thumb_url,
+        "image_credit": getattr(rest, "image_credit", None),
+        "image_license": getattr(rest, "image_license", None),
+        "image_source_url": getattr(rest, "image_source_url", None),
         "is_sponsored": rest.is_sponsored,
         "sponsor_label": rest.sponsor_label,
         "is_verified": getattr(rest, "is_verified", False),

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from fastapi import HTTPException, status
 from sqlmodel import Session
@@ -51,7 +51,7 @@ def create_itinerary_with_stops(
 ) -> Itinerary:
     """Tạo lịch trình tham quan mới kèm danh sách các điểm dừng."""
     normalized_stops = _normalize_stops_Input(payload.stops or [])
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     itinerary = Itinerary(
         user_id=current_user.id if current_user else None,
         province_id=payload.province_id,
@@ -106,7 +106,7 @@ def update_itinerary_and_stops(
         itinerary.status = payload.status
     if payload.is_template is not None:
         itinerary.is_template = payload.is_template
-    itinerary.updated_at = datetime.utcnow()
+    itinerary.updated_at = datetime.now(timezone.utc)
 
     if payload.stops is not None:
         normalized_stops = _normalize_stops_Input(payload.stops)
@@ -165,7 +165,7 @@ def add_stop_to_itinerary(
         notes=stop_in.notes,
     )
     db.add(new_stop)
-    itinerary.updated_at = datetime.utcnow()
+    itinerary.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(itinerary)
     return itinerary
@@ -181,7 +181,9 @@ def sync_itinerary_from_offline(
     """
     if payload.server_id:
         existing = db.query(Itinerary).filter(Itinerary.id == payload.server_id).first()
-        if existing:
+        # Chỉ cập nhật khi lịch trình đúng là của người dùng hiện tại; ngược lại
+        # tạo bản ghi mới để không cho phép ghi đè lịch trình của người khác.
+        if existing and current_user and existing.user_id == current_user.id:
             return update_itinerary_and_stops(
                 db=db,
                 itinerary=existing,
@@ -365,7 +367,7 @@ def suggest_and_insert_smart_meal_stop(
         ),
     )
     db.add(new_stop)
-    itinerary.updated_at = datetime.utcnow()
+    itinerary.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(new_stop)
 

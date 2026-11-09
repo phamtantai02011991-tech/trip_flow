@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../core/config/app_config.dart';
+import '../core/network/auth_interceptor.dart';
 import '../core/services/smart_ai_assistant_service.dart';
 
 /// Kết quả một lượt chat với trợ lý: câu trả lời + hành động đã thực thi thật.
@@ -25,7 +26,9 @@ class AssistantApi {
               baseUrl: AppConfig.apiBaseUrl,
               connectTimeout: const Duration(seconds: 3),
               receiveTimeout: const Duration(seconds: 5),
-            ));
+            )) {
+    _dio.interceptors.add(authInterceptor());
+  }
 
   final Dio _dio;
 

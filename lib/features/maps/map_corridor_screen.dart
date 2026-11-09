@@ -5,6 +5,8 @@ import '../../core/utils/app_state.dart';
 import '../../core/utils/data_models.dart';
 import '../../core/utils/geo_utils.dart';
 import '../../core/widgets/common_widgets.dart';
+import '../../data/places_api.dart';
+import '../../ui/tokens/app_tokens.dart';
 import '../restaurants/restaurant_detail_screen.dart';
 
 /// Tab 2: Bản đồ & Tìm nhà hàng trên lộ trình (MapCorridorScreen - Mục 5.1.8 & Mục 9).
@@ -30,6 +32,7 @@ class _MapCorridorScreenState extends State<MapCorridorScreen> {
   double _corridorRadiusKm = AppConfig.defaultCorridorRadiusKm;
   String _selectedCuisine = 'all';
   CorridorSearchResponseModel? _backendResponse;
+  List<AlongRouteStop> _alongRouteStops = const [];
   bool _isSearchingBackend = false;
 
   Future<void> _runBackendCorridorSearch(
@@ -49,9 +52,22 @@ class _MapCorridorScreenState extends State<MapCorridorScreen> {
           .where((r) => r.provinceId == widget.appState.selectedProvince.id)
           .toList(),
     );
+    List<AlongRouteStop> stops = const [];
+    try {
+      stops = await PlacesApi().alongRoute(
+        originLat: origin.latitude,
+        originLng: origin.longitude,
+        destLat: target.latitude,
+        destLng: target.longitude,
+        corridorRadiusKm: _corridorRadiusKm,
+      );
+    } catch (_) {
+      stops = const [];
+    }
     if (mounted) {
       setState(() {
         _backendResponse = resp;
+        _alongRouteStops = stops;
         _isSearchingBackend = false;
       });
     }
@@ -616,10 +632,147 @@ class _MapCorridorScreenState extends State<MapCorridorScreen> {
                     ),
                   );
                 }),
+              if (_alongRouteStops.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                Text(
+                  'Điểm nghỉ chân dọc tuyến (${_alongRouteStops.length})',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Cây xăng, sạc EV và quán cà phê nằm trong hành lang tuyến đường.',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                ),
+                const SizedBox(height: 10),
+                ..._alongRouteStops.map(
+                  (stop) => _buildAlongRouteStopCard(context, stop),
+                ),
+              ],
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildAlongRouteStopCard(BuildContext context, AlongRouteStop stop) {
+    final color = switch (stop.kind) {
+      'gas' => AppColors.kindGas,
+      'ev' => AppColors.kindEv,
+      'cafe' => AppColors.kindCafe,
+      _ => AppColors.kindRest,
+    };
+    final icon = switch (stop.kind) {
+      'gas' => Icons.local_gas_station_rounded,
+      'ev' => Icons.ev_station_rounded,
+      'cafe' => Icons.local_cafe_rounded,
+      _ => Icons.chair_alt_rounded,
+    };
+    final label = switch (stop.kind) {
+      'gas' => 'Cây xăng',
+      'ev' => 'Sạc EV',
+      'cafe' => 'Quán cà phê',
+      _ => 'Điểm nghỉ',
+    };
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: stop.thumbnailUrl.isNotEmpty
+                ? Image.network(
+                    stop.thumbnailUrl,
+                    width: 46,
+                    height: 46,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 46,
+                      height: 46,
+                      color: color.withValues(alpha: 0.14),
+                      child: Icon(icon, color: color),
+                    ),
+                  )
+                : Container(
+                    width: 46,
+                    height: 46,
+                    color: color.withValues(alpha: 0.14),
+                    child: Icon(icon, color: color),
+                  ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  stop.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '$label • Cách tuyến ${stop.distanceFromRouteKm} km '
+                  '(+${stop.estimatedDetourMins} phút)',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+                if (stop.address.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    stop.address,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              widget.appState.addCustomStopToActiveItinerary(
+                title: stop.name,
+                address: stop.address,
+                plannedTime: '15:00 - 15:20',
+                stopType: stop.kind,
+                notes: 'Điểm nghỉ chân dọc tuyến '
+                    '(cách tuyến ${stop.distanceFromRouteKm} km).',
+                latitude: stop.latitude,
+                longitude: stop.longitude,
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Đã thêm "${stop.name}" vào Lịch trình!'),
+                  backgroundColor: AppTheme.primaryTeal,
+                ),
+              );
+            },
+            child: const Text('Thêm'),
+          ),
+        ],
+      ),
     );
   }
 }

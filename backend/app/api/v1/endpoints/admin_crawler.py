@@ -5,11 +5,12 @@ Endpoints Quản trị Tiến trình Cào Dữ liệu Ngầm (AI Data Ingestion 
 - GET /api/v1/admin/crawl: Xem danh sách lịch sử các job cào dữ liệu gần nhất.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlmodel import Session, select
 
+from app.core.config import settings
 from app.core.security import get_current_active_superuser
 from app.db.session import get_db
 from app.models.crawl_job import CrawlJob
@@ -61,6 +62,15 @@ async def trigger_google_maps_crawl(
             detail="Từ khóa tìm kiếm (keyword) không được để trống.",
         )
 
+    if settings.is_production and not settings.ENABLE_GOOGLE_CRAWLER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                "Tính năng cào dữ liệu Google Maps bị tắt ở production vì lý do điều khoản "
+                "sử dụng và pháp lý. Đặt ENABLE_GOOGLE_CRAWLER=1 nếu đã có thỏa thuận dữ liệu."
+            ),
+        )
+
     if not is_valid_vn_location(payload.lat, payload.lng):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -78,7 +88,7 @@ async def trigger_google_maps_crawl(
         total_scraped=0,
         inserted_count=0,
         duplicate_count=0,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     db.add(job)
     db.commit()
