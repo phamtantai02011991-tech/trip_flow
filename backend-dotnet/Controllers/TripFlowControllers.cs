@@ -246,3 +246,4 @@ public class AssistantController : ControllerBase
         });
     }
 }
+

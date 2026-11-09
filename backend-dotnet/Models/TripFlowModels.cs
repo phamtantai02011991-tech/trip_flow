@@ -319,3 +319,4 @@ public class AssistantChatResponse
     [JsonPropertyName("rejected")]
     public List<object> Rejected { get; set; } = new();
 }
+
