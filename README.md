@@ -13,11 +13,11 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 <p align="center">
-  <b>Đồ Án Chuyên Ngành: eProject (.Net & Mobile App Development) — Semester 3</b><br>
+  <b>Dự án .NET & Mobile App Development — RajPham</b><br>
   <b>Khám phá du lịch 10 tỉnh thành • Thuật toán tìm quán ăn ngon dọc lộ trình (Corridor Search) • Đánh giá thực tế từ Google Maps • Lịch trình thông minh Offline-First</b>
 </p>
 
-[Khám Phá Tính Năng](#-tính-năng-nổi-bật) • [Kiến Trúc Hệ Thống](#-kiến-trúc-hệ-thống) • [Giao Diện Ứng Dụng](#-giao-diện-ứng-dụng--user-flows) • [Thuật Toán SFCS](#-thuật-toán-smart-food-corridor-score-sfcs) • [Hướng Dẫn Cài Đặt](#-hướng-dẫn-cài-đặt--khởi-chạy) • [Thông Tin Đồ Án](#-thông-tin-đồ-án-eproject)
+[Khám Phá Tính Năng](#-tính-năng-nổi-bật) • [Kiến Trúc Hệ Thống](#-kiến-trúc-hệ-thống) • [Giao Diện Ứng Dụng](#-giao-diện-ứng-dụng--user-flows) • [Thuật Toán SFCS](#-thuật-toán-smart-food-corridor-score-sfcs) • [Hướng Dẫn Cài Đặt](#-hướng-dẫn-cài-đặt--khởi-chạy) • [Thông Tin Dự Án](#-thông-tin-dự-án)
 
 </div>
 
@@ -243,18 +243,14 @@ Toàn bộ các tiêu chí chức năng đã được thẩm định và vượt
 
 ---
 
-## 🎓 Thông Tin Đồ Án (eProject)
+## 🎓 Thông Tin Dự Án
 
-* **Tên đề tài**: Nền Tảng Khám Phá Du Lịch, Ẩm Thực & Lên Lộ Trình Thông Minh Toàn Quốc (TripFlow)
-* **Học kỳ**: **Semester 3**
-* **Chuyên ngành**: **eProject (.Net & Mobile App Development)**
-* **Sinh viên thực hiện**: **[Phạm Tấn Tài](https://github.com/phamtantai02011991-tech)**
-* **Mã lớp**: `T3.2503.E1`
+* **Đề tài**: Nền Tảng Khám Phá Du Lịch, Ẩm Thực & Lên Lộ Trình Thông Minh Toàn Quốc (TripFlow)
 * **Kho lưu trữ chính thức**: [https://github.com/phamtantai02011991-tech/trip_flow](https://github.com/phamtantai02011991-tech/trip_flow)
 
 ---
 
 ## 📄 Bản Quyền & Giấy Phép
 
-Phát triển bởi **[Phạm Tấn Tài](https://github.com/phamtantai02011991-tech)**.  
+Phát triển bởi **[Phạm Tấn Tài (RajPham)](https://github.com/phamtantai02011991-tech)**.  
 Dự án được phát hành theo giấy phép **[MIT License](LICENSE)**.
