@@ -1,33 +1,28 @@
-FROM python:3.12-slim
+# Multi-stage build for ASP.NET Core Web API (.NET 10)
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
+WORKDIR /src
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+# Copy project file and restore
+COPY ["TripFlow.Api.csproj", "./"]
+RUN dotnet restore "TripFlow.Api.csproj"
 
+# Copy source and publish
+COPY . .
+RUN dotnet publish "TripFlow.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS final
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Install curl for docker healthcheck
+RUN apk add --no-cache curl
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+# Copy published files
+COPY --from=build /app/publish .
 
-COPY . .
-
-RUN chmod +x /app/docker-entrypoint.sh
-
-# Chạy bằng user không phải root
-RUN useradd --create-home --shell /bin/bash appuser \
-    && chown -R appuser:appuser /app
-USER appuser
-
+# Environment
+ENV ASPNETCORE_URLS=http://+:8000
+ENV ASPNETCORE_ENVIRONMENT=Production
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=25s --retries=3 \
-    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3).status == 200 else 1)"
-
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+ENTRYPOINT ["dotnet", "TripFlow.Api.dll"]

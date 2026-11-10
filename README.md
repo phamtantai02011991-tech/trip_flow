@@ -56,11 +56,11 @@ d:\trip_flow\
 │   ├── core/                     # State Management (Provider), Network (Dio), Cache (Hive), Theme
 │   ├── data/                     # API Services kết nối Backend
 │   └── features/                 # Màn hình: Home, Khám phá, Ẩm thực, Khách sạn, Trợ lý AI, Profile
-├── backend-dotnet/               # [BACKEND CHÍNH THỨC] ASP.NET Core Web API (.NET 10 / C#)
-│   ├── Controllers/              # 8 RESTful Controllers (Auth, Provinces, Destinations, Restaurants, v.v.)
-│   ├── Models/                   # Data Entities & DTOs
-│   ├── Data/                     # Data Store & Seed Data 10 Tỉnh Thành
-│   └── Program.cs                # Cấu hình Swagger OpenAPI, CORS & Dependency Injection
+├── backend/                      # [BACKEND CHÍNH THỨC] ASP.NET Core Web API (.NET 10 / C#)
+│   ├── Controllers/              # 13 RESTful Controllers (Auth, Places, Destinations, Trips, Admin...)
+│   ├── Models/                   # Data Entities & DTOs (26 Entity models, snake_case DTOs)
+│   ├── Data/                     # DbContext, Migrations & DatabaseSeeder (158 địa điểm, 77 nhà hàng, 50 trạm dừng)
+│   └── Program.cs                # Cấu hình Swagger OpenAPI, CORS & Error Envelope Middleware
 ├── admin-web/                    # [WEB ADMIN] Website Quản trị React 18 + Vite + Tailwind CSS
 │   ├── src/pages/                # Bảng điều khiển Dashboard, Quản lý địa điểm, Đối tác, Phân quyền
 │   └── src/services/             # Kết nối REST API Backend
@@ -184,14 +184,14 @@ Trong đó:
 
 ### 2. Khởi Chạy Backend .NET (ASP.NET Core Web API)
 ```bash
-# Di chuyển vào thư mục backend-dotnet
-cd backend-dotnet
+# Di chuyển vào thư mục backend
+cd backend
 
 # Khởi chạy server tại cổng 8000
 dotnet run
 ```
 * 🌐 **Swagger UI tương tác**: Mở trình duyệt tại [http://localhost:8000/](http://localhost:8000/) hoặc [http://localhost:8000/swagger](http://localhost:8000/swagger)
-* Cung cấp đầy đủ 8 cụm API chuẩn RESTful cho cả Mobile App và Web Admin.
+* Cung cấp đầy đủ 78 endpoints chuẩn RESTful cho cả Mobile App và Web Admin.
 
 ---
 
@@ -228,7 +228,7 @@ Toàn bộ các tiêu chí chức năng đã được thẩm định và vượt
 
 | Mã TC | Hạng mục kiểm duyệt | Trạng thái | Ghi chú nghiệm thu |
 |:---:|:---|:---:|:---|
-| **TC-01** | Cấu trúc Monorepo & Điều hướng phân hệ | **PASSED** | Mobile Flutter tại Root, Backend tại `backend-dotnet/`, Admin tại `admin-web/`. |
+| **TC-01** | Cấu trúc Monorepo & Điều hướng phân hệ | **PASSED** | Mobile Flutter tại Root, Backend tại `backend/`, Admin tại `admin-web/`. |
 | **TC-02** | Cơ sở dữ liệu 10 Tỉnh/Thành 4 Vùng Miền | **PASSED** | Quản lý đầy đủ dữ liệu định danh, tọa độ tâm và hình ảnh 10 tỉnh thành trọng điểm. |
 | **TC-03** | Tìm kiếm Tiếng Việt thông minh | **PASSED** | Hỗ trợ tìm kiếm không dấu & có dấu (`da lat`, `pho`, `com tam`) đạt độ khớp tuyệt đối. |
 | **TC-04** | Thuật toán hành lang cung đường Corridor Search | **PASSED** | Lọc chính xác các điểm dừng nằm sát tuyến đường di chuyển trong bán kính < 2km. |

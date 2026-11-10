@@ -57,8 +57,12 @@ obj/
 *.user
 *.suo
 .vs/
-backend-dotnet/bin/
-backend-dotnet/obj/
+**/bin/
+**/obj/
+backend/bin/
+backend/obj/
+backend/TripFlow.Tests/bin/
+backend/TripFlow.Tests/obj/
 
 # Tooling & local agent state (sinh tự động, không commit)
 devtools_options.yaml

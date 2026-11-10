@@ -20,6 +20,7 @@ Xem báo cáo kiểm toán mới nhất: [`09-KIEM-TOAN-TRIEN-KHAI.md`](09-KIEM-
 | 10 | [`10-CATALOG-DU-LIEU-THAT.md`](10-CATALOG-DU-LIEU-THAT.md) | Catalog thật 10 tỉnh: nguồn, giấy phép ảnh, quy trình thêm dữ liệu |
 | 11 | [`11-RUNBOOK-TRIEN-KHAI.md`](11-RUNBOOK-TRIEN-KHAI.md) | **Runbook production:** env, deploy Docker, backup, rollback, smoke test |
 | 12 | [`12-PHAT-HANH-TRIP-PLANNER.md`](12-PHAT-HANH-TRIP-PLANNER.md) | **Xác nhận phát hành:** bằng chứng test/build, hạn chế, điều kiện go-live |
+| 13 | [`13-MIGRATION-DOTNET.md`](13-MIGRATION-DOTNET.md) | **Kế hoạch chuyển backend sang .NET:** file xoá/giữ, phase, API parity, Definition of Done |
 
 ## Bắt đầu code
 

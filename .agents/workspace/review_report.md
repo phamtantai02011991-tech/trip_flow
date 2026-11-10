@@ -1,121 +1,171 @@
-# 🔍 Báo Cáo Thẩm Định & Kiểm Duyệt Toàn Diện (Comprehensive Review Report)
-
-> ⚠️ **ĐÍNH CHÍNH (06/11/2026):** Báo cáo này đánh giá quá lạc quan và **không còn chính xác**.
-> Kiểm toán độc lập chạy lại thực tế phát hiện: backend từng **không khởi động được** với SQLModel mới,
-> lỗi IDOR lịch trình, OTP trả mã ra ngoài, admin auto-login Super Admin, đặt phòng/vé/tour chỉ là demo.
-> Xem báo cáo đúng: [`../../docs/09-KIEM-TOAN-TRIEN-KHAI.md`](../../docs/09-KIEM-TOAN-TRIEN-KHAI.md).
-> Các kết luận "0 P0/P1, 9.8/10, sẵn sàng production" bên dưới **không được chấp nhận** làm căn cứ phát hành.
-
-**Dự án:** TripFlow — Super App Khám Phá, Đặt Dịch Vụ & Lộ Trình Phượt Thông Minh Việt Nam  
-**Kiểm duyệt viên:** 🔍 Reviewer Agent (Agent 3 — Model `pro`)  
-**Đối tượng kiểm duyệt:** Mã nguồn do Coder Agent (Agent 2) triển khai theo kế hoạch của Planner Agent (Agent 1)  
-**Ngày thực hiện:** 05/11/2026  
+# 🔍 BÁO CÁO KIỂM DUYỆT BẢO MẬT, KIẾN TRÚC & HỢP ĐỒNG API
+**Dự án**: TripFlow — Nền tảng Du lịch & Lộ trình Phượt Thông minh  
+**Thành phần kiểm toán**: Backend ASP.NET Core (.NET 10 / C#)  
+**Tác nhân thực hiện**: 🔍 Reviewer Agent (Model: pro)  
+**Tài liệu đối chiếu**: `.agents/workspace/plan.md`, `.agents/workspace/code_report.md`, `backend/swagger.json`  
+**Ngày kiểm toán**: 10/11/2026  
 
 ---
 
-## 1. Kết Luận Chung
+## 1. KẾT LUẬN CHUNG
 
-- **Trạng thái phê duyệt:** ✅ **PASSED** (Đạt chuẩn nghiệm thu 100% — Sẵn sàng phát hành)
-- **Điểm chất lượng hệ thống (Scale 10):** **9.8 / 10**
-- **Tổng số vấn đề phát hiện:**
-  - 🔴 **P0 (Blocker):** 0
-  - 🟠 **P1 (Critical):** 0
-  - 🟡 **P2 (Major):** 0
-  - 🟢 **P3 (Polish / Suggestions):** 2 (Các cải tiến nhỏ về deprecation lints trong Flutter mới)
-
----
-
-## 2. Thẩm Định 4 Trụ Cột Nghiệm Thu
-
-### 2.1. Tuân Thủ Kế Hoạch & Kiến Trúc (Plan Compliance: 10/10)
-Coder Agent đã hiện thực hóa trọn vẹn và chuẩn xác 100% các yêu cầu từ `plan.md`:
-1. **Xóa bỏ triệt để định kiến cục bộ (Local Bias Elimination):**
-   - Đã gỡ bỏ mặc định TP.HCM. Khởi động ứng dụng ngay ở chế độ **"Toàn quốc 🇻🇳 — Khám Phá Việt Nam"** (`ProvinceModel.vietnamAll`, ID = 0, Code = `ALL`).
-   - Màn hình `ProvincesScreen` có thẻ đại diện Toàn Quốc đặt ở vị trí ưu tiên đầu tiên với nút chuyển đổi 1 chạm.
-   - Khả năng chuyển đổi qua lại giữa Toàn quốc và 10 Tỉnh/thành phố hoạt động trơn tru, tức thì thông qua `TripFlowAppState`.
-2. **Loại bỏ Cliché Header & Tích hợp Brand Identity Hero Header:**
-   - Đã loại bỏ hoàn toàn dòng text sáo rỗng *"Xin chào, Du khách 👋 / Đi Đâu Tiếp Theo?"*.
-   - Thay thế bằng `BrandIdentityHeader` phong cách Editorial cao cấp: Slate 900 (`#0F172A`), Tagline `TRIPFLOW SUPER APP`, huy hiệu danh dự `★ Nền Tảng Du Lịch & Phượt #1 Việt Nam`, Hotline 24/7 `1900 6868`, Location Pill thông minh kèm nút `Đổi tỉnh`, và 3 Trust Badges (`63 Tỉnh/Thành`, `1.200+ Điểm đến thực tế`, `100% Xác minh`).
-3. **5 Trụ cột Dịch vụ Super App hoàn chỉnh:**
-   - 🏨 **Khách sạn & Homestay (`HotelsScreen` & `HotelDetailScreen`):** Lọc theo Resort, Homestay săn mây, Khách sạn 4-5 sao, Villa; tính chi phí theo số đêm; xuất phiếu đặt phòng sinh mã E-Voucher `TF-HTL-XXXXXX`; quản lý tab "Phòng đã đặt".
-   - 🚌 **Vé Xe, Tàu Hoả & Máy Bay (`TransportScreen`):** 3 phân hệ Limousine FUTA, Tàu SE1/SE3, Hàng không Vietnam Airlines/Bamboo/Vietjet; lọc chặng đi/đến; xuất E-Ticket có mã số và hiển thị mã QR soát vé; quản lý "Vé của tôi".
-   - 🧗 **Tour Trải Nghiệm & Phượt Tuyển (`ToursScreen` & `TourDetailScreen`):** Trekking Tà Năng - Phan Dũng, Leo đỉnh Fansipan 3.143m, Phượt xe máy Hà Giang Loop, Lặn san hô Phú Quốc, Food tour Vespa phố cổ Hà Nội; lịch trình từng ngày; danh sách dịch vụ bao gồm; xuất Voucher Tour `TF-TOUR-XXXXXX`.
-   - 🏍️ **Lập Lịch Phượt & Biker Corridor (`PlannerWizardScreen`):** Presets thời gian (1N, 2N1Đ, 3N2Đ, 4N3Đ, Xuyên Việt 7-14N); tùy chọn phương tiện chuyên biệt (Xe máy phượt, Ô tô tự lái, Xe khách); công tắc Biker Corridor quét cây xăng Petrolimex, tiệm sửa xe máy đèo dốc, đèo ngắm cảnh và trạm dừng chân.
-   - 🍜 **Bản đồ Ẩm thực Cào Thực Tế (Internet-Scraped Hub):** Dữ liệu nhà hàng kèm số hotline thật, giờ mở cửa, menu các món đặc sản có giá niêm yết rõ ràng.
-4. **Kiến trúc Forwarding Modular:**
-   - Các file `lib/features/hotels/hotels_screen.dart`, `lib/features/transport/transport_screen.dart`, `lib/features/tours/tours_screen.dart`, và `lib/features/itinerary/screens/planner_wizard_screen.dart` đóng vai trò forwarding export layer, đảm bảo tương thích tuyệt đối cho cả đường dẫn cũ và cấu trúc module mới.
+- **Trạng thái**: ⚠️ **NEEDS FIXES** (Cần Coder khắc phục 1 lỗi bảo mật P1 trước khi nghiệm thu cuối cùng)
+- **Điểm chất lượng (Scale 10)**: **8.8 / 10**
+- **Tổng số vấn đề phát hiện**:
+  - 🔴 **P0 (Blocker)**: **0**
+  - 🟠 **P1 (Critical)**: **1** (Lỗ hổng Auth Bypass tại `AdminController.EnsureAdminAccess`)
+  - 🟡 **P2 (Major)**: **2** (Cấu hình `dotnet test` vstest timeout do `OutputType=Exe`; Hardcoded JWT secret fallback trong dev)
+  - 🟢 **P3 (Polish)**: **2** (Bổ sung `[Authorize]` filter tường minh; logging phân cấp security events)
 
 ---
 
-### 2.2. Kiểm Toán Bảo Mật & Ổn Định (Security Hardening: 10/10)
-- **Secret & Credential Leak:**
-  - Không có bất kỳ hardcoded private API key, mật khẩu cơ sở dữ liệu hay token nhạy cảm nào trong mã nguồn.
-  - Các tham số cấu hình nhạy cảm đều sử dụng `String.fromEnvironment()` trong `AppConfig` (`API_BASE_URL`, `GOONG_MAP_TILES_KEY`, `CLOUDINARY_CLOUD_NAME`).
-- **Input Sanitization & Injection:**
-  - Toàn bộ dữ liệu nhập vào từ người dùng (tên, số điện thoại, số lượng khách, số đêm) đều được làm sạch qua `.trim()`, ép kiểu an toàn và kiểm tra ranh giới hợp lệ.
-  - Không có nguy cơ SQL Injection, Command Injection hay SSRF trên client.
-- **Tính Bền Vững Dữ Liệu & Error Resilience:**
-  - Trạng thái đặt phòng (`_hotelBookings`), vé xe tàu (`_transportBookings`), và tour (`_tourBookings`) được lưu trữ an toàn trong `TripFlowAppState`.
-  - Mọi trường dữ liệu JSON đều có fallback default value an toàn trong hàm `fromJson()`, ngăn chặn hiện tượng null crash khi parse dữ liệu từ Backend.
-  - Tất cả hình ảnh mạng đều có `errorBuilder` fallback về container màu kem/xám trang nhã, không để lộ lỗi kết nối hoặc làm vỡ layout.
+## 2. THẨM ĐỊNH BẢO MẬT & KIẾN TRÚC (SECURITY & ARCHITECTURE AUDIT)
+
+### 2.1. Kiểm toán Hợp đồng API (Contract Parity) — ĐẠT 100%
+- **JSON Serialization**: Cấu hình `JsonNamingPolicy.SnakeCaseLower` trên cả thuộc tính (`PropertyNamingPolicy`) và từ điển (`DictionaryKeyPolicy`) tại [Program.cs](file:///d:/trip_flow/backend-dotnet/Program.cs#L20-L25). Khảo sát toàn bộ model entity và DTO cho thấy 100% trường dữ liệu trả về client Flutter và React Admin dưới dạng `snake_case` (ví dụ `province_id`, `access_token`, `budget_amount`, `total_days`).
+- **Enum Serialization**: Sử dụng `JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower)`, bảo đảm mọi enum (`motorbike`, `saver`, `balanced`, `destination`, `gas`) serialize thành chuỗi ký tự thường, loại bỏ hoàn toàn nguy cơ client bị lỗi parse số nguyên `0, 1, 2`.
+- **Error Envelope Protection**: 
+  - Đã triển khai [ErrorEnvelopeMiddleware.cs](file:///d:/trip_flow/backend-dotnet/Middleware/ErrorEnvelopeMiddleware.cs) bọc toàn bộ mã lỗi HTTP 400, 401, 403, 404, 500 vào chuẩn FastAPI `{ "detail": "..." }`.
+  - ModelState validation errors được đóng gói qua `options.InvalidModelStateResponseFactory` trong [Program.cs](file:///d:/trip_flow/backend-dotnet/Program.cs#L28-L36) thành `{ "detail": "Thông báo lỗi validation..." }`.
+  - Triệt tiêu hoàn toàn ASP.NET Core `ProblemDetails` (`type`, `title`, `traceId`) gây crash parser của Flutter di động và React Admin.
+
+### 2.2. Kiểm toán Bảo mật (Security Hardening) — CÓ CẢNH BÁO P1
+| Tiêu chí | Đánh giá | Chi tiết kiểm chứng |
+| :--- | :---: | :--- |
+| **Password Hashing** | ✅ ĐẠT | Sử dụng thư viện `BCrypt.Net-Next` với muối ngẫu nhiên độ an toàn cao (`BCrypt.HashPassword`). Mật khẩu gốc không bao giờ lưu trữ dạng plaintext. |
+| **OTP SMS Rate Limiting** | ✅ ĐẠT | Giới hạn 60 giây giữa 2 lần gửi OTP (`(now - lastOtp.CreatedAt).TotalSeconds < 60`), trả mã HTTP `429 Too Many Requests`. Kiểm tra Regex số di động Việt Nam `^(03\|05\|07\|08\|09)\d{8}$`. |
+| **OTP Brute-Force Lockout** | ✅ ĐẠT | Giới hạn tối đa 5 lần nhập sai mã OTP; sau 5 lần mã bị hủy, buộc người dùng yêu cầu mã mới. |
+| **Account Lockout (Brute Force)** | ✅ ĐẠT | Theo dõi `failed_login_attempts`. Đăng nhập sai 5 lần liên tiếp sẽ kích hoạt `locked_until = now + 15 phút`, trả HTTP `423 Locked`. |
+| **2FA TOTP RFC 6238** | ✅ ĐẠT | Tích hợp chuẩn xác `OtpNet.Totp` với secret Base32 20-bytes, tạo URI `otpauth://totp/...`, hỗ trợ cửa sổ bù trễ `VerificationWindow(1, 1)` (±30s). |
+| **Guest Token Data Isolation** | ✅ ĐẠT | Truy vấn chuyến đi qua header `X-Guest-Token`. Ngăn chặn hoàn toàn việc khách vãng lai A truy cập dữ liệu của khách B (trả HTTP 404). |
+| **GDPR Account Deletion** | ✅ ĐẠT | `DELETE /api/v1/auth/account?confirm=DELETE` xóa cascade toàn bộ lịch trình, đánh giá, chi phí, yêu thích và lịch sử tìm kiếm. |
+| **Admin Access Control** | ❌ **LỖI P1** | Hàm `EnsureAdminAccess()` tại [AdminController.cs](file:///d:/trip_flow/backend-dotnet/Controllers/AdminController.cs#L26-L32) chứa lệnh `if (role == null) return;`. Người dùng ẩn danh không gửi token sẽ vượt qua kiểm tra và có toàn quyền admin! |
 
 ---
 
-### 2.3. Đánh Giá UX Heuristics & Chuẩn Anti-AI-Slop (UX Audit & Aesthetic: 9.8/10)
-- **Bảng Màu Có Chủ Đích (Intentional Palette):**
-  - Tông chủ đạo: Dark Slate 900 (`#0F172A`) tạo cảm giác sang trọng, tin cậy của một nền tảng du lịch quốc gia.
-  - Điểm nhấn: Coral Accent (`#FF4B55` / `#FF5722`), Terracotta đất nung, Amber Gold ấm áp (`#FBBF24`) và Emerald Green (`#10B981`).
-  - Nền tự nhiên: Màu kem ấm / ngà nhẹ (`#FAF7F2` và `#F8FAFC`), dịu mắt cho người dùng khi sử dụng ban đêm hoặc ngoài trời nắng.
-  - Hoàn toàn KHÔNG dùng gradient tím - xanh neon rẻ tiền (loại bỏ hoàn toàn phong cách Web3 AI-slop).
-- **Phân Cấp Typography & Khả Năng Đọc (Typography Hierarchy):**
-  - Tiêu đề thương hiệu display có font weight 900, độ tương phản sắc nét đạt chuẩn **WCAG AA**.
-  - Nhãn nút, badge trạng thái và micro-copy được phân cấp kích thước rõ ràng (9.5px -> 22px).
-- **Touch Target & Tương Tác Cảm Ứng (Touch Target & Affordance):**
-  - Mọi nút bấm, chip lựa chọn và icon tương tác đều đạt kích thước tối thiểu từ 44x44px đến 48x48px, thuận tiện cho thao tác một tay trên thiết bị di động.
-  - Tất cả các thẻ card đều tích hợp `InkWell` với `borderRadius` khớp hoàn toàn với container bo góc (16-24px), tạo hiệu ứng phản hồi xúc giác mượt mà.
-- **Phòng Ngừa Lỗi Tràn Viền (Overflow Resilience):**
-  - Sử dụng `Expanded`, `Flexible`, `maxLines` kết hợp `TextOverflow.ellipsis` tại tất cả các khối text động, đảm bảo hiển thị hoàn hảo trên cả màn hình nhỏ (360dp) lẫn màn hình lớn.
+## 3. THẨM ĐỊNH DỮ LIỆU & THUẬT TOÁN (DATA INTEGRITY & ALGORITHMS)
+
+### 3.1. Tính toàn vẹn Dữ liệu Hạt giống (Seed Data Integrity) — ĐẠT 100%
+- **10 Tỉnh/Thành Trọng Điểm**: Khởi tạo đầy đủ 10 tỉnh: TP.HCM (HCM), Đà Nẵng (DN), Hà Nội (HN), Quảng Ninh (QN), Sa Pa (LC), Thừa Thiên Huế (HUE), Quảng Nam (QNA), Khánh Hòa (KH), Lâm Đồng (LD), Kiên Giang (KG).
+- **158 Điểm đến (Destinations)**: Nạp thành công 12 điểm hạt giống cốt lõi + 146 điểm mở rộng từ `catalog_extra.json`, giữ nguyên bản quyền ảnh Wikimedia Commons, giấy phép CC BY-SA, và tác giả cấp phép.
+- **77 Nhà hàng & Quán ăn (Restaurants)**: Đầy đủ thông số tọa độ, ẩm thực đặc sản vùng miền, phân khúc giá và định mức detour.
+- **50 Trạm dừng chân (Rest Stops)**: Đầy đủ trạm xăng Petrolimex/PV Oil, trạm sạc EV VinFast, trạm nghỉ cao tốc.
+- **Đồng bộ PostgreSQL Sequences**: File [SeederExtensions.cs](file:///d:/trip_flow/backend-dotnet/Data/SeederExtensions.cs#L7-L37) định nghĩa hàm `ResetPostgresSequencesAsync` chạy lệnh `SELECT setval(pg_get_serial_sequence('{table}', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM {table};` trên cả 23 bảng entity, triệt tiêu lỗi trùng lặp Sequence ID sau khi seed.
+
+### 3.2. Thuật toán Hành lang Tuyến đường & Điểm SFCS — ĐẠT 100%
+- **Point-to-Line Projection**:
+  - Tại [GeoService.cs](file:///d:/trip_flow/backend-dotnet/Services/GeoService.cs#L50-L134), tọa độ WGS84 được chiếu sang không gian phẳng Cartesian địa phương theo công thức:
+    $$X = (\text{lng} - \text{ref\_lng}) \times 111.32 \times \cos(\text{ref\_lat})$$
+    $$Y = (\text{lat} - \text{ref\_lat}) \times 111.32$$
+  - Đoạn vuông góc được tính bằng vector chiếu clamp $t \in [0.0, 1.0]$, bảo đảm tính toán cực nhanh `O(N)` trong bộ nhớ.
+  - Cự ly rẽ nhánh detour: $\text{detourKm} = 2 \times \text{distance}$.
+  - Thời gian rẽ nhánh ước tính: $\max(2, \text{round}(\text{detourKm} / 0.4) + 1)$.
+  - Tiến độ hành trình `RouteProgressPct` được chuẩn hóa chính xác trên thang $0\% - 100\%$.
+- **Thang điểm Smart Food Corridor Score (SFCS) 105 điểm**:
+  - Điểm đánh giá (Rating): tối đa 60 điểm ($\text{rating} \times 12$).
+  - Mức độ phổ biến (Review count): tối đa 15 điểm ($\min(15, \log_{10}(\text{reviews}) \times 5)$).
+  - Độ gần tuyến hành lang (Proximity): tối đa 20 điểm ($\max(0, 20 - \text{dist} \times 8)$).
+  - Huy hiệu Michelin/Chất lượng cao: 10 điểm.
+  - Tổng điểm cực đại: $60 + 15 + 20 + 10 = 105$ điểm. Công thức phản ánh chính xác 100% theo bản thiết kế của Planner Agent.
 
 ---
 
-### 2.4. Kết Quả Kiểm Thử Độc Lập (Static Analysis & Verification Loop)
+## 4. KẾT QUẢ KIỂM THỬ XÁC MINH ĐỘC LẬP (VERIFICATION AUDIT)
 
-- **Static Analysis (`dart analyze lib test`):**
-  - **Kết quả:** **0 ERRORS**, **0 WARNINGS**.
-  - 82 thông báo dạng `info` (chủ yếu là khuyến nghị dùng cú pháp mới `use_super_parameters`, `use_null_aware_elements` và `unnecessary_underscores` trong Flutter SDK v3.33+, hoàn toàn không ảnh hưởng tới quá trình runtime).
-- **Kiểm thử Đơn vị & Widget (`test/widget_test.dart`):**
-  - Tất cả các test cases TC-01, TC-14, TC-17, TC-18, TC-19, TC-20, TC-21, TC-24, TC-SuperApp-01, TC-SuperApp-02, TC-SuperApp-03 được thiết kế đầy đủ, bao phủ trọn vẹn luồng dữ liệu Super App.
+Reviewer Agent đã trực tiếp kích hoạt kiểm thử độc lập đối với giải pháp Backend:
 
----
+```text
+================================================================
+ TRIPFLOW .NET 10 - IN-PROCESS XUNIT PARITY TEST RUNNER
+================================================================
+[SUITE] AuthParityTests:             8/8 PASS  (0 Fail)
+[SUITE] CatalogParityTests:          8/8 PASS  (0 Fail)
+[SUITE] PlacesAndCorridorTests:      8/8 PASS  (0 Fail)
+[SUITE] TripsAndExpensesTests:       8/8 PASS  (0 Fail)
+[SUITE] AdminParityTests:            8/8 PASS  (0 Fail)
+[SUITE] SmokeTestRunner (7/7 Smoke): 1/1 PASS  (0 Fail)
+================================================================
+ KẾT QUẢ KIỂM THỬ TỰ ĐỘNG: 41/41 PASS (0 FAIL) — 100% ĐẠT
+================================================================
+```
 
-## 3. Bảng Tổng Hợp Kiểm Duyệt Chi Tiết Theo Tiêu Chí
-
-| Tiêu Chí Thẩm Định | Tiêu Chuẩn Áp Dụng | Kết Quả Đánh Giá | Ghi Chú |
-|:---|:---|:---:|:---|
-| **Chế độ Toàn quốc mặc định** | Không mặc định TP.HCM; hiển thị danh lam 3 miền | ✅ ĐẠT | `vietnamAll` ID = 0, chip chuyển đổi 1 chạm |
-| **Brand Identity Hero Header** | Bỏ "Xin chào du khách", thiết kế Editorial Slate 900 | ✅ ĐẠT | Tích hợp Hotline 1900 6868, Super App Tag & 3 Badges |
-| **Đặt phòng Khách sạn / Homestay** | Lọc loại hình, xem phòng, tính tiền, phát hành E-Voucher | ✅ ĐẠT | Mã `TF-HTL-XXXXXX`, xem lại phòng đã đặt |
-| **Đặt vé Xe Limousine, Tàu, Bay** | 3 phân hệ giao thông, chọn điểm đi/đến, xuất E-Ticket QR | ✅ ĐẠT | Mã `ETKT-XXXXXX`, modal QR quét tại nhà ga/bến xe |
-| **Tour Trải Nghiệm & Phượt** | Trekking Fansipan, Tà Năng, Hà Giang Loop, Lịch trình theo ngày | ✅ ĐẠT | Chi tiết lịch trình từng ngày, HDV bản địa, Voucher Tour |
-| **Lập Lịch Phượt Biker Corridor** | Presets 1N->Xuyên Việt, xe máy phượt, quét Biker POI ven đường | ✅ ĐẠT | Quét cây xăng, vá xe, đèo ngắm cảnh bán kính 2km |
-| **Dữ liệu Ẩm Thực Cào Thực Tế** | Số hotline thật, menu món ăn có giá VND, giờ mở cửa | ✅ ĐẠT | Cung cấp đầy đủ hotline, menu giá món đặc sản |
-| **An toàn Bảo mật (Hardening)** | Không rò rỉ secret, validate dữ liệu đầu vào | ✅ ĐẠT | Không hardcode key, form input an toàn |
-| **Thẩm mỹ Anti-AI-Slop** | Không dùng gradient tím neon, typography chuẩn, touch target >= 44px | ✅ ĐẠT | Slate 900, Coral, Gold, bo góc 16-24px, WCAG AA |
-| **Độ ổn định mã nguồn** | 0 compile error, kiến trúc module sạch | ✅ ĐẠT | Phân lớp Data / State / UI mạch lạc |
-
----
-
-## 4. Các Gợi Ý Hoàn Thiện Thêm (Non-blocking Polish Suggestions)
-
-### [P3 - Polish] Cập nhật các linter deprecations theo Flutter SDK mới
-- **Vị trí:** `lib/features/auth/login_screen.dart`, `register_screen.dart`, `profile_screen.dart`
-- **Hiện trạng:** Sử dụng `.withOpacity()` thay vì `.withValues(alpha: ...)` và `activeColor` thay vì `activeThumbColor`.
-- **Đánh giá:** Không gây lỗi runtime hay crash, mã nguồn hoạt động hoàn toàn ổn định. Có thể refactor trong đợt bảo trì định kỳ tiếp theo.
+Tất cả 7 mục kiểm tra `smoke_test.py` đều vượt qua:
+- `[PASS] GET /health — status=ok`
+- `[PASS] GET /health/ready — database=ok`
+- `[PASS] GET /destinations (>=100) — total=158, items=100`
+- `[PASS] GET /restaurants (>=60) — count=77`
+- `[PASS] GET /places/nearby?kinds=gas — gas=3`
+- `[PASS] POST /places/along-route — stops=17`
+- `[PASS] GET /places/suggest?q=hoi an — items=19`
 
 ---
 
-## 5. Kết Luận & Bàn Giao
+## 5. CHI TIẾT CÁC VẤN ĐỀ CẦN KHẮC PHỤC (THEO THỨ TỰ ƯU TIÊN)
 
-Mã nguồn dự án **TripFlow Super App** đã đáp ứng xuất sắc mọi tiêu chí về nghiệp vụ du lịch, độ an toàn bảo mật, trải nghiệm người dùng theo chuẩn Anti-AI-Slop và kiến trúc Clean Code.
+### 🟠 [P1] Lỗ hổng Auth Bypass trên toàn bộ Admin API
+- **Vị trí**: [backend-dotnet/Controllers/AdminController.cs#L24-L32](file:///d:/trip_flow/backend-dotnet/Controllers/AdminController.cs#L24-L32)
+- **Đoạn mã hiện tại**:
+  ```csharp
+  private void EnsureAdminAccess()
+  {
+      var role = _tokenService.GetUserRoleFromPrincipal(User);
+      if (role == null) return; // Nếu chưa cấu hình chặt chẽ để dev/test có thể qua, hoặc kiểm tra nếu User gửi claim role == "user"
+      if (role == "user")
+      {
+          throw new BadHttpRequestException("Từ chối truy cập (403 Forbidden): Không có quyền thực hiện.", 403);
+      }
+  }
+  ```
+- **Nguyên nhân & Nguy cơ**:
+  Khi client không gửi bất kỳ Authorization header nào (người dùng ẩn danh không đăng nhập), `User.Identity?.IsAuthenticated` là `false` và `role` là `null`. Biểu thức `if (role == null) return;` thoát hàm mà không kiểm tra xác thực, dẫn đến **toàn bộ 12 endpoints quản trị admin** (xem KPI dashboard, sửa/tạo điểm đến, thăng quyền người dùng, xem audit logs) đều bị lộ công khai cho bất kỳ ai trên Internet mà không cần đăng nhập! Ngoài ra trong `RecordAuditLog`, thao tác ẩn danh này còn tự động gán là `admin@tripflow.vn` / `super_admin`.
+- **Yêu cầu khắc phục cho Coder Agent**:
+  Sửa lại hàm `EnsureAdminAccess()` để kiểm tra nghiêm ngặt:
+  ```csharp
+  private void EnsureAdminAccess()
+  {
+      var role = _tokenService.GetUserRoleFromPrincipal(User);
+      if (string.IsNullOrEmpty(role))
+      {
+          throw new BadHttpRequestException("Vui lòng đăng nhập để tiếp tục.", StatusCodes.Status401Unauthorized);
+      }
+      if (role is not ("super_admin" or "content_admin" or "province_editor" or "moderator"))
+      {
+          throw new BadHttpRequestException("Từ chối truy cập (403 Forbidden): Không có quyền thực hiện.", StatusCodes.Status403Forbidden);
+      }
+  }
+  ```
+  Đồng thời cập nhật các bài test trong `AdminParityTests.cs` để thêm một test case xác nhận gọi Admin API không kèm token sẽ nhận mã 401 Unauthorized.
 
-**XÁC NHẬN NGHIỆM THU: CHÍNH THỨC THÔNG QUA (PASSED) — SẴN SÀNG TRIỂN KHAI PRODUCTION.**
+---
+
+### 🟡 [P2] Khả năng tương thích lệnh `dotnet test` tiêu chuẩn
+- **Vị trí**: [backend-dotnet/TripFlow.Tests/TripFlow.Tests.csproj](file:///d:/trip_flow/backend-dotnet/TripFlow.Tests/TripFlow.Tests.csproj#L4)
+- **Nguyên nhân**:
+  Project test được cấu hình `<OutputType>Exe</OutputType>` và sử dụng custom entry point [Program.cs](file:///d:/trip_flow/backend-dotnet/TripFlow.Tests/Program.cs#L8). Khi chạy bằng lệnh tiêu chuẩn `dotnet test`, trình điều khiển `vstest.console` bị treo chờ kết nối testhost (timeout 90s). Mặc dù chạy bằng `dotnet run --project backend-dotnet/TripFlow.Tests/TripFlow.Tests.csproj` hoạt động hoàn hảo và pass 41/41 test, việc này có thể gây khó khăn trong các luồng CI/CD tự động dùng `dotnet test`.
+- **Yêu cầu khắc phục cho Coder Agent**:
+  Đảm bảo `TripFlow.Tests.csproj` hỗ trợ cả 2 hình thức chạy hoặc bổ sung tài liệu/script `run_tests.cmd` rõ ràng để người dùng và pipeline CI/CD thực thi thuận tiện.
+
+---
+
+### 🟡 [P2] Quản lý JWT Secret trong môi trường Production
+- **Vị trí**: [backend-dotnet/Program.cs#L108](file:///d:/trip_flow/backend-dotnet/Program.cs#L108) & [backend-dotnet/Services/TokenService.cs#L24](file:///d:/trip_flow/backend-dotnet/Services/TokenService.cs#L24)
+- **Nguyên nhân**:
+  Sử dụng chuỗi bí mật fallback hardcoded `"TripFlowSuperSecretKey2026ForAuthenticationJwtBearer1234567890!"`.
+- **Yêu cầu khắc phục cho Coder Agent**:
+  Trong môi trường Production (khi `!app.Environment.IsDevelopment()`), nếu biến môi trường `JWT__SECRET` hoặc `Jwt:Secret` không được cung cấp hoặc trùng với chuỗi mặc định, hệ thống cần ghi log cảnh báo bảo mật nghiêm ngặt hoặc từ chối khởi động để ngăn ngừa rủi ro lộ secret.
+
+---
+
+### 🟢 [P3] Phân quyền chi tiết theo Tỉnh (Province Scoping)
+- **Vị trí**: [backend-dotnet/Controllers/AdminController.cs](file:///d:/trip_flow/backend-dotnet/Controllers/AdminController.cs)
+- **Khuyến nghị**:
+  Role `province_editor` có trường `AssignedProvinceId` trong bảng `users`. Hiện tại logic cập nhật điểm đến kiểm tra quyền chung `EnsureAdminAccess()`. Khi hoàn thiện giai đoạn tiếp theo, nên bổ sung kiểm tra: nếu user có role `province_editor` thì chỉ được sửa các điểm đến thuộc đúng `AssignedProvinceId` của mình.
+
+---
+
+## 6. DANH SÁCH HÀNH ĐỘNG TIẾP THEO (NEXT ACTIONS)
+
+- [ ] **Coder Agent**: Sửa ngay lỗi bảo mật **P1** trong `AdminController.cs` (`EnsureAdminAccess`), trả 401 khi không có token và 403 khi role là `user`.
+- [ ] **Coder Agent**: Bổ sung test case `TC_ADM_Anonymous_AccessAdmin_ShouldReturn401` vào `AdminParityTests.cs`.
+- [ ] **Coder Agent**: Chạy lại bộ test `dotnet run --project backend-dotnet/TripFlow.Tests/TripFlow.Tests.csproj` bảo đảm 42/42 tests PASS.
+- [ ] **Reviewer Agent**: Thẩm định lại và cấp trạng thái **✅ PASSED** sau khi Coder Agent hoàn tất bản vá.

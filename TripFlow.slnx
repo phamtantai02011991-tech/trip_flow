@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/TripFlow.Api.csproj" />
+    <Project Path="backend/TripFlow.Tests/TripFlow.Tests.csproj" />
+  </Folder>
+</Solution>
